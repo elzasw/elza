@@ -70,10 +70,6 @@ public class DaExportExtSyncsProcessor implements Runnable {
 
     private static final int DEFAULT_EXPORT_LIST_SIZE = 100;
 
-    private static final List<DaSyncQueueItem.QueueItemState> QUEUE_STATES = List.of(
-            DaSyncQueueItem.QueueItemState.EXPORT_NEW,
-            DaSyncQueueItem.QueueItemState.EXPORT_SENT);
-
     static final String NOT_CONFIRMED = "Digitální archiv nepotvrdil přijetí balíčku.";
 
     private int exportListSize = DEFAULT_EXPORT_LIST_SIZE;
@@ -125,9 +121,10 @@ public class DaExportExtSyncsProcessor implements Runnable {
             exportListSize = DEFAULT_EXPORT_LIST_SIZE;
             return true;
         } catch (Exception ex) {
-            logger.error("Failed to send the export batch of {} item(s), it will be sent again.", items.size(), ex);
             daService.scheduleRetry(items, "Změnový balíček se nepodařilo odeslat do digitálního archivu: "
                     + DaRequestFailure.describe(ex) + ". Odeslání bude opakováno.");
+            DaRequestFailure.log(logger, digitalRepository,
+                                 "export batch of " + items.size() + " item(s) could not be sent", items, ex);
             exportListSize = 1;
             return false;
         } finally {
@@ -187,9 +184,10 @@ public class DaExportExtSyncsProcessor implements Runnable {
                 daService.changeQueueItemsState(batch, DaSyncQueueItem.QueueItemState.EXPORT_ERROR, failure);
                 actionService.completeFromQueue(batch, DaAipActionItemState.ERROR, failure);
             } else {
-                logger.error("Failed to ask about export batch {}, it will be asked again.", batchId, ex);
                 daService.scheduleRetry(batch, "Stav odeslaného balíčku se nepodařilo zjistit: " + description
                         + ". Dotaz bude opakován.");
+                DaRequestFailure.log(logger, digitalRepository, "state of export batch " + batchId
+                        + " could not be obtained", batch, ex);
             }
             return false;
         }
@@ -283,7 +281,9 @@ public class DaExportExtSyncsProcessor implements Runnable {
                     boolean sent = exchange(this::sendNextBatch);
                     if (!recorded && !sent) {
                         try {
-                            idle(DaService.idleMillis(daService.getEarliestAttempt(QUEUE_STATES), QUEUE_CHECK_TIME_INTERVAL));
+                            idle(DaService.idleMillis(daService.getEarliestAttempt(
+                                    DaSyncQueueItem.QueueItemState.EXPORT_SENT, DaSyncQueueItem.QueueItemState.EXPORT_NEW),
+                                    QUEUE_CHECK_TIME_INTERVAL));
                         } catch (InterruptedException e) {
                             logger.error(e.getMessage(), e);
                             break;

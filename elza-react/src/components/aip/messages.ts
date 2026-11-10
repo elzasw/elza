@@ -193,6 +193,10 @@ export const problemMessages = defineMessages({
         id: "aip.problem.UNKNOWN_INSTITUTION",
         defaultMessage: "Nenalezena instituce",
     },
+    [AipProblemType.UnknownOriginator]: {
+        id: "aip.problem.UNKNOWN_ORIGINATOR",
+        defaultMessage: "Nenalezen původce",
+    },
 });
 
 /**

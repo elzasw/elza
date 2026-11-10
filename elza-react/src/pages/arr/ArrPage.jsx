@@ -303,6 +303,8 @@ class ArrPage extends ArrParentPage {
                         false,
                         null,
                         true,
+                        null,
+                        true,
                     ),
                 );
             }
@@ -653,7 +655,7 @@ class ArrPage extends ArrParentPage {
         if (node.parentNode == null) {
             node.parentNode = createFundRoot(activeFund);
         }
-        this.props.dispatch(fundSelectSubNode(activeFund.versionId, node.id, node.parentNode, undefined, undefined, undefined, undefined, undefined, true));
+        this.props.dispatch(fundSelectSubNode(activeFund.versionId, node.id, node.parentNode, undefined, undefined, true, undefined, undefined, true));
     }
 
     handleShowVisiblePolicies(activeFund) {
@@ -720,6 +722,8 @@ class ArrPage extends ArrParentPage {
                     ref="fundVisiblePolicies"
                     items={nodesPolicy.items}
                     selectedItem={activeNode !== null ? activeNode.selectedSubNodeId : null}
+                    // the row height is set in DiscrepanciesList.scss, the scroll position is computed from this value
+                    itemHeight={25}
                     renderItemContent={this.renderPolicyItem}
                     onSelect={this.handleSelectVisiblePoliciesNode.bind(this, activeFund)}
                     /*onDoubleClick={this.handleShowVisiblePolicies.bind(this, activeFund)}*/

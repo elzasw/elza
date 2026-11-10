@@ -4,8 +4,9 @@ import { AppState } from "typings/store";
 import * as perms from "actions/user/Permission";
 
 function canUsePublicationType(type: PublicationType, fundId: number, userDetail: { hasOne: (...args: any[]) => boolean }): boolean {
-    if (!type.allowPermExport && !type.allowPermPublication) {
-        return userDetail.hasOne(perms.ADMIN);
+    const isFundAdmin = userDetail.hasOne(perms.ADMIN, perms.FUND_ADMIN);
+    if (isFundAdmin) {
+        return true;
     }
     return !!(
         (type.allowPermExport && userDetail.hasOne(perms.FUND_EXPORT_ALL, { type: perms.FUND_EXPORT, fundId })) ||

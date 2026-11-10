@@ -471,18 +471,23 @@ public class CamConnector implements ApiCamConnector {
                 apExternalSystem.getType() == ApExternalSystemType.CAM_COMPLETE_V2) {
         	// if apikeyId & apikeyValue define - use its
         	if (apikeyId != null && apikeyValue != null) {
-                return new CamInstance(apExternalSystem.getUrl(), apikeyId, apikeyValue);
+                return new CamInstance(apExternalSystem.getUrl(), apikeyId, apikeyValue, isTlsVerify(apExternalSystem));
         	}
         	// use cache instanceMap
             CamInstance camInstance = instanceMap.get(apExternalSystem.getExternalSystemId());
             if (camInstance == null) {
-                camInstance = new CamInstance(apExternalSystem.getUrl(), apExternalSystem.getApiKeyId(), apExternalSystem.getApiKeyValue());
+                camInstance = new CamInstance(apExternalSystem.getUrl(), apExternalSystem.getApiKeyId(), apExternalSystem.getApiKeyValue(),
+                        isTlsVerify(apExternalSystem));
                 instanceMap.put(apExternalSystem.getExternalSystemId(), camInstance);
             }
             return camInstance;
         } else {
             throw new IllegalArgumentException("Externí systém není typu CAM");
         }
+    }
+
+    private static boolean isTlsVerify(final ApExternalSystem apExternalSystem) {
+        return !Boolean.FALSE.equals(apExternalSystem.getTlsVerify());
     }
 
     private <T> T unmarshal(final Class<T> classObject, final ApiResponse<File> apiResponse) {

@@ -11,6 +11,7 @@ import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.service.AccessPointService;
+import cz.tacr.elza.dataexchange.common.items.DescriptionItemStringImpl;
 import cz.tacr.elza.dataexchange.common.items.ImportableItemData;
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointInfo;
@@ -193,6 +194,9 @@ public class AccessPointEntryProcessor implements ItemProcessor {
     private List<ItemWrapper> processItems(ApPart partEntity, List<DescriptionItem> itemList, String fragmentId) {
         List<ItemWrapper> itemWrapperList = new ArrayList<>();
         for (DescriptionItem di : itemList) {
+            if (DescriptionItemStringImpl.hasBlankValue(di)) {
+                continue;
+            }
             ItemType itemType = staticData.getItemTypeByCode(di.getT());
             if (itemType == null) {
                 throw new DEImportException("Description item type not found, code:" + di.getT());

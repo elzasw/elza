@@ -122,7 +122,8 @@ public class AipPackageFilesTest {
 
         AipProblemException e = assertThrows(AipProblemException.class,
                 () -> AipPackageFiles.mets(AipPackageFiles.packageRoot(tempDir)));
-        assertEquals("Balíček neobsahuje soubor METS.xml", e.getMessage());
+        // the message names what the package holds instead
+        assertEquals("Balíček neobsahuje soubor METS.xml (obsahuje: representations/)", e.getMessage());
     }
 
     @Test

@@ -54,6 +54,23 @@ public class EadUnitdateParserTest {
         assertEquals("1.10.2001", UnitDateConverter.convertToString(d));
     }
 
+    /** A package of Charles University: the day of origin written as an interval of one day. */
+    @Test
+    void intervalWithinOnePeriod_isThatPeriod() {
+        ArrDataUnitdate day = parse("D-D", std("2025-01-21T00:00:00"), std("2025-01-21T23:59:59"));
+        assertEquals("D", day.getFormat());
+        assertEquals("2025-01-21T00:00:00", day.getValueFrom());
+        assertEquals("2025-01-21T23:59:59", day.getValueTo());
+        assertEquals("21.1.2025", UnitDateConverter.convertToString(day));
+
+        ArrDataUnitdate year = parse("Y-Y", std("1958-01-01T00:00:00"), std("1958-12-31T00:00:00"));
+        assertEquals("Y", year.getFormat());
+        assertEquals("1958", UnitDateConverter.convertToString(year));
+
+        // two days stay an interval
+        assertEquals("D-D", parse("D-D", std("2025-01-21T00:00:00"), std("2025-01-22T23:59:59")).getFormat());
+    }
+
     @Test
     void mixedFormats() {
         ArrDataUnitdate d = parse("YM-D", std("1920-05-01T00:00:00"), std("1921-02-14T23:59:59"));

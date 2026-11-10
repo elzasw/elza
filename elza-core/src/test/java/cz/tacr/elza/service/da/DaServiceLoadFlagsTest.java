@@ -117,6 +117,8 @@ public class DaServiceLoadFlagsTest {
         setField(service, "daLocalCacheRepository", localCacheRepository);
         setField(service, "actionService", actionService);
         setField(service, "referenceResolver", referenceResolver);
+        // permissions are checked by the caller's entry point and are not under test here
+        setField(service, "aipAuthorization", mock(AipAuthorization.class));
 
         // The service expects the caller to hold a transaction; here the test stands in for one.
         TransactionSynchronizationManager.setActualTransactionActive(true);

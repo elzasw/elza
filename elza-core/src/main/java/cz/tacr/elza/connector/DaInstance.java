@@ -4,6 +4,7 @@ import com.lightcomp.ft.FileTransfer;
 import com.lightcomp.ft.client.Client;
 import com.lightcomp.ft.client.ClientConfig;
 import cz.tacr.da.controller.DefaultApi;
+import cz.tacr.elza.api.DaApiAuthentication;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,31 +24,28 @@ public class DaInstance {
     private static final String FILETRANSFER_URL = "/ws/ft";
 
     /**
-     * @param fileTransferUrl File Transfer endpoint; blank = {@code url} + {@code /ws/ft}
-     * @param tlsVerify       false = trust any TLS certificate of the DA (REST API and File Transfer)
+     * @param fileTransferUrl   File Transfer endpoint; blank = {@code url} + {@code /ws/ft}
+     * @param apiAuthentication authentication of the REST API; File Transfer uses HTTP Basic
+     *                          whenever {@code username} is set
+     * @param tlsVerify         false = trust any TLS certificate of the DA (REST API and File Transfer)
      */
     public DaInstance(final String url, final String fileTransferUrl,
+                      final DaApiAuthentication apiAuthentication,
                       final String apiKey, final String apiValue, final String username, final String password,
                       final boolean tlsVerify) {
         if (StringUtils.isEmpty(url)) {
             throw new IllegalArgumentException("Není nastavena properta da.url pro připojení api");
-        } else if (StringUtils.isEmpty(apiKey)) {
-//            throw new IllegalArgumentException("Není nastavena properta da.api-key pro připojení api");
-        } else if (StringUtils.isEmpty(apiValue)) {
-//            throw new IllegalArgumentException("Není nastavena properta da.api-value pro připojení api");
-        } else if (StringUtils.isEmpty(username)) {
-//            throw new IllegalArgumentException("Není nastavena properta da.username pro připojení api");
-        } else if (StringUtils.isEmpty(password)) {
-//            throw new IllegalArgumentException("Není nastavena properta da.password pro připojení api");
         }
         this.url = StringUtils.stripEnd(url.trim(), "/");
         this.fileTransferUrl = resolveFileTransferUrl(url, fileTransferUrl);
         String apiUrl = getApiUrl();
-        ApiClientDa apiClientDa = new ApiClientDa(apiUrl, apiKey, apiValue, tlsVerify);
+        ApiClientDa apiClientDa = new ApiClientDa(apiUrl, apiAuthentication, apiKey, apiValue, username, password,
+                tlsVerify);
         defaultApi = new DefaultApi(apiClientDa);
         fileTransferClient = FileTransfer.createClient(createClientConfig(this.fileTransferUrl, username, password, tlsVerify));
         fileTransferClient.start();
-        logger.debug("Inicializován konektor na DA: {} (apiKey: {}, tlsVerify: {})", apiUrl, apiKey, tlsVerify);
+        logger.debug("Inicializován konektor na DA: {} (authentication: {}, apiKey: {}, username: {}, tlsVerify: {})",
+                apiUrl, apiAuthentication, apiKey, username, tlsVerify);
     }
 
     private ClientConfig createClientConfig(final String url, final String username, final String password,

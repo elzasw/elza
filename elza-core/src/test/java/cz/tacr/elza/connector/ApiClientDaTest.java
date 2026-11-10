@@ -1,18 +1,36 @@
 package cz.tacr.elza.connector;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.concurrent.atomic.AtomicReference;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 
 import org.junit.jupiter.api.Test;
 
+import cz.tacr.elza.api.DaApiAuthentication;
 import cz.tacr.elza.common.security.NoCheckTrustManager;
+import cz.tacr.elza.exception.SystemException;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
+import okhttp3.Protocol;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 /**
- * TLS verification of the DA REST client is set by the repository option only; the API key
- * decides the signature, not the certificate check.
+ * TLS verification of the DA REST client is set by the repository option only; the
+ * authentication method decides the Authorization header, not the certificate check.
  */
 public class ApiClientDaTest {
 
@@ -20,25 +38,55 @@ public class ApiClientDaTest {
 
     private static final OkHttpClient DEFAULT_CLIENT = new OkHttpClient();
 
+    private static ApiClientDa createClient(DaApiAuthentication authentication, boolean tlsVerify) {
+        return new ApiClientDa(URL, authentication, "elza", "secret", "user", "pass", tlsVerify);
+    }
+
+    /**
+     * Sends a request through the client's interceptors and returns it as it would leave ELZA;
+     * the last interceptor answers instead of the network.
+     */
+    private static Request sentRequest(ApiClientDa apiClient) throws IOException {
+        return sentRequest(apiClient, "/updates?count=1");
+    }
+
+    private static Request sentRequest(ApiClientDa apiClient, String path) throws IOException {
+        AtomicReference<Request> sent = new AtomicReference<>();
+        OkHttpClient client = apiClient.getHttpClient().newBuilder()
+                .addInterceptor(chain -> {
+                    sent.set(chain.request());
+                    return new Response.Builder()
+                            .request(chain.request())
+                            .protocol(Protocol.HTTP_1_1)
+                            .code(200)
+                            .message("OK")
+                            .body(ResponseBody.create("{}", MediaType.get("application/json")))
+                            .build();
+                })
+                .build();
+        client.newCall(new Request.Builder().url(URL + path).build()).execute().close();
+        return sent.get();
+    }
+
     @Test
     void verify_withApiKey_keepsStandardVerification() {
-        OkHttpClient client = new ApiClientDa(URL, "elza", "secret", true).getHttpClient();
+        OkHttpClient client = createClient(DaApiAuthentication.API_KEY, true).getHttpClient();
 
         assertSame(DEFAULT_CLIENT.hostnameVerifier(), client.hostnameVerifier());
         assertFalse(client.x509TrustManager() instanceof NoCheckTrustManager);
     }
 
     @Test
-    void verify_withoutApiKey_keepsStandardVerification() {
-        OkHttpClient client = new ApiClientDa(URL, null, null, true).getHttpClient();
+    void verify_withoutAuthentication_keepsStandardVerification() {
+        OkHttpClient client = createClient(DaApiAuthentication.NONE, true).getHttpClient();
 
         assertSame(DEFAULT_CLIENT.hostnameVerifier(), client.hostnameVerifier());
         assertFalse(client.x509TrustManager() instanceof NoCheckTrustManager);
     }
 
     @Test
-    void skip_withoutApiKey_trustsAnyCertificateAndHost() {
-        OkHttpClient client = new ApiClientDa(URL, null, null, false).getHttpClient();
+    void skip_withoutAuthentication_trustsAnyCertificateAndHost() {
+        OkHttpClient client = createClient(DaApiAuthentication.NONE, false).getHttpClient();
 
         assertInstanceOf(NoCheckTrustManager.class, client.x509TrustManager());
         assertTrue(client.hostnameVerifier().verify("other.example", null));
@@ -46,9 +94,81 @@ public class ApiClientDaTest {
 
     @Test
     void skip_withApiKey_trustsAnyCertificateAndHost() {
-        OkHttpClient client = new ApiClientDa(URL, "elza", "secret", false).getHttpClient();
+        OkHttpClient client = createClient(DaApiAuthentication.API_KEY, false).getHttpClient();
 
         assertInstanceOf(NoCheckTrustManager.class, client.x509TrustManager());
         assertTrue(client.hostnameVerifier().verify("other.example", null));
+    }
+
+    @Test
+    void none_sendsNoAuthorization() throws IOException {
+        Request request = sentRequest(createClient(DaApiAuthentication.NONE, true));
+
+        assertNull(request.header(ApiClientDa.AUTHORIZATION));
+        assertNull(request.header(ApiClientDa.X_NDA_DATE));
+    }
+
+    @Test
+    void apiKey_signsRequest() throws IOException {
+        Request request = sentRequest(createClient(DaApiAuthentication.API_KEY, true));
+
+        assertTrue(request.header(ApiClientDa.AUTHORIZATION).startsWith("NDA-HMAC-SHA256 KeyId=elza,Signature="));
+        assertEquals(14, request.header(ApiClientDa.X_NDA_DATE).length());
+    }
+
+    @Test
+    void basic_sendsUsernameAndPassword() throws IOException {
+        Request request = sentRequest(createClient(DaApiAuthentication.BASIC, true));
+
+        // base64("user:pass")
+        assertEquals("Basic dXNlcjpwYXNz", request.header(ApiClientDa.AUTHORIZATION));
+        assertNull(request.header(ApiClientDa.X_NDA_DATE));
+    }
+
+    @Test
+    void basic_withoutPassword_sendsEmptyPassword() throws IOException {
+        Request request = sentRequest(new ApiClientDa(URL, DaApiAuthentication.BASIC, null, null, "user", null, true));
+
+        // base64("user:")
+        assertEquals("Basic dXNlcjo=", request.header(ApiClientDa.AUTHORIZATION));
+    }
+
+    /**
+     * The signed text holds the decoded path, so a non-ASCII identifier must be signed as UTF-8
+     * whatever the platform charset. The build runs tests with {@code file.encoding=UTF-8}; to
+     * check another charset run with {@code -DargLine=-Dfile.encoding=Cp1250}.
+     */
+    @Test
+    void apiKey_signsNonAsciiPathAsUtf8() throws Exception {
+        Request request = sentRequest(createClient(DaApiAuthentication.API_KEY, true), "/download/result/Žluťoučký-1");
+
+        String signedText = "da.example" + "GET" + "/api/download/result/Žluťoučký-1"
+                + request.header(ApiClientDa.X_NDA_DATE);
+        Mac hmac = Mac.getInstance("HmacSHA256");
+        hmac.init(new SecretKeySpec("secret".getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
+        String expected = Base64.getEncoder().withoutPadding()
+                .encodeToString(hmac.doFinal(signedText.getBytes(StandardCharsets.UTF_8)));
+
+        assertEquals("NDA-HMAC-SHA256 KeyId=elza,Signature=" + expected, request.header(ApiClientDa.AUTHORIZATION));
+    }
+
+    /** An empty key value cannot sign; the request must not leave with a null signature. */
+    @Test
+    void apiKey_unsignable_failsWithoutSending() {
+        ApiClientDa apiClient = new ApiClientDa(URL, DaApiAuthentication.API_KEY, "elza", "", null, null, true);
+
+        assertThrows(SystemException.class, () -> sentRequest(apiClient));
+    }
+
+    @Test
+    void apiKey_withoutKey_isRejected() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new ApiClientDa(URL, DaApiAuthentication.API_KEY, null, null, "user", "pass", true));
+    }
+
+    @Test
+    void basic_withoutUsername_isRejected() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new ApiClientDa(URL, DaApiAuthentication.BASIC, "elza", "secret", null, "pass", true));
     }
 }

@@ -1,5 +1,5 @@
 import { defineMessages } from "react-intl";
-import { PublicationStateInternal } from "elza-api";
+import { ConnectionType, PublicationStateInternal } from "elza-api";
 
 
 export const messages = defineMessages({
@@ -23,4 +23,10 @@ export const stateMessages = defineMessages({
     [PublicationStateInternal.PrepareError]: { id: "publication.state.PREPARE_ERROR", defaultMessage: "Chyba přípravy" },
     [PublicationStateInternal.PublishError]: { id: "publication.state.PUBLISH_ERROR", defaultMessage: "Chyba publikace" },
     [PublicationStateInternal.Invalidated]:  { id: "publication.state.INVALIDATED",   defaultMessage: "Zneplatněná" },
+});
+
+export const connectionTypeMessages = defineMessages({
+    [ConnectionType.Development]: { id: "publication.system.connectionType.DEVELOPMENT", defaultMessage: "Vývoj" },
+    [ConnectionType.Test]:        { id: "publication.system.connectionType.TEST",        defaultMessage: "Test" },
+    [ConnectionType.Production]:  { id: "publication.system.connectionType.PRODUCTION",  defaultMessage: "Produkce" },
 });

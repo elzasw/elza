@@ -68,6 +68,7 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId, seedFromParent
     addEmptyDescItem: addEmptyDescItemBase,
     deleteDescItem,
     createDescItem,
+    createItemsOutsideForm,
     updateDescItem,
     parent,
   } = nodeFormData;
@@ -168,14 +169,16 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId, seedFromParent
     if (!formData) {
       return;
     }
-    await pasteItems({
-      formData,
-      nodeId,
-      nodeVersion: nodeData?.version ?? nodeVersionId,
-      fundId: activeFund.id,
-      fundVersionId: fondsVersionId,
-      itemTypeId: descItemTypeId,
-    });
+    await createItemsOutsideForm(() =>
+      pasteItems({
+        formData,
+        nodeId,
+        nodeVersion: nodeData?.version ?? nodeVersionId,
+        fundId: activeFund.id,
+        fundVersionId: fondsVersionId,
+        itemTypeId: descItemTypeId,
+      }),
+    );
   }
 
   function getOpenInDataGridHref(descItemTypeId: number) {
@@ -210,6 +213,7 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId, seedFromParent
         parent={parent}
         nodeData={nodeData}
         onAddDescItem={addEmptyDescItem}
+        onCreateItems={createItemsOutsideForm}
         daos={daos}
       />
       <DaoLinkDetail nodeId={nodeId} />

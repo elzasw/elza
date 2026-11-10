@@ -12,15 +12,14 @@ Management port
 ===============
 
 The monitoring endpoints are enabled by default. They are published on a
-separate management port, ``8081``, bound to ``127.0.0.1``, so they are
-reachable only from the server itself. The application port is not
-affected. The built-in defaults are:
+separate management port bound to ``127.0.0.1``, so they are reachable
+only from the server itself. The application port is not affected. The
+built-in defaults are:
 
 .. code-block:: yaml
 
    management:
      server:
-       port: 8081
        address: 127.0.0.1
      endpoints:
        web:
@@ -35,6 +34,29 @@ affected. The built-in defaults are:
 Only the ``health`` and ``prometheus`` endpoints are published. Any value
 can be overridden in :file:`elza.yaml` or with an environment variable
 (for example ``MANAGEMENT_SERVER_PORT``).
+
+The management port is set by ``management.server.port``:
+
+* Not set (default): the first free port after the application port
+  (``server.port`` + 1, + 2, ... up to + 10) is used. With the default
+  application port ``8080`` it is ``8081``. The port in use is written to
+  the log at start (``Management (actuator) port is not configured ...,
+  using 8081 on 127.0.0.1``). When no port in the range is free, ELZA
+  does not start.
+* Set: exactly that port is used. ELZA does not start when the port
+  equals ``server.port`` or another process already listens on it; the
+  log names the port.
+* ``-1``: the monitoring endpoints are switched off.
+
+Set the port explicitly when a monitoring tool or the CSC client needs a
+fixed address, for example when several ELZA instances run on one
+server:
+
+.. code-block:: yaml
+
+   management:
+     server:
+       port: 9081
 
 .. warning::
 
@@ -69,13 +91,15 @@ configured (``elza.security.ldap.ad-domain``); it then checks the
 configured LDAP server. It can be switched off with
 ``management.health.ldap.enabled: false``.
 
+.. _monitoring-metrics:
+
 ELZA metrics
 ============
 
 Besides the standard metrics of the JVM, the HTTP server
 (``http_server_requests_*``), the database connection pool (HikariCP) and
-the system, ELZA publishes metrics of its synchronisation queue with
-external systems (typically CAM) and of its task scheduler. The metrics
+the system, ELZA publishes metrics of its synchronisation queues with
+external systems (CAM and digital archives) and of its task scheduler. The metrics
 have no labels; queue values are aggregated over all configured external
 systems. Age metrics return ``-1`` when there is nothing to measure.
 
@@ -110,6 +134,21 @@ systems. Age metrics return ``-1`` when there is nothing to measure.
        entered its state. Grows when the queue is not processed, which the
        last-success metric cannot see.
      - above 3600
+   * - ``elza_da_failing_age_seconds``
+     - Seconds the longest failing waiting request of a digital archive
+       queue has been failing. Such a request is retried without end, for
+       example a package the digital archive cannot prepare until it is
+       fixed there; the administrator either has it fixed or marks the
+       request as failed in the queue (see :ref:`da-queue`).
+     - above 14400
+   * - ``elza_da_failing_count``
+     - Number of waiting requests of digital archive queues whose
+       exchanges with the digital archive keep failing.
+     - none
+   * - ``elza_da_error_count``
+     - Number of digital archive queue requests that ended in error
+       (download, processing or export) and were not repeated.
+     - none
    * - ``elza_scheduler_heartbeat_age_seconds``
      - Seconds since the task scheduler last ticked. Grows without limit
        when the scheduler is frozen, which stops CAM synchronisation and

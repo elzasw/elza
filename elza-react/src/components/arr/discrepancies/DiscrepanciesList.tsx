@@ -32,7 +32,7 @@ export const DiscrepanciesList:FC<DiscrepanciesListProps> = ({
         if (discrepancyItem.parentNode === null) {
             discrepancyItem.parentNode = createFundRoot(activeFund);
         }
-        dispatch(fundSelectSubNode(activeFund.versionId, discrepancyItem.id, discrepancyItem.parentNode));
+        dispatch(fundSelectSubNode(activeFund.versionId, discrepancyItem.id, discrepancyItem.parentNode, false, null, true, undefined, undefined, true));
     }
 
     const getItems = (fromIndex:number, toIndex:number) => {

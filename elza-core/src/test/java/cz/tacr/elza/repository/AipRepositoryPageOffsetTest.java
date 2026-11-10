@@ -213,6 +213,27 @@ public class AipRepositoryPageOffsetTest extends AbstractTest {
         assertEquals(aipIds.keySet().stream().sorted().toList(), seen.stream().sorted().toList());
     }
 
+    /**
+     * A search without a page size (or with zero) reads one default page, never the whole list:
+     * an archive holds tens of thousands of AIPs and each listed one becomes a detail.
+     */
+    @Test
+    public void testMissingPageSizeReadsDefaultPage() {
+        for (Integer size : new Integer[] { null, 0 }) {
+            SearchParams params = params(2);
+            params.setSize(size);
+
+            FilteredResult<DaAip> page = aipRepository.findAipsByFilter(params);
+
+            assertEquals(AipRepositoryImpl.DEFAULT_PAGE_SIZE, page.getMaxResults());
+            assertEquals(aipIds.size(), page.getList().size());
+            assertEquals(0, offsetOf("aip-offset-7", params));
+        }
+
+        SearchParams onePerPage = params(1);
+        assertEquals(1, aipRepository.findAipsByFilter(onePerPage).getList().size());
+    }
+
     // --- helpers ---------------------------------------------------------------------------
 
     private Integer offsetOf(final String code, final SearchParams params) {

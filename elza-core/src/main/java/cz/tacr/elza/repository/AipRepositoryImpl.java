@@ -11,7 +11,6 @@ import cz.tacr.elza.repository.filter.AipFilterValueType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Tuple;
-import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -22,13 +21,25 @@ import java.util.Map;
 /**
  */
 public class AipRepositoryImpl implements AipRepositoryCustom {
+
+    /**
+     * Page size of a search that does not set one. The list never returns all AIPs at once:
+     * each of them is turned into a detail, and an archive holds tens of thousands of them.
+     */
+    public static final int DEFAULT_PAGE_SIZE = 25;
+
     @PersistenceContext
     private EntityManager entityManager;
 
+    private static int pageSize(final SearchParams params) {
+        Integer size = params.getSize();
+        return size == null || size <= 0 ? DEFAULT_PAGE_SIZE : size;
+    }
+
     @Override
-    public FilteredResult<DaAip> findAipsByFilter(final SearchParams params) {
+    public FilteredResult<DaAip> findAipsByFilter(final SearchParams params, final AipVisibility visibility) {
         int firstResult = params.getOffset() == null ? 0 : params.getOffset();
-        int maxResults = params.getSize() == null ? 0 : params.getSize();
+        int maxResults = pageSize(params);
 
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<DaAip> query = cb.createQuery(DaAip.class);
@@ -40,8 +51,8 @@ public class AipRepositoryImpl implements AipRepositoryCustom {
         Joins joins = joins(cb, root);
         Joins joinsCount = joins(cb, aipRootCount);
 
-        Predicate condition = prepareCondition(params.getFilters(), cb, joins);
-        Predicate conditionCount = prepareCondition(params.getFilters(), cb, joinsCount);
+        Predicate condition = condition(params, visibility, cb, query, joins);
+        Predicate conditionCount = condition(params, visibility, cb, queryCount, joinsCount);
 
         query.select(root);
         queryCount.select(cb.countDistinct(aipRootCount));
@@ -49,12 +60,10 @@ public class AipRepositoryImpl implements AipRepositoryCustom {
         query.where(condition).orderBy(prepareOrder(sortKeys(params.getSort()), cb, joins));
         queryCount.where(conditionCount);
 
-        TypedQuery<DaAip> tq = entityManager.createQuery(query)
-                .setFirstResult(firstResult);
-        if (maxResults > 0) {
-            tq.setMaxResults(maxResults);
-        }
-        List<DaAip> list = tq.getResultList();
+        List<DaAip> list = entityManager.createQuery(query)
+                .setFirstResult(firstResult)
+                .setMaxResults(maxResults)
+                .getResultList();
         int count = entityManager.createQuery(queryCount).getSingleResult().intValue();
 
         return new FilteredResult<>(firstResult, maxResults, count, list);
@@ -71,13 +80,14 @@ public class AipRepositoryImpl implements AipRepositoryCustom {
      * runs on; the comparison below must say the same thing as the ORDER BY of the page query.
      */
     @Override
-    public Integer findAipPageOffset(final SearchParams params, final Integer aipId) {
-        int pageSize = params.getSize() == null ? 0 : params.getSize();
+    public Integer findAipPageOffset(final SearchParams params, final Integer aipId,
+                                     final AipVisibility visibility) {
+        int pageSize = pageSize(params);
 
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         List<SortKey> keys = sortKeys(params.getSort());
 
-        List<Object> values = sortValuesOf(params, aipId, keys, cb);
+        List<Object> values = sortValuesOf(params, visibility, aipId, keys, cb);
         if (values == null) {
             // the AIP is not part of the filtered result - there is no page to go to
             return null;
@@ -88,18 +98,18 @@ public class AipRepositoryImpl implements AipRepositoryCustom {
         Joins joins = joins(cb, root);
 
         query.select(cb.countDistinct(root))
-                .where(cb.and(prepareCondition(params.getFilters(), cb, joins),
+                .where(cb.and(condition(params, visibility, cb, query, joins),
                         sortsBefore(keys, values, cb, joins)));
 
         int rank = entityManager.createQuery(query).getSingleResult().intValue();
-        return pageSize > 0 ? (rank / pageSize) * pageSize : 0;
+        return (rank / pageSize) * pageSize;
     }
 
     /**
      * Values the AIP is sorted by, read under the filter of the search - an AIP the filter leaves
      * out has no position in the result and yields null.
      */
-    private List<Object> sortValuesOf(final SearchParams params, final Integer aipId,
+    private List<Object> sortValuesOf(final SearchParams params, final AipVisibility visibility, final Integer aipId,
                                       final List<SortKey> keys, final CriteriaBuilder cb) {
         CriteriaQuery<Tuple> query = cb.createTupleQuery();
         Root<DaAip> root = query.from(DaAip.class);
@@ -110,7 +120,7 @@ public class AipRepositoryImpl implements AipRepositoryCustom {
             selections.add(key.path(joins));
         }
         query.multiselect(selections)
-                .where(cb.and(prepareCondition(params.getFilters(), cb, joins),
+                .where(cb.and(condition(params, visibility, cb, query, joins),
                         cb.equal(root.get(AipFieldMapping.AIP_ID.getAttribute()), aipId)));
 
         List<Tuple> rows = entityManager.createQuery(query).setMaxResults(1).getResultList();
@@ -217,6 +227,35 @@ public class AipRepositoryImpl implements AipRepositoryCustom {
         joins.byJoin.put(AipJoin.FUND, fundJoin);
         joins.byJoin.put(AipJoin.DIGITAL_REPOSITORY, repositoryJoin);
         return joins;
+    }
+
+    private Predicate condition(final SearchParams params, final AipVisibility visibility,
+                                final CriteriaBuilder cb, final AbstractQuery<?> query, final Joins joins) {
+        return cb.and(prepareCondition(params.getFilters(), cb, joins),
+                      visibilityCondition(visibility, cb, query, joins));
+    }
+
+    /**
+     * The funds of the user are read from the permission view, the same way the list of funds is
+     * restricted.
+     */
+    private Predicate visibilityCondition(final AipVisibility visibility, final CriteriaBuilder cb,
+                                          final AbstractQuery<?> query, final Joins joins) {
+        if (visibility.unattached() && visibility.userId() == null) {
+            return cb.conjunction();
+        }
+        Path<Integer> fundId = joins.get(AipJoin.FUND).get(ArrFund.FIELD_FUND_ID);
+        Predicate attached = cb.isNotNull(fundId);
+        if (visibility.userId() != null) {
+            Subquery<Integer> userFunds = query.subquery(Integer.class);
+            Root<UsrPermissionView> perm = userFunds.from(UsrPermissionView.class);
+            userFunds.select(perm.get(UsrPermissionView.FIELD_FUND_ID))
+                    .where(cb.equal(perm.get(UsrPermissionView.FIELD_USER_ID), visibility.userId()),
+                           perm.get("permission").in(UsrPermission.Permission.FUND_RD,
+                                                     UsrPermission.Permission.FUND_ARR));
+            attached = fundId.in(userFunds);
+        }
+        return visibility.unattached() ? cb.or(attached, cb.isNull(fundId)) : attached;
     }
 
     /**

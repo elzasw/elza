@@ -78,8 +78,10 @@ function renderPaste() {
         },
     });
 
+    let lastCreatedItems: NodeItem[] | undefined;
+
     async function paste(formData: Pick<NodeFormData, 'descItems' | 'itemTypes'>, itemTypeId?: number) {
-        await pasteItems?.({
+        lastCreatedItems = await pasteItems?.({
             formData: formData as NodeFormData,
             nodeId: NODE_ID,
             nodeVersion: NODE_VERSION,
@@ -91,7 +93,7 @@ function renderPaste() {
         return toasts[toasts.length - 1];
     }
 
-    return { paste };
+    return { paste, createdItems: () => lastCreatedItems };
 }
 
 const ownItem = stringItem(1, 'a', { nodeId: NODE_ID, itemObjectId: 50, position: 1 });
@@ -110,18 +112,13 @@ describe('usePasteItems', () => {
 
     it('appends accepted items after the own ones and reports duplicates', async () => {
         setClipboard([stringItem(1, 'b', { position: 1 }), stringItem(1, 'a', { position: 2 }), stringItem(2, 'x')]);
-        const { paste } = renderPaste();
+        const { paste, createdItems } = renderPaste();
 
         const toast = await paste({ descItems: [ownItem, inheritedItem], itemTypes: [itemType(1), itemType(2)] });
 
-        expect(updateDescItems).toHaveBeenCalledWith(
-            FUND_VERSION_ID,
-            NODE_ID,
-            NODE_VERSION,
-            [stringItem(1, 'b', { position: 2 }), stringItem(2, 'x', { position: 1 })],
-            [],
-            [],
-        );
+        const expectedItems = [stringItem(1, 'b', { position: 2 }), stringItem(2, 'x', { position: 1 })];
+        expect(updateDescItems).toHaveBeenCalledWith(FUND_VERSION_ID, NODE_ID, NODE_VERSION, expectedItems, [], []);
+        expect(createdItems()).toEqual(expectedItems);
         expect(toast.style).toBe('success');
         expect(toast.title).toMatch(/\b2\b/);
         render(<>{toast.message}</>);
@@ -211,11 +208,12 @@ describe('usePasteItems', () => {
     it('shows the server error when the paste fails', async () => {
         updateDescItems.mockRejectedValue({ errorMessage: 'Verze JP neodpovídá' });
         setClipboard([stringItem(1, 'b')]);
-        const { paste } = renderPaste();
+        const { paste, createdItems } = renderPaste();
 
         const toast = await paste({ descItems: [], itemTypes: [itemType(1)] });
 
         expect(toast.style).toBe('danger');
         expect(toast.message).toBe('Verze JP neodpovídá');
+        expect(createdItems()).toEqual([]);
     });
 });

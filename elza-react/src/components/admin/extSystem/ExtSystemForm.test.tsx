@@ -1,7 +1,13 @@
 import { describe, it, expect, vi } from 'vitest';
 
 import { renderWithProviders, screen, fireEvent } from 'test/test-utils';
-import { JAVA_ATTR_CLASS, DigitalRepositoryType, DaDownloadMethod, DaOnReceivedAction } from '../../../constants';
+import {
+    JAVA_ATTR_CLASS,
+    DigitalRepositoryType,
+    DaDownloadMethod,
+    DaOnReceivedAction,
+    DaApiAuthentication,
+} from '../../../constants';
 import ExtSystemForm, { EXT_SYSTEM_CLASS } from './ExtSystemForm';
 
 /**
@@ -76,7 +82,7 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
 
         expect(select(container, 'sendNotification')).not.toBeNull();
         fireEvent.change(input(container, 'name')!, { target: { value: 'Repozitář WSDL' } });
-        fireEvent.click(screen.getByRole('button', { name: 'Upravit' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Uložit' }));
 
         await vi.waitFor(() => expect(onSubmitForm).toHaveBeenCalledTimes(1));
     });
@@ -89,6 +95,7 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
                     id: 7,
                     downloadMethod: DaDownloadMethod.Standard,
                     onReceived: DaOnReceivedAction.None,
+                    apiAuthentication: DaApiAuthentication.None,
                 })}
                 onSubmitForm={onSubmitForm}
             />,
@@ -96,7 +103,7 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
 
         expect(select(container, 'sendNotification')).toBeNull();
         fireEvent.change(input(container, 'name')!, { target: { value: 'Archiv' } });
-        fireEvent.click(screen.getByRole('button', { name: 'Upravit' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Uložit' }));
 
         await vi.waitFor(() => expect(onSubmitForm).toHaveBeenCalledTimes(1));
     });
@@ -109,6 +116,7 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
                     id: 7,
                     downloadMethod: DaDownloadMethod.Standard,
                     onReceived: DaOnReceivedAction.None,
+                    apiAuthentication: DaApiAuthentication.None,
                 })}
                 onSubmitForm={onSubmitForm}
             />,
@@ -116,7 +124,7 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
 
         expect(select(container, 'tlsVerify')!.value).toBe('true');
         fireEvent.change(select(container, 'tlsVerify')!, { target: { value: 'false' } });
-        fireEvent.click(screen.getByRole('button', { name: 'Upravit' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Uložit' }));
 
         await vi.waitFor(() => expect(onSubmitForm).toHaveBeenCalledTimes(1));
         expect(onSubmitForm.mock.calls[0][0]).toMatchObject({ tlsVerify: false });
@@ -130,17 +138,76 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
                     id: 7,
                     downloadMethod: DaDownloadMethod.Standard,
                     onReceived: DaOnReceivedAction.None,
+                    apiAuthentication: DaApiAuthentication.None,
                 })}
                 onSubmitForm={onSubmitForm}
             />,
         );
 
+        expect(input(container, 'apiKeyId')).toBeNull();
+        fireEvent.change(select(container, 'apiAuthentication')!, { target: { value: DaApiAuthentication.ApiKey } });
         fireEvent.change(input(container, 'apiKeyId')!, { target: { value: 'elza' } });
         fireEvent.change(input(container, 'apiKeyValue')!, { target: { value: 'secret' } });
-        fireEvent.click(screen.getByRole('button', { name: 'Upravit' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Uložit' }));
 
         await vi.waitFor(() => expect(onSubmitForm).toHaveBeenCalledTimes(1));
-        expect(onSubmitForm.mock.calls[0][0]).toMatchObject({ apiKeyId: 'elza', apiKeyValue: 'secret' });
+        expect(onSubmitForm.mock.calls[0][0]).toMatchObject({
+            apiAuthentication: DaApiAuthentication.ApiKey,
+            apiKeyId: 'elza',
+            apiKeyValue: 'secret',
+        });
+    });
+
+    it.each([
+        [DaApiAuthentication.ApiKey, 'apiKeyValue'],
+        [DaApiAuthentication.Basic, 'username'],
+    ])('ověření %s se neuloží bez %s', async (authentication, missing) => {
+        const onSubmitForm = vi.fn().mockResolvedValue(undefined);
+        const { container } = renderWithProviders(
+            <ExtSystemForm
+                initialValues={repository(DigitalRepositoryType.Da, {
+                    id: 7,
+                    downloadMethod: DaDownloadMethod.Standard,
+                    onReceived: DaOnReceivedAction.None,
+                    apiAuthentication: authentication,
+                    apiKeyId: 'elza',
+                })}
+                onSubmitForm={onSubmitForm}
+            />,
+        );
+
+        fireEvent.change(input(container, 'name')!, { target: { value: 'Archiv' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Uložit' }));
+
+        await vi.waitFor(() => expect(input(container, missing)!.classList).toContain('is-invalid'));
+        expect(onSubmitForm).not.toHaveBeenCalled();
+    });
+
+    it('ověření Basic používá uživatelské jméno a heslo, API klíč nenabízí', async () => {
+        const onSubmitForm = vi.fn().mockResolvedValue(undefined);
+        const { container } = renderWithProviders(
+            <ExtSystemForm
+                initialValues={repository(DigitalRepositoryType.Da, {
+                    id: 7,
+                    downloadMethod: DaDownloadMethod.Standard,
+                    onReceived: DaOnReceivedAction.None,
+                    apiAuthentication: DaApiAuthentication.Basic,
+                })}
+                onSubmitForm={onSubmitForm}
+            />,
+        );
+
+        expect(input(container, 'apiKeyId')).toBeNull();
+        fireEvent.change(input(container, 'username')!, { target: { value: 'elza' } });
+        fireEvent.change(input(container, 'password')!, { target: { value: 'secret' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Uložit' }));
+
+        await vi.waitFor(() => expect(onSubmitForm).toHaveBeenCalledTimes(1));
+        expect(onSubmitForm.mock.calls[0][0]).toMatchObject({
+            apiAuthentication: DaApiAuthentication.Basic,
+            username: 'elza',
+            password: 'secret',
+        });
     });
 
     it('odešle zvolené hodnoty', async () => {
@@ -152,6 +219,7 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
                     sendNotification: 'false',
                     downloadMethod: DaDownloadMethod.Standard,
                     onReceived: DaOnReceivedAction.None,
+                    apiAuthentication: DaApiAuthentication.None,
                     syncDelay: 300,
                     statusPollInterval: 2,
                 })}
@@ -163,7 +231,7 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
         fireEvent.change(select(container, 'onReceived')!, { target: { value: DaOnReceivedAction.DownloadMetadata } });
         fireEvent.change(input(container, 'syncDelay')!, { target: { value: '3600' } });
         fireEvent.change(input(container, 'statusPollInterval')!, { target: { value: '5' } });
-        fireEvent.click(screen.getByRole('button', { name: 'Upravit' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Uložit' }));
 
         await vi.waitFor(() => expect(onSubmitForm).toHaveBeenCalledTimes(1));
         expect(onSubmitForm.mock.calls[0][0]).toMatchObject({
@@ -207,6 +275,7 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
                     sendNotification: 'false',
                     downloadMethod: DaDownloadMethod.FileTransfer,
                     onReceived: DaOnReceivedAction.None,
+                    apiAuthentication: DaApiAuthentication.None,
                 })}
                 onSubmitForm={onSubmitForm}
             />,
@@ -214,7 +283,7 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
 
         fireEvent.change(input(container, 'fileTransferUrl')!, { target: { value: 'https://ft.example/transfer' } });
         fireEvent.change(input(container, 'fileTransferType')!, { target: { value: 'GetMetadata_ELZA' } });
-        fireEvent.click(screen.getByRole('button', { name: 'Upravit' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Uložit' }));
 
         await vi.waitFor(() => expect(onSubmitForm).toHaveBeenCalledTimes(1));
         expect(onSubmitForm.mock.calls[0][0]).toMatchObject({
@@ -232,13 +301,14 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
                     sendNotification: 'false',
                     downloadMethod: DaDownloadMethod.Standard,
                     onReceived: DaOnReceivedAction.None,
+                    apiAuthentication: DaApiAuthentication.None,
                 })}
                 onSubmitForm={onSubmitForm}
             />,
         );
 
         fireEvent.change(input(container, 'statusPollInterval')!, { target: { value: '0' } });
-        fireEvent.click(screen.getByRole('button', { name: 'Upravit' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Uložit' }));
 
         expect(await screen.findByText('Interval musí být alespoň 1 s')).toBeInTheDocument();
         expect(onSubmitForm).not.toHaveBeenCalled();

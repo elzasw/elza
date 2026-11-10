@@ -650,6 +650,8 @@ public class AccessPointService {
         validationNotDeleted(apState);
 
         ApAccessPoint accessPoint = apState.getAccessPoint();
+        // cached access points are rebuilt at the end, rebuilding clears the persistence context
+        MultipleApChangeContext macc = new MultipleApChangeContext();
 
         if (replacedBy != null) {
             ApState replacedByState = stateRepository.findLastByAccessPointId(replacedBy.getAccessPointId());
@@ -680,8 +682,6 @@ public class AccessPointService {
                 validationMergePossibility(replacedByState);
             }
 
-            MultipleApChangeContext macc = new MultipleApChangeContext();
-
             replace(apState, replacedByState, extSystem, macc, false);
             apState.setReplacedBy(replacedBy);
 
@@ -709,13 +709,12 @@ public class AccessPointService {
                 // je třeba aktualizovat ap cache
                 macc.add(replacedBy.getAccessPointId());
             }
-
-            for (Integer apId: macc.getModifiedApIds()) {
-                accessPointCacheService.createApCachedAccessPoint(apId);
-            }
         }
 
-        invalidateAccessPointPublishAndReindex(apState, accessPoint, change);
+        invalidateAccessPointPublishAndReindex(apState, accessPoint, change).forEach(macc::add);
+        for (Integer apId : macc.getModifiedApIds()) {
+            accessPointCacheService.createApCachedAccessPoint(apId);
+        }
         logger.info("Deleted accessPoint, id: {}, replacedBy: {}", apState.getAccessPointId(),
                     replacedBy != null ? replacedBy.getAccessPointId() : null);
     }
@@ -796,25 +795,34 @@ public class AccessPointService {
      */
     public void invalidateAccessPoints(final List<ApState> apStates) {
         ApChange change = apDataService.createChange(ApChange.Type.AP_DELETE);
+        Set<Integer> apIdsToCache = new HashSet<>();
         for (ApState apState : apStates) {
             validationNotDeleted(apState);
             ApAccessPoint accessPoint = apState.getAccessPoint();
-            invalidateAccessPointPublishAndReindex(apState, accessPoint, change);
+            apIdsToCache.addAll(invalidateAccessPointPublishAndReindex(apState, accessPoint, change));
+        }
+        for (Integer apId : apIdsToCache) {
+            accessPointCacheService.createApCachedAccessPoint(apId);
         }
     }
 
     /**
      * Zneplatnění ApAccessPoint
      *
+     * The cached access points are not rebuilt here: rebuilding one clears the persistence context, and
+     * the caller still works with the entities it has loaded. The caller rebuilds the returned ones before
+     * its transaction ends.
+     *
      * @param apState
+     *            state of the access point; it stays the current state, now with the delete change
      * @param accessPoint
      * @param change
-     * @return vrací aktualizovaný stav
+     * @return ids of the access points whose cached form has to be rebuilt by the caller
      */
-    public ApState invalidateAccessPoint(ApState apState, ApAccessPoint accessPoint, final ApChange change) {
+    public Collection<Integer> invalidateAccessPoint(ApState apState, ApAccessPoint accessPoint, final ApChange change) {
         // check if not already deleted
         if (apState.getDeleteChange() != null) {
-            return apState;
+            return Collections.emptyList();
         }
 
         checkDeletion(accessPoint);
@@ -848,15 +856,13 @@ public class AccessPointService {
 
         accessPointCacheService.deleteCachedAccessPoint(accessPoint);
 
-        if (apState.getReplacedById() != null) {
-            // aktualizace náhradní entity v cache
-            accessPointCacheService.createApCachedAccessPoint(apState.getReplacedById());
-        }
-
         // close if exists WfTask
         taskService.closeWfTask(apState, Status.CANCELLED);
 
-        return apState;
+        // the replacing entity lists the entities it replaces in its cached form
+        return apState.getReplacedById() != null
+                ? Collections.singletonList(apState.getReplacedById())
+                : Collections.emptyList();
     }
 
     /**
@@ -865,9 +871,12 @@ public class AccessPointService {
      * @param apState
      * @param accessPoint
      * @param change
+     * @return ids of the access points whose cached form has to be rebuilt by the caller, see
+     *         {@link #invalidateAccessPoint(ApState, ApAccessPoint, ApChange)}
      */
-    private void invalidateAccessPointPublishAndReindex(final ApState apState, ApAccessPoint accessPoint, final ApChange change) {
-        invalidateAccessPoint(apState, accessPoint, change);
+    private Collection<Integer> invalidateAccessPointPublishAndReindex(final ApState apState, ApAccessPoint accessPoint,
+                                                                       final ApChange change) {
+        Collection<Integer> apIdsToCache = invalidateAccessPoint(apState, accessPoint, change);
 
         accessPoint = saveWithLock(accessPoint);
         publishAccessPointDeleteEvent(accessPoint);
@@ -875,6 +884,7 @@ public class AccessPointService {
 
         // there may be tens of thousands of dependent entities, so they are revalidated asynchronously
         partService.checkReferredRecords(accessPoint);
+        return apIdsToCache;
     }
 
     /**
@@ -2626,7 +2636,7 @@ public class AccessPointService {
         if (replace) {
             replace(state, trgState, null, macc, false);
             state.setReplacedBy(trgState.getAccessPoint());
-            invalidateAccessPoint(state, srcAccessPoint, change);
+            invalidateAccessPoint(state, srcAccessPoint, change).forEach(macc::add);
             // dependent entities still referring to the invalidated entity are revalidated asynchronously
             partService.checkReferredRecords(srcAccessPoint);
         }

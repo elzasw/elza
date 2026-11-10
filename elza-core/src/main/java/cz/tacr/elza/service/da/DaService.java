@@ -13,6 +13,7 @@ import cz.tacr.da.controller.vo.IngestIngestStatus;
 import cz.tacr.da.controller.vo.RequestState;
 import cz.tacr.da.controller.vo.UpdatedAips;
 import cz.tacr.da.controller.vo.UpdatedInfo;
+import cz.tacr.elza.api.AipProblemType;
 import cz.tacr.elza.api.AipType;
 import cz.tacr.elza.api.DaAipActionItemState;
 import cz.tacr.elza.api.DaAipActionType;
@@ -28,15 +29,12 @@ import cz.tacr.elza.core.security.Authorization;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDaLink;
 import cz.tacr.elza.domain.ArrDaoLink;
-import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDigitalRepository;
-import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.DaAip;
 import cz.tacr.elza.domain.DaAipAction;
-import cz.tacr.elza.domain.DaAipActionItem;
 import cz.tacr.elza.domain.DaAipState;
 import cz.tacr.elza.domain.DaChange;
 import cz.tacr.elza.domain.DaChangeType;
@@ -48,8 +46,6 @@ import cz.tacr.elza.domain.DaLevelView;
 import cz.tacr.elza.domain.DaLocalCache;
 import cz.tacr.elza.domain.DaRemoteRepositorySync;
 import cz.tacr.elza.domain.DaSyncQueueItem;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -67,9 +63,6 @@ import cz.tacr.elza.repository.DaLocalCacheRepository;
 import cz.tacr.elza.repository.DaRemoteRepositorySyncRepository;
 import cz.tacr.elza.repository.DaSyncQueueItemRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
-import cz.tacr.elza.repository.DataStringRepository;
-import cz.tacr.elza.repository.DataUnitdateRepository;
-import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
@@ -84,14 +77,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.DaoLinkPolicy;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.da.vo.DaUploadRequestImpl;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
-import cz.tacr.elza.service.eventnotification.events.EventIdNodeIdInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.utils.EadReaderWriter;
 import gov.loc.mets.v1_11.schema.AmdSecType;
@@ -107,7 +98,6 @@ import gov.loc.premis.v3.EventIdentifierComplexType;
 import gov.loc.premis.v3.IntellectualEntity;
 import gov.loc.premis.v3.LinkingAgentIdentifierComplexType;
 import gov.loc.premis.v3.LinkingObjectIdentifierComplexType;
-import gov.loc.premis.v3.ObjectComplexType;
 import gov.loc.premis.v3.ObjectIdentifierComplexType;
 import gov.loc.premis.v3.PremisComplexType;
 import gov.loc.premis.v3.SignificantPropertiesComplexType;
@@ -148,7 +138,6 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -168,6 +157,8 @@ import java.util.function.Supplier;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.TreeSet;
+import java.util.Set;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -195,6 +186,9 @@ public class DaService {
      * exception message from bloating the row.
      */
     private static final int STATE_MESSAGE_MAX_LENGTH = 4000;
+
+    /** Opens the number of attempts appended to the state message of a failing item. */
+    private static final String ATTEMPTS_NOTE = " (pokusů: ";
 
     /** Why a request for an AIP the digital archive invalidated is not carried out. */
     static final String AIP_INVALIDATED = "AIP byl v digitálním archivu zneplatněn.";
@@ -236,6 +230,8 @@ public class DaService {
     @Autowired
     private AipStateRepository aipStateRepository;
     @Autowired
+    private AipAuthorization aipAuthorization;
+    @Autowired
     private DaoLinkRepository daoLinkRepository;
     @Autowired
     private ArrDaLinkRepository daLinkRepository;
@@ -256,12 +252,6 @@ public class DaService {
     @Autowired
     private NodeCacheService nodeCacheService;
     @Autowired
-    private FundRepository fundRepository;
-    @Autowired
-    private DataStringRepository dataStringRepository;
-    @Autowired
-    private DataUnitdateRepository dataUnitdateRepository;
-    @Autowired
     private DaAipReferenceResolver referenceResolver;
     @Autowired
     private DaAipActionService actionService;
@@ -279,8 +269,7 @@ public class DaService {
 
     /** Reads and writes what an action was asked to do; see {@link ConnectParams}. */
     private final ObjectMapper objectMapper = new ObjectMapper();
-    @Autowired
-    private AsyncRequestService asyncRequestService;
+
     @Autowired
     @Qualifier("transactionManager")
     private PlatformTransactionManager txManager;
@@ -616,6 +605,18 @@ public class DaService {
         return aipRepository.findById(aipId).orElseThrow(() -> new ObjectNotFoundException("Nebyl nalezen AIP=" + aipId, AIP_NOT_FOUND));
     }
 
+    /** The AIPs with the given ids. A request naming an AIP that does not exist fails as a whole. */
+    private List<DaAip> findAipsCheckExist(Collection<Integer> aipIds) {
+        List<DaAip> aipList = aipRepository.findAllById(aipIds);
+        Set<Integer> requested = new HashSet<>(aipIds);
+        if (aipList.size() != requested.size()) {
+            aipList.forEach(aip -> requested.remove(aip.getAipId()));
+            throw new ObjectNotFoundException("Nebyly nalezeny AIP=" + requested, AIP_NOT_FOUND)
+                    .set("aipIds", requested);
+        }
+        return aipList;
+    }
+
     public DaDao findDaoById(Integer daoId) {
         return daoRepository.findById(daoId).orElseThrow(() -> new ObjectNotFoundException("Nebylo nalezeno DAO=" + daoId, AIP_NOT_FOUND));
     }
@@ -635,8 +636,12 @@ public class DaService {
      */
     @Transactional
     public DaAipAction requestMetadata(List<Integer> aipIds) {
-        DaAipAction action = actionService.start(DaAipActionType.LOAD_METADATA, aipRepository.findAllById(aipIds));
-        createDaoStructure(aipIds, actionService.sinkFor(action));
+        List<DaAip> aipList = findAipsCheckExist(aipIds);
+        Map<DaAip, DaAipState> stateMap = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList).stream()
+                .collect(Collectors.toMap(DaAipState::getDaAip, Function.identity()));
+        aipAuthorization.checkArrangeStates(stateMap.values());
+        DaAipAction action = actionService.start(DaAipActionType.LOAD_METADATA, aipList);
+        createDaoStructure(aipList, stateMap, actionService.sinkFor(action));
         return action;
     }
 
@@ -673,10 +678,16 @@ public class DaService {
 
     @Transactional
     public void createDaoStructure(List<Integer> aipIds, AipOutcomeSink sink) {
-        List<DaAip> aipList = aipRepository.findAllById(aipIds);
+        List<DaAip> aipList = findAipsCheckExist(aipIds);
         Map<DaAip, DaAipState> stateMap = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList).stream()
                 .collect(Collectors.toMap(DaAipState::getDaAip, Function.identity()));
+        createDaoStructure(aipList, stateMap, sink);
+    }
 
+    /**
+     * @param stateMap the active states of the AIPs; an AIP without one is invalidated
+     */
+    private void createDaoStructure(List<DaAip> aipList, Map<DaAip, DaAipState> stateMap, AipOutcomeSink sink) {
         List<DaAipState> resolvedStates = new ArrayList<>();
 
         for (DaAip aip : aipList) {
@@ -710,7 +721,9 @@ public class DaService {
      */
     @Transactional
     public DaAipAction deleteMetadata(List<Integer> aipIds) {
-        DaAipAction action = actionService.start(DaAipActionType.DELETE_METADATA, aipRepository.findAllById(aipIds));
+        List<DaAip> aipList = findAipsCheckExist(aipIds);
+        aipAuthorization.checkArrange(aipList);
+        DaAipAction action = actionService.start(DaAipActionType.DELETE_METADATA, aipList);
         deleteDaoStructure(aipIds, actionService.sinkFor(action));
         return action;
     }
@@ -821,7 +834,7 @@ public class DaService {
 
     @Transactional
     public int remapReferences(List<Integer> aipIds, AipOutcomeSink sink) {
-        List<DaAip> aipList = aipRepository.findAllById(aipIds);
+        List<DaAip> aipList = findAipsCheckExist(aipIds);
         List<DaAipState> stateList = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList);
         Set<Integer> activeAipIds = stateList.stream().map(s -> s.getDaAip().getAipId()).collect(Collectors.toSet());
         aipList.stream().map(DaAip::getAipId).filter(id -> !activeAipIds.contains(id))
@@ -832,12 +845,12 @@ public class DaService {
             if (referenceResolver.resolveReferences(aipState)) {
                 resolvedStates.add(aipState);
                 sink.finished(aipId);
+            } else if (aipState.getProblemDescription() != null) {
+                sink.skipped(aipId, aipState.getProblemDescription());
             } else if (aipState.getFund() != null) {
-                sink.skipped(aipId, "Instituce i archivní soubor jsou dohledané, není co měnit.");
+                sink.skipped(aipId, "Instituce, archivní soubor i původce jsou dohledaní, není co měnit.");
             } else {
-                sink.skipped(aipId, aipState.getProblemDescription() != null
-                        ? aipState.getProblemDescription()
-                        : "Archivní soubor se podle údajů balíčku nepodařilo dohledat.");
+                sink.skipped(aipId, "Archivní soubor se podle údajů balíčku nepodařilo dohledat.");
             }
         }
         aipStateRepository.saveAll(stateList);
@@ -862,11 +875,12 @@ public class DaService {
 
     @Transactional
     public DaAipAction aipDownloadCompleteAip(List<Integer> aipIds) {
-        DaAipAction action = actionService.start(DaAipActionType.LOAD_COMPLETE_AIP, aipRepository.findAllById(aipIds));
-        AipOutcomeSink sink = actionService.sinkFor(action);
-        List<DaAip> aipList = aipRepository.findAllById(aipIds);
+        List<DaAip> aipList = findAipsCheckExist(aipIds);
         Map<DaAip, DaAipState> stateMap = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList).stream()
                 .collect(Collectors.toMap(DaAipState::getDaAip, Function.identity()));
+        aipAuthorization.checkArrangeStates(stateMap.values());
+        DaAipAction action = actionService.start(DaAipActionType.LOAD_COMPLETE_AIP, aipList);
+        AipOutcomeSink sink = actionService.sinkFor(action);
 
         for (DaAip aip : aipList) {
             DaAipState aipState = stateMap.get(aip);
@@ -890,11 +904,12 @@ public class DaService {
 
     @Transactional
     public DaAipAction aipDeleteCompleteAip(List<Integer> aipIds) {
-        DaAipAction action = actionService.start(DaAipActionType.DELETE_COMPLETE_AIP, aipRepository.findAllById(aipIds));
-        AipOutcomeSink sink = actionService.sinkFor(action);
-        List<DaAip> aipList = aipRepository.findAllById(aipIds);
+        List<DaAip> aipList = findAipsCheckExist(aipIds);
         Map<DaAip, DaAipState> stateMap = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList).stream()
                 .collect(Collectors.toMap(DaAipState::getDaAip, Function.identity()));
+        aipAuthorization.checkArrangeStates(stateMap.values());
+        DaAipAction action = actionService.start(DaAipActionType.DELETE_COMPLETE_AIP, aipList);
+        AipOutcomeSink sink = actionService.sinkFor(action);
 
         // The complete package is replaced by the metadata package when that one arrives, and the
         // flags follow the package on disk - so nothing is cleared here, the pending downgrade
@@ -922,13 +937,17 @@ public class DaService {
      * so an AIP that fails does not take the ones already done with it.
      */
     public DaAipAction aipUpdateAip(AipUpdateType type, List<Integer> aipIds) {
-        DaAipAction action = actionService.start(actionTypeOf(type), aipRepository.findAllById(aipIds));
+        DaAipAction action = inTransaction(() -> {
+            List<DaAip> aipList = findAipsCheckExist(aipIds);
+            aipAuthorization.checkArrange(aipList);
+            return actionService.start(actionTypeOf(type), aipList);
+        });
         AipOutcomeSink sink = actionService.sinkFor(action);
         if (type == AipUpdateType.DOWNLOAD_UPDATE) {
             // Enqueueing is a few inserts per AIP and cannot fail halfway through the work of
             // one, so the whole request is one transaction rather than one per AIP.
             inTransaction(() -> {
-                List<DaAip> aipList = aipRepository.findAllById(aipIds);
+                List<DaAip> aipList = findAipsCheckExist(aipIds);
                 Map<DaAip, DaAipState> stateMap = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList).stream()
                         .collect(Collectors.toMap(DaAipState::getDaAip, Function.identity()));
 
@@ -977,7 +996,9 @@ public class DaService {
 
     @Transactional
     public DaAipAction aipExportAip(List<Integer> aipIds) {
-        DaAipAction action = actionService.start(DaAipActionType.EXPORT, aipRepository.findAllById(aipIds));
+        List<DaAip> requested = findAipsCheckExist(aipIds);
+        aipAuthorization.checkArrange(requested);
+        DaAipAction action = actionService.start(DaAipActionType.EXPORT, requested);
         AipOutcomeSink sink = actionService.sinkFor(action);
         List<DaAip> aipList = aipRepository.findByIdAndLinkExists(aipIds);
         // Only an AIP attached to a unit of description can be exported; the query filters the
@@ -1365,12 +1386,8 @@ public class DaService {
                                               DaSyncQueueItem.QueueItemState... states) {
         Pageable pageable = PageRequest.of(0, pageSize);
 
-        List<Integer> busy = new ArrayList<>(syncQueueItemRepository.findRepositoriesWithState(inFlightState));
-        if (busy.isEmpty()) {
-            busy.add(-1); // NOT IN () is not valid SQL
-        }
         Iterable<DaSyncQueueItem> syncQueueItemIterable = syncQueueItemRepository.findDueByStates(Arrays.asList(states),
-                OffsetDateTime.now(), busy, pageable);
+                OffsetDateTime.now(), busyRepositories(inFlightState), pageable);
         List<DaSyncQueueItem> syncQueueItemList = new ArrayList<>();
 
         if (syncQueueItemIterable.iterator().hasNext()) {
@@ -1412,13 +1429,29 @@ public class DaService {
         return batch;
     }
 
+    /** Repositories with a batch of the given state in flight; never empty - NOT IN () is not valid SQL. */
+    private List<Integer> busyRepositories(DaSyncQueueItem.QueueItemState inFlightState) {
+        List<Integer> busy = new ArrayList<>(syncQueueItemRepository.findRepositoriesWithState(inFlightState));
+        if (busy.isEmpty()) {
+            busy.add(-1);
+        }
+        return busy;
+    }
+
     /**
-     * @return when the processor of the given states has to look at the queue again at the
-     *         latest, or null when no item waits for a time
+     * When the processor has to look at the queue again at the latest: the next question about a
+     * batch in flight, or the earliest waiting item it can take - one of a repository without a
+     * batch in flight, as {@link #getNextItems} takes them.
+     *
+     * @param inFlightState the state of a batch in flight of this direction
+     * @param states        the states of the waiting items
+     * @return the time, or null when no item waits for a time
      */
     @Transactional
-    public OffsetDateTime getEarliestAttempt(Collection<DaSyncQueueItem.QueueItemState> states) {
-        return syncQueueItemRepository.findEarliestAttempt(states);
+    public OffsetDateTime getEarliestAttempt(DaSyncQueueItem.QueueItemState inFlightState,
+                                             DaSyncQueueItem.QueueItemState... states) {
+        return syncQueueItemRepository.findEarliestAttempt(inFlightState, Arrays.asList(states),
+                                                           busyRepositories(inFlightState));
     }
 
     /**
@@ -1433,20 +1466,38 @@ public class DaService {
             item.setState(state);
             item.setBatchId(batchId);
             item.setDate(now);
-            item.setStateMessage(null);
+            // a batch the DA accepted proves nothing yet - it may give the batch up again; a
+            // failing item keeps its failure until the DA answers about the batch as expected
+            if (item.getFailingSince() == null) {
+                item.setStateMessage(null);
+            }
             item.setNextAttemptAt(now.plus(Duration.ofMillis(statusPollMillis(digitalRepository))));
         }
         syncQueueItemRepository.saveAll(items);
     }
 
-    /** The DA still works on the batch; the next question is due after the status interval. */
+    /**
+     * The DA still works on the batch; the next question is due after the status interval. The
+     * DA answered as expected, so a failure the items recorded before is over.
+     */
     @Transactional
     public void scheduleNextCheck(Collection<DaSyncQueueItem> items, ArrDigitalRepository digitalRepository) {
         OffsetDateTime next = OffsetDateTime.now().plus(Duration.ofMillis(statusPollMillis(digitalRepository)));
         for (DaSyncQueueItem item : items) {
             item.setNextAttemptAt(next);
+            if (item.getFailingSince() != null) {
+                item.setFailingSince(null);
+                item.setStateMessage(null);
+            }
         }
         syncQueueItemRepository.saveAll(items);
+    }
+
+    /** A failure of an exchange about the item; the first of a run of them starts it. */
+    private static void startFailing(DaSyncQueueItem item, OffsetDateTime now) {
+        if (item.getFailingSince() == null) {
+            item.setFailingSince(now);
+        }
     }
 
     /**
@@ -1490,7 +1541,8 @@ public class DaService {
             item.setAttemptCount(attempts);
             item.setDate(now);
             item.setNextAttemptAt(now.plus(retryDelay(repositoryOf(item), attempts)));
-            item.setStateMessage(StringUtils.abbreviate(description + " (pokusů: " + attempts + ")",
+            startFailing(item, now);
+            item.setStateMessage(StringUtils.abbreviate(description + ATTEMPTS_NOTE + attempts + ")",
                                                         STATE_MESSAGE_MAX_LENGTH));
         }
         syncQueueItemRepository.saveAll(items);
@@ -1520,6 +1572,16 @@ public class DaService {
     /** Whether the request waits and the DA has not received it - only such can be cancelled. */
     static boolean isUndelivered(DaSyncQueueItem item) {
         return BooleanUtils.isTrue(item.getActive()) && UNDELIVERED_STATES.contains(item.getState());
+    }
+
+    /**
+     * Whether the request is a download that waits and keeps failing - only such can be marked
+     * as failed by the user.
+     */
+    static boolean isFailingDownload(DaSyncQueueItem item) {
+        return BooleanUtils.isTrue(item.getActive())
+                && DOWNLOAD_WAITING_STATES.contains(item.getState())
+                && item.getFailingSince() != null;
     }
 
     /** Whether the request ended by an error and nothing newer replaced it. */
@@ -1597,6 +1659,36 @@ public class DaService {
         return repeated;
     }
 
+    /**
+     * Ends failing downloads the user gave up on - typically a package the DA keeps failing to
+     * prepare until it is fixed there. The requests end as failed, with the last failure, on
+     * the AIP and the action as well; once the package is fixed, the user repeats them.
+     *
+     * @param items failing downloads ({@link #isFailingDownload})
+     * @param username who ended them; null when not known
+     */
+    @Transactional
+    public void markFailed(Collection<DaSyncQueueItem> items, @Nullable String username) {
+        String endedBy = "Stahování ukončil uživatel" + (StringUtils.isBlank(username) ? "" : " " + username);
+        Map<DaSyncQueueItem, AipProblem> problems = new LinkedHashMap<>();
+        for (DaSyncQueueItem item : items) {
+            problems.put(item, AipProblem.derived(AipProblemType.DOWNLOAD_ERROR,
+                    endedBy + ATTEMPTS_NOTE + item.getAttemptCount() + ")."
+                            + lastFailure(item.getStateMessage())));
+        }
+        failQueueItems(problems, DaSyncQueueItem.QueueItemState.IMPORT_ERROR);
+    }
+
+    /** The failure the state message of a failing download describes, without the retry notes. */
+    private static String lastFailure(@Nullable String stateMessage) {
+        if (StringUtils.isBlank(stateMessage)) {
+            return "";
+        }
+        String failure = StringUtils.substringBeforeLast(stateMessage, ATTEMPTS_NOTE).strip();
+        failure = StringUtils.removeEnd(failure, AipProblem.DOWNLOAD_RETRY_NOTE.strip()).strip();
+        return " Poslední chyba: " + failure;
+    }
+
     @Transactional
     public void updateAipToQueueItems(List<DaSyncQueueItem> syncQueueItemList) {
         if (CollectionUtils.isNotEmpty(syncQueueItemList)) {
@@ -1638,6 +1730,7 @@ public class DaService {
                 syncQueueItem.setStateMessage(StringUtils.abbreviate(stateMessage, STATE_MESSAGE_MAX_LENGTH));
                 syncQueueItem.setDate(now);
                 syncQueueItem.setNextAttemptAt(null);
+                syncQueueItem.setFailingSince(null);
             }
             syncQueueItemRepository.saveAll(syncQueueItemList);
         }
@@ -1651,6 +1744,11 @@ public class DaService {
      * DA holds the package and every retry may succeed. The failure is described on each item and as a problem of
      * its AIP - an AIP the DA announced but ELZA could never download is created from what the
      * change carries, so the user finds it in the AIP list instead of only in the queue.
+     *
+     * The action item a queue item carries out is finished with the failure, although the queue
+     * item itself goes on: the retries come at growing intervals that nobody watches in a dialog,
+     * and the user who asked for the action is told right away that the package is not coming
+     * yet. The retries are followed on the AIP and in the queue.
      */
     @Transactional
     public void recordDownloadFailure(List<DaSyncQueueItem> syncQueueItemList, Exception failure) {
@@ -1661,11 +1759,13 @@ public class DaService {
             syncQueueItem.setAttemptCount(attempts);
             syncQueueItem.setDate(now);
             syncQueueItem.setNextAttemptAt(now.plus(retryDelay(repositoryOf(syncQueueItem), attempts)));
+            startFailing(syncQueueItem, now);
             syncQueueItem.setStateMessage(StringUtils.abbreviate(
-                    problem.description() + " (pokusů: " + attempts + ")", STATE_MESSAGE_MAX_LENGTH));
+                    problem.description() + ATTEMPTS_NOTE + attempts + ")", STATE_MESSAGE_MAX_LENGTH));
             recordAipProblem(syncQueueItem, problem);
         }
         syncQueueItemRepository.saveAll(syncQueueItemList);
+        actionService.completeFromQueue(syncQueueItemList, DaAipActionItemState.ERROR, problem.description());
     }
 
     /**
@@ -1729,6 +1829,8 @@ public class DaService {
                 syncQueueItem.setState(state);
                 syncQueueItem.setStateMessage(StringUtils.abbreviate(problem.description(), STATE_MESSAGE_MAX_LENGTH));
                 syncQueueItem.setDate(now);
+                syncQueueItem.setNextAttemptAt(null);
+                syncQueueItem.setFailingSince(null);
                 recordAipProblem(syncQueueItem, problem);
                 actionService.completeFromQueue(List.of(syncQueueItem), DaAipActionItemState.ERROR,
                                                 problem.description());
@@ -1789,6 +1891,7 @@ public class DaService {
                 }
                 DaAipState aipState;
                 try {
+                    AipPackageFiles.normalizeDelivered(aipDir.toPath());
                     Path packageInfo = AipPackageFiles.packageInfo(aipDir.toPath());
                     aipState = packageInfoService.processPackageInfo(digitalRepository, packageInfo.toFile());
                     // The load flags of the AIP are set by storing the package, so a package is
@@ -1812,6 +1915,21 @@ public class DaService {
                     Path zipDir = createZip(aipDir, resourcePathResolver.getAipDir());
                     DaSyncQueueItem syncQueueItem = syncQueueItemMap.getOrDefault(aipState.getDaAip().getCode(), null);
                     applicationContext.getBean(DaService.class).createImportLocalCache(aipState, digitalRepository, aipType, zipDir, syncQueueItem);
+                }
+            }
+
+            // An item whose package the batch does not carry has nothing to be loaded from; it
+            // would otherwise be closed as loaded with the rest of the batch. The names the
+            // batch does carry say what the DA sent instead.
+            Set<String> deliveredCodes = aipDirSet.stream().map(File::getName).collect(Collectors.toSet());
+            for (DaSyncQueueItem item : syncQueueItemList) {
+                if (!deliveredCodes.contains(item.getCode()) && !failedItems.containsKey(item)) {
+                    String delivered = deliveredCodes.isEmpty() ? "dávka je prázdná"
+                            : "dávka obsahuje: " + String.join(", ", new TreeSet<>(deliveredCodes));
+                    AipProblem problem = AipProblem.of(AipProblemException.metadata(
+                            "Dávka neobsahuje balíček AIP " + item.getCode() + " (" + delivered + ")"));
+                    logger.error("Balíček {} v dávce chybí: {}", item.getCode(), problem.description());
+                    failedItems.put(item, problem);
                 }
             }
 
@@ -2042,6 +2160,12 @@ public class DaService {
             DaSyncQueueItem.QueueItemState.UPDATE,
             DaSyncQueueItem.QueueItemState.EXPORT_NEW);
 
+    /** Downloads waiting for the queue, requested from the DA or not. */
+    private static final List<DaSyncQueueItem.QueueItemState> DOWNLOAD_WAITING_STATES = List.of(
+            DaSyncQueueItem.QueueItemState.IMPORT_NEW,
+            DaSyncQueueItem.QueueItemState.UPDATE,
+            DaSyncQueueItem.QueueItemState.DOWNLOAD_REQUESTED);
+
     /** Requests waiting for the queue, delivered to the DA or not. */
     private static final List<DaSyncQueueItem.QueueItemState> WAITING_STATES = List.of(
             DaSyncQueueItem.QueueItemState.IMPORT_NEW,
@@ -2122,22 +2246,58 @@ public class DaService {
     /**
      * Downloads the prepared batch over File Transfer; the caller closes the returned content,
      * which deletes the downloaded file.
+     *
+     * The DA communication standard delivers a batch over File Transfer as a set of directories,
+     * one per package, so the delivered tree is packed into the zip the processing of a batch
+     * expects - the same layout the standard download returns. A DA that delivers the batch as a
+     * single zip file is accepted as well.
      */
     public SpooledContent downloadFileTransfer(ArrDigitalRepository digitalRepository, String batchId) throws IOException {
         Path downloadDir = Files.createTempDirectory(batchId);
         try {
             daConnector.downloadFileTransfer(digitalRepository, batchId, downloadDir);
-            Path downloaded;
-            try (Stream<Path> str = Files.walk(downloadDir)
-                    .filter(p -> Files.isRegularFile(p) && p.getFileName().toString().endsWith(".zip"))) {
-                downloaded = str.findFirst().orElseThrow(() -> new IllegalStateException("Nenalezen stažený soubor přes Filetransfer"));
-            }
-            // keep only the package, the download directory is removed below
             Path zip = Files.createTempFile("da-ft-", ".zip");
-            Files.move(downloaded, zip, StandardCopyOption.REPLACE_EXISTING);
+            try {
+                packDelivered(downloadDir, zip);
+            } catch (IOException | RuntimeException e) {
+                Files.deleteIfExists(zip);
+                throw e;
+            }
             return SpooledContent.ofTempFile(zip);
         } finally {
             PathUtils.deleteDirectory(downloadDir);
+        }
+    }
+
+    /**
+     * Puts what File Transfer delivered into {@code downloadDir} into {@code zip}: a single zip
+     * file lying directly in the download directory is the batch itself and is moved as it is,
+     * anything else is packed with the entries named relative to the download directory. A zip
+     * inside a package directory is a part of that package, even when it is all the batch holds
+     * - the directory names the AIP and must stay.
+     *
+     * @throws IllegalStateException when nothing was delivered
+     */
+    static void packDelivered(Path downloadDir, Path zip) throws IOException {
+        List<Path> files;
+        try (Stream<Path> str = Files.walk(downloadDir)) {
+            files = str.filter(Files::isRegularFile).toList();
+        }
+        if (files.isEmpty()) {
+            throw new IllegalStateException("File Transfer nepřenesl žádný soubor dávky");
+        }
+        if (files.size() == 1 && files.get(0).getFileName().toString().endsWith(".zip")
+                && downloadDir.equals(files.get(0).getParent())) {
+            Files.move(files.get(0), zip, StandardCopyOption.REPLACE_EXISTING);
+            return;
+        }
+        try (ZipOutputStream zipOut = new ZipOutputStream(Files.newOutputStream(zip))) {
+            File[] children = downloadDir.toFile().listFiles();
+            if (children != null) {
+                for (File child : children) {
+                    zipFile(child, child.getName(), zipOut);
+                }
+            }
         }
     }
 
@@ -2245,6 +2405,7 @@ public class DaService {
     @Transactional
     public void connectPartListToJP(Integer nodeId, Integer daAipId, List<Integer> daDaoIdList) {
         ArrNode arrNode = nodeRepository.getOneCheckExist(nodeId);
+        checkArrPermission(arrNode);
         DaAip daAip = findAipById(daAipId);
         for (Integer daDaoId : daDaoIdList) {
             DaDao daDao = findDaoById(daDaoId);
@@ -2261,6 +2422,7 @@ public class DaService {
     @Transactional
     public void createJPFromSelectedList(Integer nodeId, Integer daAipId, List<Integer> daDaoIdList) {
         ArrNode arrNode = nodeRepository.getOneCheckExist(nodeId);
+        checkArrPermission(arrNode);
         DaAip daAip = findAipById(daAipId);
         for (Integer daDaoId : daDaoIdList) {
             DaDao daDao = findDaoById(daDaoId);
@@ -2283,6 +2445,7 @@ public class DaService {
     @Transactional
     public void connectSelectedListToJP(Integer nodeId, Integer daAipId, List<Integer> daDaoIdList) {
         ArrNode arrNode = nodeRepository.getOneCheckExist(nodeId);
+        checkArrPermission(arrNode);
         DaAip daAip = findAipById(daAipId);
         for (Integer daDaoId : daDaoIdList) {
             DaDao daDao = findDaoById(daDaoId);
@@ -2299,6 +2462,7 @@ public class DaService {
     @Transactional
     public void createAndLinkFromSelectedList(Integer nodeId, Integer daAipId, List<Integer> daDaoIdList) {
         ArrNode arrNode = nodeRepository.getOneCheckExist(nodeId);
+        checkArrPermission(arrNode);
         DaAip daAip = findAipById(daAipId);
         for (Integer daDaoId : daDaoIdList) {
             DaDao daDao = findDaoById(daDaoId);
@@ -2407,7 +2571,7 @@ public class DaService {
     @Transactional
     public List<BlockedAip> checkConnect(Integer nodeId, List<Integer> aipIds, boolean newNode) {
         List<BlockedAip> blocked = new ArrayList<>();
-        for (DaAip aip : aipRepository.findAllById(aipIds)) {
+        for (DaAip aip : findAipsCheckExist(aipIds)) {
             List<ArrDaLink> liveLinks =
                     daLinkRepository.findByAip_AipIdAndDaDaoIsNullAndDeleteChangeIsNull(aip.getAipId());
             boolean refused = newNode
@@ -2450,7 +2614,7 @@ public class DaService {
      * afterwards, so the request is answered without waiting for it.
      */
     private DaAipAction submitConnect(DaAipActionType actionType, List<Integer> aipIds, ConnectParams params) {
-        List<DaAip> aipList = aipRepository.findAllById(aipIds);
+        List<DaAip> aipList = findAipsCheckExist(aipIds);
         DaAipAction action = actionService.start(actionType, aipList, writeParams(params));
         actionService.enqueueSteps(action.getAipActionId());
         return action;
@@ -2475,8 +2639,8 @@ public class DaService {
     /** Attaches whole packages to an existing unit of description. */
     public DaAipAction submitBulkConnectToJP(Integer nodeId, List<Integer> aipIds) {
         inTransaction(() -> {
-            nodeRepository.getOneCheckExist(nodeId);
-            checkAllCanBeAttached(aipRepository.findAllById(aipIds), nodeId);
+            checkArrPermission(nodeRepository.getOneCheckExist(nodeId));
+            checkAllCanBeAttached(findAipsCheckExist(aipIds), nodeId);
             return null;
         });
         return inTransaction(() -> submitConnect(DaAipActionType.CONNECT_TO_NODE, aipIds,
@@ -2521,8 +2685,8 @@ public class DaService {
     /** Creates a unit of description per package and attaches the package there. */
     public DaAipAction submitBulkCreateFromSelected(Integer nodeId, List<Integer> aipIds) {
         inTransaction(() -> {
-            nodeRepository.getOneCheckExist(nodeId);
-            checkAllCanBeAttached(aipRepository.findAllById(aipIds), null);
+            checkArrPermission(nodeRepository.getOneCheckExist(nodeId));
+            checkAllCanBeAttached(findAipsCheckExist(aipIds), null);
             return null;
         });
         return inTransaction(() -> submitConnect(DaAipActionType.CREATE_NODES, aipIds,
@@ -2558,7 +2722,8 @@ public class DaService {
                                                Integer levelViewId, boolean createOwnNode) {
         ConnectParams params = inTransaction(() -> {
             ArrNode arrNode = nodeRepository.getOneCheckExist(nodeId);
-            checkAllCanBeAttached(aipRepository.findAllById(aipIds), null);
+            checkArrPermission(arrNode);
+            checkAllCanBeAttached(findAipsCheckExist(aipIds), null);
 
             DaLevelView levelView = daLevelViewRepository.findById(levelViewId).orElseThrow(
                     () -> new ObjectNotFoundException("Nebylo nalezeno level view s předaným ID. ID=" + levelViewId,
@@ -2673,6 +2838,7 @@ public class DaService {
     public ResponseEntity<Resource> getComponent(Integer fileId) {
         DaDaoFile daoFile = daoFileRepository.findById(fileId).orElseThrow(() -> new IllegalStateException("Nenalezen soubor s id " + fileId));
         DaAip aip = daoFile.getDao().getAip();
+        aipAuthorization.checkRead(List.of(aip));
         DaLocalCache localCache = daLocalCacheRepository.findByAipAndQueueItemStatesIn(aip, getQueueImportStates());
 
         try {
@@ -2817,6 +2983,7 @@ public class DaService {
 
     private Path getPackagePath(Integer aipId) {
         DaAip aip = findAipById(aipId);
+        aipAuthorization.checkRead(List.of(aip));
         DaLocalCache localCache = daLocalCacheRepository.findByAipAndQueueItemStatesIn(aip, getQueueImportStates());
         if (localCache == null || localCache.getFilePath() == null) {
             throw new ObjectNotFoundException("Pro AIP=" + aipId + " není stažený žádný balíček", AIP_NOT_FOUND);

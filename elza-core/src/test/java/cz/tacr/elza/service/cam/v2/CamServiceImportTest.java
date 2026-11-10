@@ -3,9 +3,11 @@ package cz.tacr.elza.service.cam.v2;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,6 +27,7 @@ import com.github.tomakehurst.wiremock.common.ConsoleNotifier;
 import cz.tacr.cam.v2.schema.cam.CodeXml;
 import cz.tacr.cam.v2.schema.cam.DateTimeXml;
 import cz.tacr.cam.v2.schema.cam.EntityIdXml;
+import cz.tacr.cam.v2.schema.cam.EntityRecordRefXml;
 import cz.tacr.cam.v2.schema.cam.EntityRecordStateXml;
 import cz.tacr.cam.v2.schema.cam.EntityXml;
 import cz.tacr.cam.v2.schema.cam.ExistingIssueXml;
@@ -46,17 +49,22 @@ import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.cam.ItemSyncProcessor;
 import cz.tacr.elza.cam.v2.ItemSyncImportProcessor;
 import cz.tacr.elza.controller.AbstractControllerTest;
+import cz.tacr.elza.controller.ApControllerTest;
 import cz.tacr.elza.controller.factory.ApFactory;
+import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApExternalSystemVO;
+import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ExtEntityBinding;
 import cz.tacr.elza.controller.vo.ExtIssueIconState;
 import cz.tacr.elza.controller.vo.SysExternalSystemVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingIssue;
 import cz.tacr.elza.domain.ApBindingState;
+import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ExtSyncsQueueItem;
@@ -67,9 +75,13 @@ import cz.tacr.elza.repository.ApBindingIssueRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApStateRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
 import cz.tacr.elza.service.AccessPointConnectorService;
+import cz.tacr.elza.service.AccessPointDataService;
 import cz.tacr.elza.service.ExternalSystemService;
+import cz.tacr.elza.service.cache.AccessPointCacheService;
+import cz.tacr.elza.service.cache.CachedAccessPoint;
 
 /**
  * End-to-end test for the CAM v2 import flow (CAM -> ELZA) driven by the
@@ -122,14 +134,25 @@ public class CamServiceImportTest extends AbstractControllerTest {
     private ApStateRepository stateRepository;
 
     @Autowired
+    private ApTypeRepository apTypeRepository;
+
+    @Autowired
+    private AccessPointDataService accessPointDataService;
+
+    @Autowired
     private ApFactory apFactory;
+
+    @Autowired
+    private AccessPointCacheService accessPointCacheService;
 
     private CamV2MockHelper camMock;
     private String systemCode;
-    /** Binding created by the current test — used by @AfterEach to clean queue items. */
-    private Integer testBindingId;
-    /** AP created by the import — tracked so @AfterEach can clean FK-dependent rows. */
-    private String createdApUuid;
+    /** Bindings created by the current test — used by @AfterEach to clean queue items. */
+    private final List<Integer> testBindingIds = new ArrayList<>();
+    /** APs created by the import — tracked so @AfterEach can clean FK-dependent rows. */
+    private final List<String> createdApUuids = new ArrayList<>();
+    /** APs created locally by the current test — tracked so @AfterEach can clean FK-dependent rows. */
+    private final List<Integer> createdApIds = new ArrayList<>();
 
     @BeforeAll
     static void startWireMock() {
@@ -172,26 +195,27 @@ public class CamServiceImportTest extends AbstractControllerTest {
             camMock.cleanUp();
         }
         wireMockServer.resetAll();
-        // Queue items referencing the test binding / AP would otherwise trip the next
+        // Queue items referencing the test bindings / APs would otherwise trip the next
         // setUp (HelperTestService.deleteTables does not know about ext_syncs_queue_item).
-        if (testBindingId != null || createdApUuid != null) {
-            final Integer bindingId = testBindingId;
-            final String apUuid = createdApUuid;
-            new TransactionTemplate(transactionManager).executeWithoutResult(tx -> {
-                if (bindingId != null) {
-                    bindingRepository.findById(bindingId)
-                            .ifPresent(extSyncsQueueItemRepository::deleteByBinding);
+        new TransactionTemplate(transactionManager).executeWithoutResult(tx -> {
+            for (Integer bindingId : testBindingIds) {
+                bindingRepository.findById(bindingId)
+                        .ifPresent(extSyncsQueueItemRepository::deleteByBinding);
+            }
+            for (String apUuid : createdApUuids) {
+                ApAccessPoint ap = accessPointRepository.findAccessPointByUuid(apUuid);
+                if (ap != null) {
+                    extSyncsQueueItemRepository.deleteByAccessPoint(ap);
                 }
-                if (apUuid != null) {
-                    ApAccessPoint ap = accessPointRepository.findAccessPointByUuid(apUuid);
-                    if (ap != null) {
-                        extSyncsQueueItemRepository.deleteByAccessPoint(ap);
-                    }
-                }
-            });
-            testBindingId = null;
-            createdApUuid = null;
-        }
+            }
+            for (Integer apId : createdApIds) {
+                accessPointRepository.findById(apId)
+                        .ifPresent(extSyncsQueueItemRepository::deleteByAccessPoint);
+            }
+        });
+        testBindingIds.clear();
+        createdApUuids.clear();
+        createdApIds.clear();
     }
 
     /**
@@ -220,13 +244,14 @@ public class CamServiceImportTest extends AbstractControllerTest {
 
         long camEntityId = 900_001L;
         String camEntityUuid = UUID.randomUUID().toString();
-        createdApUuid = camEntityUuid;
+        createdApUuids.add(camEntityUuid);
         String partUuid = UUID.randomUUID().toString();
         String itemUuid = UUID.randomUUID().toString();
         String warningIssueUuid = UUID.randomUUID().toString();
         String errorIssueUuid = UUID.randomUUID().toString();
 
         ExtSyncsQueueItem queueItem = enqueueImport(externalSystemId, camEntityId);
+        Integer testBindingId = queueItem.getBindingId();
 
         // CAM returns the entity (carrying a warning + an error) when the processor calls GET /entities/{id}
         EntityXml entityXml = buildEntity(camEntityId, camEntityUuid, "Imported person",
@@ -302,9 +327,174 @@ public class CamServiceImportTest extends AbstractControllerTest {
         });
     }
 
+    /**
+     * An entity merged in CAM arrives as {@code ERS_REPLACED}: the local access point is invalidated
+     * and marked as replaced by the local access point of the replacing entity.
+     *
+     * The replaced access point lives in another scope than the external system, so the scope of its
+     * state is an uninitialized lazy proxy. Rebuilding the access point cache during the replacement
+     * clears the persistence context, and the index scripts of the invalidated access point must still
+     * resolve the rule set of that scope.
+     */
+    @Test
+    void importReplaced_invalidatesAccessPointOfAnotherScope() {
+        // --- given ---------------------------------------------------------
+        camMock = new CamV2MockHelper(wireMockServer);
+        systemCode = "CAM_V2_REPL_" + UUID.randomUUID();
+        int externalSystemId = createExternalSystemForWireMock(systemCode);
+
+        // the replacing entity is imported from CAM into the scope of the external system
+        long replacementCamId = 900_002L;
+        String replacementUuid = UUID.randomUUID().toString();
+        importNewEntity(externalSystemId, replacementCamId, replacementUuid, "Replacement person");
+
+        // the replaced access point is created locally in another scope and bound to its CAM entity
+        long replacedCamId = 900_003L;
+        Integer replacedApId = createLocalAccessPoint(createScope().getId(), "Replaced person");
+        ExtSyncsQueueItem queueItem = bindAndEnqueueUpdate(externalSystemId, replacedApId, replacedCamId);
+
+        EntityXml replaced = buildPlainEntity(replacedCamId, UUID.randomUUID().toString(), "Replaced person",
+                                              EntityRecordStateXml.ERS_REPLACED);
+        replaced.setReplacedBy(new EntityRecordRefXml(new EntityIdXml(replacementCamId), new UuidXml(replacementUuid)));
+        camMock.stubGetEntityById(replacedCamId, replaced);
+
+        // --- when ---------------------------------------------------------
+        ItemSyncProcessor processor = accessPointConnectorService.nextItemSyncProcessor(10);
+        assertNotNull(processor, "Queue item in UPDATE should yield a download processor");
+        assertTrue(processor.process(), "process() should return true for a replaced entity");
+
+        // --- then ---------------------------------------------------------
+        assertEquals(ExtAsyncQueueState.IMPORT_OK, reload(queueItem).getState());
+        new TransactionTemplate(transactionManager).executeWithoutResult(tx -> {
+            ApState state = stateRepository.findLastByAccessPointId(replacedApId);
+            assertNotNull(state.getDeleteChangeId(), "the replaced access point must be invalidated");
+            ApAccessPoint replacement = accessPointRepository.findAccessPointByUuid(replacementUuid);
+            assertEquals(replacement.getAccessPointId(), state.getReplacedById(),
+                         "the replaced access point must point to the local replacement");
+            CachedAccessPoint cachedReplacement = accessPointCacheService.findCachedAccessPoint(
+                    replacement.getAccessPointId());
+            assertNotNull(cachedReplacement.getReplacedAPIds(),
+                          "the cached replacement must be rebuilt and list the entity it replaces");
+            assertTrue(cachedReplacement.getReplacedAPIds().contains(replacedApId));
+
+            ApExternalSystem extSystem = externalSystemService.getExternalSystemInternal(externalSystemId);
+            ApBindingState bindingState = bindingStateRepository.findByAccessPointAndExternalSystem(
+                    state.getAccessPoint(), extSystem);
+            assertEquals(EntityRecordStateXml.ERS_REPLACED.value(), bindingState.getExtState());
+            assertEquals(SyncState.SYNC_OK, bindingState.getSyncOk());
+        });
+    }
+
+    /**
+     * A failure in the local processing of one entity is recorded on its queue item as {@code ERROR}
+     * and the processor reports the item as handled, so the queue goes on with the other entities
+     * instead of retrying the same item forever. Here CAM returns the entity with a class unknown to
+     * the installation.
+     */
+    @Test
+    void importFailure_marksQueueItemErrorAndGoesOn() {
+        // --- given ---------------------------------------------------------
+        camMock = new CamV2MockHelper(wireMockServer);
+        systemCode = "CAM_V2_FAIL_" + UUID.randomUUID();
+        int externalSystemId = createExternalSystemForWireMock(systemCode);
+
+        long camId = 900_004L;
+        Integer apId = createLocalAccessPoint(createScope().getId(), "Failing person");
+        ExtSyncsQueueItem queueItem = bindAndEnqueueUpdate(externalSystemId, apId, camId);
+
+        EntityXml entity = buildPlainEntity(camId, UUID.randomUUID().toString(), "Failing person",
+                                            EntityRecordStateXml.ERS_APPROVED);
+        entity.setEntityType(new CodeXml("NO_SUCH_CLASS"));
+        camMock.stubGetEntityById(camId, entity);
+
+        // --- when ---------------------------------------------------------
+        ItemSyncProcessor processor = accessPointConnectorService.nextItemSyncProcessor(10);
+        assertNotNull(processor, "Queue item in UPDATE should yield a download processor");
+        assertTrue(processor.process(), "a failed item is handled, the queue must go on");
+
+        // --- then ---------------------------------------------------------
+        ExtSyncsQueueItem failed = reload(queueItem);
+        assertEquals(ExtAsyncQueueState.ERROR, failed.getState());
+        assertTrue(failed.getStateMessage().startsWith("Error: synchronization failed: ES -> ELZA"),
+                   "unexpected message: " + failed.getStateMessage());
+        ApState state = stateRepository.findLastByAccessPointId(apId);
+        assertNull(state.getDeleteChangeId(), "the access point must stay untouched");
+    }
+
     // ------------------------------------------------------------------
     // helpers
     // ------------------------------------------------------------------
+
+    /** Imports a new entity from CAM through the queue; the access point is created in the scope of the external system. */
+    private void importNewEntity(int externalSystemId, long camEntityId, String camEntityUuid, String name) {
+        createdApUuids.add(camEntityUuid);
+        ExtSyncsQueueItem queueItem = enqueueImport(externalSystemId, camEntityId);
+        camMock.stubGetEntityById(camEntityId,
+                                  buildPlainEntity(camEntityId, camEntityUuid, name, EntityRecordStateXml.ERS_NEW));
+        ItemSyncProcessor processor = accessPointConnectorService.nextItemSyncProcessor(10);
+        assertNotNull(processor);
+        assertTrue(processor.process(), "import of the entity " + camEntityId + " should succeed");
+        assertEquals(ExtAsyncQueueState.IMPORT_OK, reload(queueItem).getState());
+    }
+
+    /** Creates a person with one name part in the scope, as a user does. */
+    private Integer createLocalAccessPoint(Integer scopeId, String name) {
+        List<ApItemVO> items = new ArrayList<>();
+        items.add(buildApItem(ApControllerTest.NM_MAIN, null, name, null, null));
+        ApPartFormVO partForm = ApControllerTest.createPartFormVO(null, ApControllerTest.PT_NAME, null, items);
+
+        ApAccessPointCreateVO createVO = new ApAccessPointCreateVO();
+        createVO.setTypeId(apTypeRepository.findApTypeByCode("PERSON_BEING").getApTypeId());
+        createVO.setScopeId(scopeId);
+        createVO.setPartForm(partForm);
+        ApAccessPointVO accessPoint = createAccessPoint(createVO);
+        createdApIds.add(accessPoint.getId());
+        return accessPoint.getId();
+    }
+
+    /** Binds the access point to the CAM entity as already synchronized and enqueues its update from CAM. */
+    private ExtSyncsQueueItem bindAndEnqueueUpdate(int externalSystemId, Integer accessPointId, long camEntityId) {
+        return new TransactionTemplate(transactionManager).execute(tx -> {
+            ApExternalSystem extSystem = externalSystemService.getExternalSystemInternal(externalSystemId);
+            ApAccessPoint accessPoint = accessPointRepository.findById(accessPointId).orElseThrow();
+            ApState state = stateRepository.findLastByAccessPointId(accessPointId);
+
+            ApBinding binding = externalSystemService.createApBinding(Long.toString(camEntityId), extSystem, true);
+            testBindingIds.add(binding.getBindingId());
+            ApChange change = accessPointDataService.createChange(ApChange.Type.AP_SYNCH);
+            externalSystemService.createBindingState(binding, accessPoint, change,
+                                                     EntityRecordStateXml.ERS_APPROVED.value(),
+                                                     UUID.randomUUID().toString(), "user", null,
+                                                     SyncState.SYNC_OK, accessPoint.getPreferredPart(),
+                                                     state.getApType());
+            return externalSystemService.createExtSyncsQueueItem(accessPoint, extSystem, binding, null,
+                                                                 ExtAsyncQueueState.UPDATE,
+                                                                 OffsetDateTime.now(), null);
+        });
+    }
+
+    /** A PERSON_BEING entity with one preferred-name part and a fresh revision, without issues. */
+    private static EntityXml buildPlainEntity(long entityId, String uuid, String prefName,
+                                              EntityRecordStateXml state) {
+        EntityXml ent = new EntityXml();
+        ent.setEntityId(new EntityIdXml(entityId));
+        ent.setEntityUuid(new UuidXml(uuid));
+        ent.setState(state);
+        ent.setEntityType(new CodeXml("PERSON_BEING"));
+        ent.setParts(new PartsXml());
+
+        String partUuid = UUID.randomUUID().toString();
+        PartXml prefNamePart = new PartXml(new ItemsXml(), null, null, new UuidXml(partUuid), PartTypeXml.PT_NAME);
+        prefNamePart.getItems().getItems().add(
+                new ItemStringXml(new StringXml(prefName), null, new CodeXml("NM_MAIN"),
+                                  new UuidXml(UUID.randomUUID().toString())));
+        ent.getParts().getPart().add(prefNamePart);
+
+        ent.setRevision(new RevisionInfoXml(new UuidXml(UUID.randomUUID().toString()), null, null,
+                new UserInfoXml(new CodeXml("user"), null, new LongStringXml("user"), null, null, null),
+                new DateTimeXml(OffsetDateTime.now()), null));
+        return ent;
+    }
 
     private int createExternalSystemForWireMock(String code) {
         ApScopeVO scope = createScope();
@@ -324,7 +514,7 @@ public class CamServiceImportTest extends AbstractControllerTest {
         return new TransactionTemplate(transactionManager).execute(tx -> {
             ApExternalSystem extSystem = externalSystemService.getExternalSystemInternal(externalSystemId);
             ApBinding binding = externalSystemService.createApBinding(Long.toString(camEntityId), extSystem, true);
-            testBindingId = binding.getBindingId();
+            testBindingIds.add(binding.getBindingId());
             return externalSystemService.createExtSyncsQueueItem(
                     null /* accessPoint — will be created on import */,
                     extSystem,

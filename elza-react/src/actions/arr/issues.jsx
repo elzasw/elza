@@ -99,7 +99,7 @@ export function nodeWithIssueByFundVersion(fund, nodeId, direction) {
                 if (node.parentNode == null) {
                     node.parentNode = createFundRoot(fund);
                 }
-                dispatch(fundSelectSubNode(fundVersionId, node.id, node.parentNode));
+                dispatch(fundSelectSubNode(fundVersionId, node.id, node.parentNode, false, null, true, undefined, undefined, true));
             } else {
                 dispatch(addToastrInfo(<FormattedMessage {...messages.notFound} />));
             }

@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -42,6 +43,7 @@ import cz.tacr.elza.repository.AipStateRepository;
 import cz.tacr.elza.repository.DaChangeRepository;
 import cz.tacr.elza.repository.DaLocalCacheRepository;
 import cz.tacr.elza.repository.DaSyncQueueItemRepository;
+import cz.tacr.elza.service.ExternalSystemService;
 
 /**
  * A package that arrives and cannot be processed must be as visible as one that could not be
@@ -124,7 +126,9 @@ public class DaServiceFailedPackageTest {
         // Taken out of the batch, so the caller does not report it as loaded
         assertTrue(batch.isEmpty());
         assertEquals(DaSyncQueueItem.QueueItemState.IMPORT_ERROR, syncQueueItem.getState());
-        assertEquals("Balíček neobsahuje soubor PACKAGE-INFO.xml", syncQueueItem.getStateMessage());
+        // the message says what the package holds instead, which is the only account of it
+        assertEquals("Balíček neobsahuje soubor PACKAGE-INFO.xml (obsahuje: package_info.json)",
+                     syncQueueItem.getStateMessage());
 
         // The AIP the DA announced is created, so the failure is found in the AIP list
         ArgumentCaptor<DaAip> aip = ArgumentCaptor.forClass(DaAip.class);
@@ -140,13 +144,14 @@ public class DaServiceFailedPackageTest {
         assertEquals("2", aipState.getValue().getAipVersion());
         assertNotNull(aipState.getValue().getCreateChange());
         assertEquals(AipProblemType.METADATA_ERROR, problem.getValue().type());
-        assertEquals("Balíček neobsahuje soubor PACKAGE-INFO.xml", problem.getValue().description());
+        assertEquals("Balíček neobsahuje soubor PACKAGE-INFO.xml (obsahuje: package_info.json)",
+                     problem.getValue().description());
         verify(aipStateRepository).save(aipState.getValue());
 
         // The item is out of the batch the caller closes, so its action item is finished here -
         // the request the user is watching would stay running otherwise
         verify(actionService).completeFromQueue(List.of(syncQueueItem), DaAipActionItemState.ERROR,
-                                                "Balíček neobsahuje soubor PACKAGE-INFO.xml");
+                                                "Balíček neobsahuje soubor PACKAGE-INFO.xml (obsahuje: package_info.json)");
     }
 
     /** An AIP ELZA already knows keeps its identity - the problem is written on its state. */
@@ -199,20 +204,117 @@ public class DaServiceFailedPackageTest {
 
         assertTrue(batch.isEmpty());
         assertEquals(DaSyncQueueItem.QueueItemState.IMPORT_ERROR, syncQueueItem.getState());
-        assertEquals("Balíček neobsahuje soubor METS.xml", syncQueueItem.getStateMessage());
+        assertEquals("Balíček neobsahuje soubor METS.xml (obsahuje: PACKAGE-INFO.xml)", syncQueueItem.getStateMessage());
         verifyNoInteractions(localCacheRepository);
         assertNull(knownState.getMetadataLoad());
         assertNull(knownState.getCompleteAipLoad());
     }
 
+    /**
+     * A download that failed goes on in the queue, retried at growing intervals, but the request
+     * the user is watching is finished with the failure now - a dialog that waits for the retries
+     * would never end.
+     */
+    @Test
+    void failedDownloadFinishesTheActionItemWhileTheQueueRetries() {
+        ExternalSystemService externalSystemService = mock(ExternalSystemService.class);
+        when(externalSystemService.getDigitalRepository(3)).thenReturn(repository);
+        setField(service, "externalSystemService", externalSystemService);
+        syncQueueItem.setState(DaSyncQueueItem.QueueItemState.DOWNLOAD_REQUESTED);
+
+        service.recordDownloadFailure(List.of(syncQueueItem),
+                                      new IllegalStateException("File Transfer nepřenesl žádný soubor dávky"));
+
+        // the queue item waits for its retry
+        assertEquals(DaSyncQueueItem.QueueItemState.DOWNLOAD_REQUESTED, syncQueueItem.getState());
+        assertEquals(1, syncQueueItem.getAttemptCount());
+        assertNotNull(syncQueueItem.getNextAttemptAt());
+        assertTrue(syncQueueItem.getStateMessage().contains("File Transfer nepřenesl žádný soubor dávky"),
+                   syncQueueItem.getStateMessage());
+
+        // the action item is told now, with the note that the download goes on
+        ArgumentCaptor<String> message = ArgumentCaptor.forClass(String.class);
+        verify(actionService).completeFromQueue(eq(List.of(syncQueueItem)), eq(DaAipActionItemState.ERROR),
+                                                message.capture());
+        assertTrue(message.getValue().contains("Stažení bude opakováno"), message.getValue());
+    }
+
+    /**
+     * The batch carries a package under another name than the code of the AIP asked for (a DA
+     * naming the directory by the UUID of the package): the item must not pass as loaded.
+     */
+    @Test
+    void itemWhosePackageIsNotInTheBatchFails() throws IOException {
+        List<DaSyncQueueItem> batch = new ArrayList<>(List.of(syncQueueItem));
+
+        service.processPackageInfo(repository, zipOf("dbdf00d0-85c4-4d86-8479-45f870fbb961/PACKAGE-INFO.xml", "<premis/>"),
+                                   AipType.PACKAGE_INFO, batch);
+
+        assertTrue(batch.isEmpty());
+        assertEquals(DaSyncQueueItem.QueueItemState.IMPORT_ERROR, syncQueueItem.getState());
+        assertEquals("Dávka neobsahuje balíček AIP " + CODE + " (dávka obsahuje: dbdf00d0-85c4-4d86-8479-45f870fbb961)",
+                     syncQueueItem.getStateMessage());
+        verifyNoInteractions(packageInfoService);
+    }
+
+    @Test
+    void emptyBatchFailsItsItems() throws IOException {
+        List<DaSyncQueueItem> batch = new ArrayList<>(List.of(syncQueueItem));
+
+        service.processPackageInfo(repository, zipOf(java.util.Map.of()), AipType.PACKAGE_INFO, batch);
+
+        assertTrue(batch.isEmpty());
+        assertEquals("Dávka neobsahuje balíček AIP " + CODE + " (dávka je prázdná)", syncQueueItem.getStateMessage());
+    }
+
+    /**
+     * What the ESM of Charles University delivers: the directory of the AIP holds one zip file,
+     * and the package inside keeps its own root directory named by its UUID. Both wrappers are
+     * removed, so the package is read, and stored, in the one layout.
+     */
+    @Test
+    void packageDeliveredAsNestedZipIsUnwrapped() throws Exception {
+        String uuid = "dbdf00d0-85c4-4d86-8479-45f870fbb961";
+        byte[] inner = zipBytes(java.util.Map.of(
+                uuid + "/metadata/preservation/PACKAGE-INFO.xml", "<premis/>".getBytes(StandardCharsets.UTF_8),
+                uuid + "/METS.xml", "<mets/>".getBytes(StandardCharsets.UTF_8)));
+        DaAipState state = new DaAipState();
+        DaAip aip = new DaAip();
+        aip.setCode(CODE);
+        state.setDaAip(aip);
+        ArgumentCaptor<java.io.File> packageInfo = ArgumentCaptor.forClass(java.io.File.class);
+        when(packageInfoService.processPackageInfo(any(), packageInfo.capture())).thenReturn(state);
+        List<DaSyncQueueItem> batch = new ArrayList<>(List.of(syncQueueItem));
+
+        service.processPackageInfo(repository, zipOf(java.util.Map.of(CODE + "/" + uuid + ".zip", inner)),
+                                   AipType.PACKAGE_INFO, batch);
+
+        assertEquals(List.of(syncQueueItem), batch);
+        assertEquals(DaSyncQueueItem.QueueItemState.IMPORT_NEW, syncQueueItem.getState());
+        // read from the directory of the AIP, with no wrapper in between
+        java.nio.file.Path read = packageInfo.getValue().toPath();
+        assertEquals("PACKAGE-INFO.xml", read.getFileName().toString());
+        assertEquals(CODE, read.getParent().getParent().getParent().getFileName().toString());
+    }
+
     private static InputStream zipOf(String entryName, String content) throws IOException {
+        return zipOf(java.util.Map.of(entryName, content.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    private static InputStream zipOf(java.util.Map<String, byte[]> entries) throws IOException {
+        return new ByteArrayInputStream(zipBytes(entries));
+    }
+
+    private static byte[] zipBytes(java.util.Map<String, byte[]> entries) throws IOException {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         try (ZipOutputStream zip = new ZipOutputStream(bytes)) {
-            zip.putNextEntry(new ZipEntry(entryName));
-            zip.write(content.getBytes(StandardCharsets.UTF_8));
-            zip.closeEntry();
+            for (java.util.Map.Entry<String, byte[]> entry : entries.entrySet()) {
+                zip.putNextEntry(new ZipEntry(entry.getKey()));
+                zip.write(entry.getValue());
+                zip.closeEntry();
+            }
         }
-        return new ByteArrayInputStream(bytes.toByteArray());
+        return bytes.toByteArray();
     }
 
     private static void setField(Object target, String fieldName, Object value) {

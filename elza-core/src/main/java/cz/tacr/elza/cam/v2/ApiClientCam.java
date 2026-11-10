@@ -43,33 +43,34 @@ public class ApiClientCam extends ApiClient {
     public static final DateTimeFormatter X_NDA_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
     public static final int CONNECTION_TIMEOUT = 60000;
 
+    /**
+     * @param tlsVerify false = trust any server certificate and skip the host name check
+     *                  (internal servers with a self-signed certificate)
+     */
     public ApiClientCam(@NotNull final String url,
                         @NotNull final String apiKey,
-                        @NotNull final String apiValue) {
+                        @NotNull final String apiValue,
+                        final boolean tlsVerify) {
         super();
         try {
-            camInit(url, apiKey, apiValue);
+            camInit(url, apiKey, apiValue, tlsVerify);
         } catch (GeneralSecurityException gse) {
             throw new SystemException("Failed to initialize SSL client", gse);
         }
     }
 
-    protected void camInit(final String url, final String apiKey, final String apiValue) throws GeneralSecurityException {
+    protected void camInit(final String url, final String apiKey, final String apiValue, final boolean tlsVerify)
+            throws GeneralSecurityException {
         setBasePath(url);
-
-        X509TrustManager trustManager = new NoCheckTrustManager();
-        SSLContext sslContext = SSLContext.getInstance("TLS");
-        sslContext.init(null,
-                        new TrustManager[] { trustManager },
-                        null);
-        SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
 
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
 
-        OkHttpClient.Builder builder = new OkHttpClient.Builder()
-                .sslSocketFactory(sslSocketFactory, trustManager)
-                .addInterceptor(new Interceptor() {
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        if (!tlsVerify) {
+            trustAnyCertificate(builder);
+        }
+        builder.addInterceptor(new Interceptor() {
             @Override
             public Response intercept(Chain chain) throws IOException {
                 chain = chain
@@ -81,12 +82,9 @@ public class ApiClientCam extends ApiClient {
                 String xNdaDate = OffsetDateTime.now(ZoneOffset.UTC).format(X_NDA_DATE_FORMATTER);
                 String dataToHash = getHost(request) + request.method() + "/" + String.join("/", request.url().pathSegments()) + StringUtils.defaultString(request.url().query()) + xNdaDate;
                 String signature = computeHmac(apiValue, dataToHash);
-                if (log.isDebugEnabled()) {
-                    log.debug("Data to hash: {}", dataToHash);
-                            log.debug("Authorization NDA-HMAC-SHA256 (KeyId={}, KeyValue={}), Signature={}", apiKey,
-                                      apiValue,
-                                      signature);
-                }
+                // neither the key value nor the signature is logged: the signature with the signed data
+                // would let the request be replayed while its date is accepted
+                log.debug("Authorization NDA-HMAC-SHA256 KeyId={}, signed data: {}", apiKey, dataToHash);
                 String authorization = "NDA-HMAC-SHA256 KeyId=" + apiKey + ",Signature=" + signature;
                 Request newRequest = request.newBuilder()
                         .addHeader(X_NDA_DATE, xNdaDate)
@@ -100,6 +98,15 @@ public class ApiClientCam extends ApiClient {
         }
         OkHttpClient httpClient = builder.build();
         setHttpClient(httpClient);
+    }
+
+    private static void trustAnyCertificate(final OkHttpClient.Builder builder) throws GeneralSecurityException {
+        X509TrustManager trustManager = new NoCheckTrustManager();
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(null, new TrustManager[] { trustManager }, null);
+        SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+        builder.sslSocketFactory(sslSocketFactory, trustManager)
+                .hostnameVerifier((hostname, session) -> true);
     }
 
     private String getHost(final Request request) {

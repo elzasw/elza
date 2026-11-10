@@ -9,36 +9,37 @@ import {
     MenuList,
     MenuPopover,
     MenuTrigger,
+    MessageBar,
+    MessageBarBody,
 } from '@fluentui/react-components';
-import { DeleteRegular } from '@fluentui/react-icons';
+import { DeleteRegular, EyeOffRegular, InfoRegular } from '@fluentui/react-icons';
 import { useEffect, useState } from 'react';
 import { Form, Field as FinalField } from 'react-final-form';
 import { defineMessages, useIntl } from 'react-intl';
 import { ConnectionType, PublicationType } from 'elza-api';
 import { WebApi } from 'actions/WebApi';
+import { fundPermissionMessages } from 'components/admin/permissionMessages';
 import { useDetailStyles } from './styles';
 import { ConfirmDialog } from './ConfirmDialog';
+import { connectionTypeMessages } from './messages';
 
 const messages = defineMessages({
     sectionStorage: { id: 'publication.system.section.storage', defaultMessage: 'Ukládání exportů' },
+    inactiveNotice: {
+        id: 'publication.system.inactiveNotice',
+        defaultMessage: 'Publikační systém je deaktivovaný, nelze do něj publikovat.',
+    },
     sectionPermissions: { id: 'publication.system.section.permissions', defaultMessage: 'Požadované oprávnění' },
+    permissionsHint: {
+        id: 'publication.system.section.permissionsHint',
+        defaultMessage: 'Uživatel může spustit publikaci, pokud má alespoň jedno ze zaškrtnutých oprávnění.',
+    },
     labelName: { id: 'publication.system.label.name', defaultMessage: 'Název' },
     labelCode: { id: 'publication.system.label.code', defaultMessage: 'Kód' },
     labelStoredCount: { id: 'publication.system.label.storedCount', defaultMessage: 'Počet uložených exportů' },
     labelFilter: { id: 'publication.system.label.filter', defaultMessage: 'Filtr' },
     noFilter: { id: 'arr.output.form.outputFilterPlaceholder', defaultMessage: 'Bez filtru' },
     labelConnectionType: { id: 'publication.system.label.connectionType', defaultMessage: 'Typ připojení' },
-    labelPermExport: { id: 'publication.system.label.permExport', defaultMessage: 'Oprávnění pro export' },
-    labelPermPublication: { id: 'publication.system.label.permPublication', defaultMessage: 'Oprávnění pro publikaci' },
-    connectionTypeDevelopment: {
-        id: 'publication.system.connectionType.DEVELOPMENT',
-        defaultMessage: 'Vývoj',
-    },
-    connectionTypeTest: { id: 'publication.system.connectionType.TEST', defaultMessage: 'Test' },
-    connectionTypeProduction: {
-        id: 'publication.system.connectionType.PRODUCTION',
-        defaultMessage: 'Produkce',
-    },
     btnSave: { id: 'publication.system.btn.save', defaultMessage: 'Uložit' },
     btnReset: { id: 'publication.system.btn.reset', defaultMessage: 'Obnovit' },
     btnActivate: { id: 'publication.system.btn.activate', defaultMessage: 'Aktivovat' },
@@ -94,13 +95,17 @@ export function PublicationSystemDetail({ value, onSave, onToggleActive, onRemov
                 return (
                 <form className={classes.root} onSubmit={handleSubmitWithCode}>
                     <div className={classes.form}>
+                        {isInactive && (
+                            <MessageBar intent="error" icon={<EyeOffRegular />}>
+                                <MessageBarBody>{formatMessage(messages.inactiveNotice)}</MessageBarBody>
+                            </MessageBar>
+                        )}
                         <div className={classes.section}>
                             <FinalField
                                 name="name"
                                 render={({ input }) => (
                                     <Field label={formatMessage(messages.labelName)}>
                                         <Input
-                                            disabled={isInactive}
                                             value={input.value}
                                             onChange={(_, data) => input.onChange(data.value)}
                                         />
@@ -112,7 +117,6 @@ export function PublicationSystemDetail({ value, onSave, onToggleActive, onRemov
                                 render={({ input }) => (
                                     <Field label={formatMessage(messages.labelCode)}>
                                         <Input
-                                            disabled={isInactive}
                                             value={input.value}
                                             placeholder={codePlaceholder}
                                             onChange={(_, data) => input.onChange(data.value)}
@@ -124,16 +128,16 @@ export function PublicationSystemDetail({ value, onSave, onToggleActive, onRemov
                                 name="connectionType"
                                 render={({ input }) => {
                                     const connectionTypeLabels: Record<string, string> = {
-                                        [ConnectionType.Development]: formatMessage(messages.connectionTypeDevelopment),
-                                        [ConnectionType.Test]: formatMessage(messages.connectionTypeTest),
-                                        [ConnectionType.Production]: formatMessage(messages.connectionTypeProduction),
+                                        [ConnectionType.Development]: formatMessage(connectionTypeMessages[ConnectionType.Development]),
+                                        [ConnectionType.Test]: formatMessage(connectionTypeMessages[ConnectionType.Test]),
+                                        [ConnectionType.Production]: formatMessage(connectionTypeMessages[ConnectionType.Production]),
                                     };
                                     return (
                                         <Field label={formatMessage(messages.labelConnectionType)}>
                                             <div>
                                                 <Menu>
                                                     <MenuTrigger disableButtonEnhancement>
-                                                        <MenuButton disabled={isInactive}>
+                                                        <MenuButton>
                                                             {connectionTypeLabels[input.value] ?? input.value ?? '—'}
                                                         </MenuButton>
                                                     </MenuTrigger>
@@ -165,7 +169,6 @@ export function PublicationSystemDetail({ value, onSave, onToggleActive, onRemov
                                     <Field label={formatMessage(messages.labelStoredCount)}>
                                         <Input
                                             type="number"
-                                            disabled={isInactive}
                                             value={String(input.value ?? 5)}
                                             onChange={(_, data) => {
                                                 const parsed = parseInt(data.value, 10);
@@ -187,7 +190,7 @@ export function PublicationSystemDetail({ value, onSave, onToggleActive, onRemov
                                             <div>
                                                 <Menu>
                                                     <MenuTrigger disableButtonEnhancement>
-                                                        <MenuButton disabled={isInactive}>
+                                                        <MenuButton>
                                                             {selectedFilter?.name ?? formatMessage(messages.noFilter)}
                                                         </MenuButton>
                                                     </MenuTrigger>
@@ -216,14 +219,24 @@ export function PublicationSystemDetail({ value, onSave, onToggleActive, onRemov
 
                         <div className={classes.section}>
                             {/* <div className={classes.sectionTitle}>{formatMessage(messages.sectionPermissions)}</div> */}
-                            <Field label={formatMessage(messages.sectionPermissions)}>
+                            <Field
+                                label={formatMessage(messages.sectionPermissions)}
+                                hint={{
+                                    className: classes.hint,
+                                    children: (
+                                        <>
+                                            <InfoRegular />
+                                            {formatMessage(messages.permissionsHint)}
+                                        </>
+                                    ),
+                                }}
+                            >
                                 <FinalField
                                     name="allowPermExport"
                                     type="checkbox"
                                     render={({ input }) => (
                                         <Checkbox
-                                            disabled={isInactive}
-                                            label={formatMessage(messages.labelPermExport)}
+                                            label={formatMessage(fundPermissionMessages.FUND_EXPORT)}
                                             checked={input.checked}
                                             onChange={(_, data) => input.onChange(!!data.checked)}
                                         />
@@ -234,8 +247,7 @@ export function PublicationSystemDetail({ value, onSave, onToggleActive, onRemov
                                     type="checkbox"
                                     render={({ input }) => (
                                         <Checkbox
-                                            disabled={isInactive}
-                                            label={formatMessage(messages.labelPermPublication)}
+                                            label={formatMessage(fundPermissionMessages.FUND_PUBLISH)}
                                             checked={input.checked}
                                             onChange={(_, data) => input.onChange(!!data.checked)}
                                         />

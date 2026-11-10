@@ -45,6 +45,13 @@ export enum DaOnReceivedAction {
     DownloadMetadata = "DOWNLOAD_METADATA",
 }
 
+/** How ELZA authenticates its calls to the REST API of a DA repository. */
+export enum DaApiAuthentication {
+    None = "NONE",
+    ApiKey = "API_KEY",
+    Basic = "BASIC",
+}
+
 export enum MODAL_DIALOG_VARIANT {
     LARGE = 'dialog-lg',
     FULLSCREEN = 'dialog-fullscreen',
@@ -211,6 +218,7 @@ export const URL_ADMIN_USER = `${URL_ADMIN}/user`;
 export const URL_ADMIN_GROUP = `${URL_ADMIN}/group`;
 export const URL_ADMIN_FUND = `${URL_ADMIN}/fund`;
 export const URL_ADMIN_INSTITUTION = `${URL_ADMIN}/institution`;
+export const URL_ADMIN_PUBLICATION_SYSTEM = `${URL_ADMIN}/publicationSystem`;
 export const URL_ADMIN_IMPORT = `${URL_ADMIN}/import`;
 
 export const URL_AIP = '/aip';
@@ -379,6 +387,11 @@ export const urlAdminImport = (batchId?: number) => {
 export const urlAdminInstitution = (institutionId?: number) => {
     return institutionId == null ? URL_ADMIN_INSTITUTION : `${URL_ADMIN_INSTITUTION}/${institutionId}`;
 }
+export const urlAdminPublicationSystem = (publicationSystemId?: number | string) => {
+    return publicationSystemId == null
+        ? URL_ADMIN_PUBLICATION_SYSTEM
+        : `${URL_ADMIN_PUBLICATION_SYSTEM}/${publicationSystemId}`;
+};
 
 export const urlEntity = (entityId?: number | string) => {
     return `${URL_ENTITY}/${(entityId == null ? "" : entityId)}`

@@ -1,13 +1,15 @@
 import { importForm } from 'actions/global/global.jsx';
 import { WebApi } from 'actions/index.jsx';
 import { refRuleSetFetchIfNeeded } from 'actions/refTables/ruleSet.jsx';
+import { humanFileSize } from 'components/Utils.jsx';
 import React, { useEffect, useState } from 'react';
-import { Modal } from 'react-bootstrap';
+import { Form as BsForm, Modal } from 'react-bootstrap';
 import { Field, Form } from 'react-final-form';
 import { useSelector } from 'react-redux';
 import { FormErrors } from 'redux-form';
 import { AppState, Scope } from 'typings/store';
 import { useThunkDispatch } from 'utils/hooks';
+import { exceedsUploadLimit, useUploadLimits } from 'utils/hooks/useUploadLimits';
 import * as perms from '../../actions/user/Permission.jsx';
 import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
 import { globalMessages } from 'components/shared/lang/messages';
@@ -18,6 +20,8 @@ const messages = defineMessages({
     file: { id: 'import.file', defaultMessage: 'Soubor' },
     running: { id: 'import.running', defaultMessage: 'Import probíhá' },
     importAction: { id: 'global.action.import', defaultMessage: 'Importovat' },
+    maxFileSize: { id: 'import.maxFileSize', defaultMessage: 'Maximální velikost souboru: {size}' },
+    selectedFileSize: { id: 'import.selectedFileSize', defaultMessage: 'Velikost vybraného souboru: {size}' },
 });
 import Autocomplete from '../shared/autocomplete/Autocomplete';
 import FileInput from '../shared/form/FileInput';
@@ -43,10 +47,15 @@ export const ImportForm = ({ record, fund, onClose }: IImportFormProps) => {
     const intl = useIntl();
     const [scopes, setScopes] = useState<Scope[]>([]);
     const [isRunning, setIsRunning] = useState<boolean>(false);
+    const uploadLimits = useUploadLimits();
+    const maxFileSize = uploadLimits?.maxFileSize ?? -1;
     const dispatch = useThunkDispatch();
     const userDetail = useSelector(({ userDetail }: AppState) => userDetail);
 
     const initialRecordScope = scopes.length === 1 ? scopes[0] : undefined;
+
+    const hasSizeLimit = maxFileSize >= 0;
+    const isTooLarge = (file?: File) => !!file && exceedsUploadLimit(file, maxFileSize);
 
     const validate = (values: ImportFormFields) => {
         const errors: FormErrors<ImportFormFields> = {};
@@ -56,6 +65,8 @@ export const ImportForm = ({ record, fund, onClose }: IImportFormProps) => {
         }
         if (!values.xmlFile || values.xmlFile == null) {
             errors.xmlFile = intl.formatMessage(globalMessages.validationRequired);
+        } else if (isTooLarge(values.xmlFile)) {
+            errors.xmlFile = intl.formatMessage(messages.maxFileSize, { size: humanFileSize(maxFileSize) });
         }
         return errors;
     };
@@ -117,12 +128,34 @@ export const ImportForm = ({ record, fund, onClose }: IImportFormProps) => {
                                         </Field>
                                         <Field<File> name={'xmlFile'}>
                                             {({ input, meta }) => (
-                                                <FileInput
-                                                    {...input}
-                                                    {...meta}
-                                                    label={intl.formatMessage(messages.file)}
-                                                    type="file"
-                                                />
+                                                <>
+                                                    <FileInput
+                                                        {...input}
+                                                        {...meta}
+                                                        label={intl.formatMessage(messages.file)}
+                                                        type="file"
+                                                    />
+                                                    {input.value instanceof File && (
+                                                        <BsForm.Text
+                                                            className={`d-block ${isTooLarge(input.value) ? 'text-danger' : 'text-muted'}`}
+                                                        >
+                                                            <FormattedMessage
+                                                                {...messages.selectedFileSize}
+                                                                values={{ size: humanFileSize(input.value.size) }}
+                                                            />
+                                                        </BsForm.Text>
+                                                    )}
+                                                    {hasSizeLimit && (
+                                                        <BsForm.Text
+                                                            className={`d-block ${isTooLarge(input.value) ? 'text-danger' : 'text-muted'}`}
+                                                        >
+                                                            <FormattedMessage
+                                                                {...messages.maxFileSize}
+                                                                values={{ size: humanFileSize(maxFileSize) }}
+                                                            />
+                                                        </BsForm.Text>
+                                                    )}
+                                                </>
                                             )}
                                         </Field>
                                     </Modal.Body>

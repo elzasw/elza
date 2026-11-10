@@ -1776,8 +1776,6 @@ public class ArrangementController {
      * @param newDescItemSpecId
      *            pokud se jedná o atribut se specifikací -> id specifikace, která
      *            bude nastavena
-     * @param append
-     *            příznak, zda má dojít jen k přidání nových hodnot
      * @param text
      *            text, který nahradí hledaný text v celém textu
      * @param description
@@ -1790,7 +1788,6 @@ public class ArrangementController {
     public void placeDataValues(@PathVariable("versionId") final Integer versionId,
                                 @RequestParam("descItemTypeId") final Integer descItemTypeId,
                                 @RequestParam(value = "newDescItemSpecId", required = false) final Integer newDescItemSpecId,
-                                @RequestParam(value = "append", required = false) final Boolean append,
                                 @RequestParam(value = "text", required = false) final String text,
                                 @RequestParam(value = "description", required = false) final String description,
                                 @RequestBody final ReplaceDataBody replaceDataBody) {
@@ -1811,8 +1808,7 @@ public class ArrangementController {
 
         descriptionItemService
                 .placeDescItemValues(fundVersion, itemType, nodesDO, newDescItemSpec, specifications, text, description,
-                                     replaceDataBody.getSelectionType() == SelectionType.FUND,
-                                     append != null && append);
+                                     replaceDataBody.getSelectionType() == SelectionType.FUND);
     }
 
     /**

@@ -1433,4 +1433,76 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="20261020120000" author="sergey.iryupin">
+        <!-- Whether the TLS certificate of a CAM is verified. Existing CAM systems keep their
+             behaviour: the client never checked the certificate. New systems verify. -->
+        <addColumn tableName="ap_external_system">
+            <column name="tls_verify" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <sql>
+            UPDATE ap_external_system SET tls_verify = false
+        </sql>
+    </changeSet>
+
+    <changeSet id="20261025120000" author="ppy">
+        <!-- Since when the exchanges about a queue item keep failing; null after an exchange
+             that succeeded. Monitoring reports how long the DA queue has been stuck from it.
+             A waiting item whose last exchange failed still carries the failure in its state
+             message; the time of that failure is the best known start. -->
+        <addColumn tableName="da_sync_queue_item">
+            <column name="failing_since" type="timestamp with time zone"/>
+        </addColumn>
+        <sql>
+            UPDATE da_sync_queue_item SET failing_since = date
+            WHERE active = true AND attempt_count > 0 AND state_message IS NOT NULL
+              AND state IN ('IMPORT_NEW', 'UPDATE', 'DOWNLOAD_REQUESTED', 'EXPORT_NEW', 'EXPORT_SENT')
+        </sql>
+    </changeSet>
+
+    <changeSet id="20261028120000" author="ppy">
+        <!-- How ELZA authenticates its calls to the REST API of a DA (NONE, API_KEY, BASIC).
+             Existing DA repositories keep their behaviour: the requests were signed exactly
+             when both parts of the API key were set, otherwise they carried no authentication. -->
+        <addColumn tableName="arr_digital_repository">
+            <column name="api_authentication" type="nvarchar(50)" defaultValue="NONE">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <sql>
+            UPDATE arr_digital_repository SET api_authentication = 'API_KEY'
+            WHERE digital_repository_type = 'DA'
+              AND external_system_id IN (SELECT external_system_id FROM sys_external_system
+                                         WHERE api_key_id IS NOT NULL AND api_key_value IS NOT NULL)
+        </sql>
+    </changeSet>
+
+    <changeSet id="20261105120000" author="ppy">
+        <!-- The list of AIPs reads the active state and the active import/export queue items
+             of the AIPs on the page by aip_id. -->
+        <createIndex tableName="da_sync_queue_item" indexName="ix_da_sync_queue_item_aip">
+            <column name="aip_id"/>
+        </createIndex>
+        <createIndex tableName="da_aip_state" indexName="ix_da_aip_state_aip">
+            <column name="aip_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="20261105130000" author="ppy">
+        <!-- The label of a DAO is taken from the package as it comes (METS LABEL of a level,
+             a representation or a file); its length is not limited. -->
+        <modifyDataType tableName="da_dao" columnName="label" newDataType="${type.text}"/>
+    </changeSet>
+
+    <changeSet id="20261105140000" author="ppy">
+        <!-- The DA processors and the queue metrics read the active items of given states
+             (waiting, in flight) - a small part of the table, which keeps the finished items. -->
+        <createIndex tableName="da_sync_queue_item" indexName="ix_da_sync_queue_item_state">
+            <column name="state"/>
+            <column name="active"/>
+            <column name="next_attempt_at"/>
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

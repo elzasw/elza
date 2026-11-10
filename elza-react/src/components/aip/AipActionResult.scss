@@ -31,9 +31,10 @@
             gap: 4px;
         }
 
-        /* Důvod je u přeskočeného a chybného AIPu to podstatné - proto pod stavem, ne v tooltipu. */
+        /* Důvod je u přeskočeného a chybného AIPu to podstatné - proto pod stavem, ne v tooltipu,
+           a v barvě čitelné na bílém podkladu, ne v potlačeném odstínu popisků. */
         .item-message {
-            color: $shade-6;
+            color: $shade-9;
             margin-top: 2px;
         }
 

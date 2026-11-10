@@ -70,6 +70,38 @@ export function getGeometryFormatData(geometry: Geometry): { coordinateCount: nu
   return formatData;
 }
 
+function getOnlyPart(geometry: Geometry): Geometry | undefined {
+  if (isMultiPoint(geometry)) {
+    const points = geometry.getPoints();
+    return points.length === 1 ? points[0] : undefined;
+  }
+  if (isMultiLineString(geometry)) {
+    const lineStrings = geometry.getLineStrings();
+    return lineStrings.length === 1 ? lineStrings[0] : undefined;
+  }
+  if (isMultiPolygon(geometry)) {
+    const polygons = geometry.getPolygons();
+    return polygons.length === 1 ? polygons[0] : undefined;
+  }
+  return undefined;
+}
+
+/**
+ * Rewrites a multi geometry with a single part (MULTILINESTRING((…))) to its simple type (LINESTRING(…)).
+ * CAM rejects multi geometries with fewer than two parts. Any other value is returned unchanged.
+ */
+export function simplifySinglePartGeometry(value: string): string {
+  const format = new WKT();
+  let geometry: Geometry;
+  try {
+    geometry = format.readGeometry(value);
+  } catch {
+    return value;
+  }
+  const onlyPart = getOnlyPart(geometry);
+  return onlyPart ? format.writeGeometry(onlyPart) : value;
+}
+
 export function parseCoordinateSummary(value: string): { geometryType: string; coordinateCount: number; objectCount: number } | null {
   try {
     const geometry = new WKT().readGeometry(value);

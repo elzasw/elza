@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import jakarta.servlet.MultipartConfigElement;
+
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -29,6 +32,7 @@ import cz.tacr.elza.controller.vo.ImportItemError;
 import cz.tacr.elza.controller.vo.ImportItemResult;
 import cz.tacr.elza.controller.vo.ImpResultType;
 import cz.tacr.elza.controller.vo.ItemState;
+import cz.tacr.elza.controller.vo.UploadLimits;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.BatchState;
 import cz.tacr.elza.domain.DmsFile;
@@ -65,6 +69,8 @@ public class ImportBatchController implements ImportBatchesApi {
     private AsyncRequestService asyncRequestService;
     @Autowired
     private cz.tacr.elza.repository.ImpItemResultRepository itemResultRepository;
+    @Autowired
+    private ObjectProvider<MultipartConfigElement> multipartConfig;
 
     // ---------- list / get ----------
 
@@ -291,6 +297,23 @@ public class ImportBatchController implements ImportBatchesApi {
         } catch (IOException ex) {
             throw new BusinessException("Cannot read server folder: " + ex.getMessage(), BaseCode.INVALID_STATE);
         }
+    }
+
+    /**
+     * Not limited to the import-batch permissions: archival files are imported from the
+     * fund list by users who cannot open the batch administration.
+     */
+    @Override
+    public ResponseEntity<UploadLimits> importBatchUploadLimits() {
+        if (userService.getLoggedUserDetail() == null) {
+            throw new AccessDeniedException("Not authenticated", Collections.emptyList());
+        }
+        // The bean is defined by the web application module; without it no limit is applied.
+        MultipartConfigElement config = multipartConfig.getIfAvailable();
+        UploadLimits vo = new UploadLimits();
+        vo.setMaxFileSize(config == null ? -1L : config.getMaxFileSize());
+        vo.setMaxRequestSize(config == null ? -1L : config.getMaxRequestSize());
+        return ResponseEntity.ok(vo);
     }
 
     @Override

@@ -28,6 +28,7 @@ import {
     PlayRegular,
 } from '@fluentui/react-icons';
 import { Api } from 'api';
+import { useConfirmModal } from 'components/shared/dialog/useConfirmModal';
 import { DaQueueActionResult, DaQueueDirection, DaQueueItemPage, DaQueueItemVO, QueueItemState } from 'elza-api';
 import { MouseEvent, ReactNode, useEffect, useMemo, useState } from 'react';
 import { FormattedMessage, useIntl } from 'react-intl';
@@ -55,6 +56,9 @@ const WAITING: QueueItemState[] = [
 /** Requests the DA has not received - the only ones that can be cancelled. */
 const UNDELIVERED: QueueItemState[] = [QueueItemState.ImportNew, QueueItemState.Update, QueueItemState.ExportNew];
 const FAILED: QueueItemState[] = [QueueItemState.ImportError, QueueItemState.ExportError];
+const DOWNLOAD_WAITING: QueueItemState[] = [
+    QueueItemState.ImportNew, QueueItemState.Update, QueueItemState.DownloadRequested,
+];
 
 const STATES: QueueItemState[] = [
     QueueItemState.ImportNew, QueueItemState.Update, QueueItemState.DownloadRequested, QueueItemState.ImportOk,
@@ -65,6 +69,8 @@ const STATES: QueueItemState[] = [
 export const canRetryNow = (item: DaQueueItemVO) => item.active && WAITING.includes(item.state);
 export const canWithdraw = (item: DaQueueItemVO) => item.active && UNDELIVERED.includes(item.state);
 export const canRepeat = (item: DaQueueItemVO) => item.active && FAILED.includes(item.state);
+export const canMarkFailed = (item: DaQueueItemVO) =>
+    item.active && DOWNLOAD_WAITING.includes(item.state) && item.failingSince != null;
 
 const useStyles = makeStyles({
     page: {
@@ -158,12 +164,13 @@ interface Props {
 /**
  * Requests of the queue of one digital archive, newest first. Opens with the waiting ones; the
  * selected rows can be retried now, cancelled (only before the DA has them) or repeated after a
- * failure.
+ * failure. A download that keeps failing can be marked as failed in its detail.
  */
 export function DaQueueList({ repositoryId, repositorySelector }: Props) {
     const styles = useStyles();
     const intl = useIntl();
     const dispatch = useDispatch();
+    const confirm = useConfirmModal();
 
     const [filter, setFilter] = useState<DaQueueFilter>(INITIAL_FILTER);
     const [from, setFrom] = useState(0);
@@ -206,13 +213,30 @@ export function DaQueueList({ repositoryId, repositorySelector }: Props) {
     const someSelected = items.some(item => selected.has(item.id));
     const toggleAll = () => setSelected(allSelected ? new Set() : new Set(items.map(item => item.id)));
 
-    const run = async (action: (ids: number[]) => Promise<{ data: DaQueueActionResult }>) => {
-        const { data: result } = await action(selectedItems.map(item => item.id));
+    const report = (result: DaQueueActionResult) => {
         dispatch(result.done > 0
             ? addToastrSuccess(intl.formatMessage(messages.actionDone, { done: result.done, skipped: result.skipped }))
             : addToastrWarning(intl.formatMessage(messages.actionNothing)));
-        setSelected(new Set());
         refresh();
+    };
+
+    const run = async (action: (ids: number[]) => Promise<{ data: DaQueueActionResult }>) => {
+        const { data: result } = await action(selectedItems.map(item => item.id));
+        setSelected(new Set());
+        report(result);
+    };
+
+    const markFailed = async (item: DaQueueItemVO) => {
+        const confirmed = await confirm({
+            title: intl.formatMessage(messages.markFailed),
+            message: intl.formatMessage(messages.markFailedConfirm, { aipCode: item.aipCode }),
+            confirmLabel: intl.formatMessage(messages.markFailed),
+        });
+        if (!confirmed) {
+            return;
+        }
+        const { data: result } = await Api.externalSystems.externalSystemDaQueueMarkFailed(repositoryId, [item.id]);
+        report(result);
     };
 
     const page = (target: number) => {
@@ -407,7 +431,11 @@ export function DaQueueList({ repositoryId, repositorySelector }: Props) {
                     )}
                 </div>
             </div>
-            <DaQueueDetail item={detail} onClose={() => setDetailId(undefined)} />
+            <DaQueueDetail
+                item={detail}
+                onClose={() => setDetailId(undefined)}
+                onMarkFailed={detail && canMarkFailed(detail) ? () => markFailed(detail) : undefined}
+            />
         </div>
     );
 }

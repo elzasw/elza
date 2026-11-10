@@ -1,6 +1,7 @@
 package cz.tacr.elza.service.da;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -30,6 +31,7 @@ import cz.tacr.elza.controller.vo.OperationLogicalType;
 import cz.tacr.elza.controller.vo.OperationTextType;
 import cz.tacr.elza.controller.vo.SearchParams;
 import cz.tacr.elza.controller.vo.TextValueFilter;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFund;
@@ -40,12 +42,14 @@ import cz.tacr.elza.domain.DaAipState;
 import cz.tacr.elza.domain.DaChange;
 import cz.tacr.elza.domain.DaChangeType;
 import cz.tacr.elza.domain.DaDao;
+import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.repository.AipRepository;
 import cz.tacr.elza.repository.AipStateRepository;
 import cz.tacr.elza.repository.ArrDaLinkRepository;
 import cz.tacr.elza.repository.DaChangeRepository;
 import cz.tacr.elza.repository.DaDaoRepository;
 import cz.tacr.elza.repository.DigitalRepositoryRepository;
+import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.service.AipService;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.FundLevelService.AddLevelDirection;
@@ -81,6 +85,8 @@ public class AipEntryLookupTest extends AbstractServiceTest {
     private DigitalRepositoryRepository digitalRepositoryRepository;
     @Autowired
     private FundLevelService fundLevelService;
+    @Autowired
+    private InstitutionRepository institutionRepository;
 
     private TransactionTemplate tx() {
         return new TransactionTemplate(txManager);
@@ -198,5 +204,66 @@ public class AipEntryLookupTest extends AbstractServiceTest {
         assertEquals(2, links.size());
         assertNull(links.get(wholeNodeId).getDaoCode(), "a link of the whole AIP has no part");
         assertEquals(PART_CODE, links.get(partNodeId).getDaoCode());
+
+        Map<Integer, String> treeNames = treeNames(fund, List.of(wholeNodeId, partNodeId));
+        assertEquals(treeNames.get(wholeNodeId), links.get(wholeNodeId).getName());
+        assertEquals(treeNames.get(partNodeId), links.get(partNodeId).getName());
+    }
+
+    /** The list names the linked units as the tree does, the root of the fund included. */
+    @Test
+    public void unitNamesWithoutTheTreeMatchTheTree() {
+        FundInfo fund = tx().execute(t -> createFund("F-da-names"));
+        List<Integer> nodeIds = List.of(fund.getRootNodeId(), childNodeId(fund));
+
+        Map<Integer, String> names = tx().execute(t -> levelTreeCacheService.getNodeNames(nodeIds,
+                fundVersionRepository.findById(fund.getFundVersion().getFundVersionId()).orElseThrow()));
+
+        assertEquals(treeNames(fund, nodeIds), names);
+    }
+
+    private Map<Integer, String> treeNames(FundInfo fund, List<Integer> nodeIds) {
+        return tx().execute(t -> levelTreeCacheService
+                .getNodesByIds(nodeIds, fund.getFundVersion().getFundVersionId()).stream()
+                .collect(Collectors.toMap(TreeNodeVO::getId, TreeNodeVO::getName)));
+    }
+
+    /**
+     * The connected objects of a page are read at once for all its AIPs; each AIP still gets its
+     * own fund, institution and originator, and an AIP without them gets none.
+     */
+    @Test
+    public void pageOfAipsCarriesTheirConnectedObjects() {
+        FundInfo fund = tx().execute(t -> createFund("F-da-page"));
+        Aip withFund = createAip(REPOSITORY, AIP_UUID, fund.getFund());
+        Aip withoutFund = createAip("DA-ENTRY-2", "uuid-" + AIP_UUID, null);
+        ParInstitution institution = tx().execute(t -> {
+            ParInstitution inst = institutionRepository.findById(fund.getFund().getInstitutionId()).orElseThrow();
+            DaAipState state = aipStateRepository.findByDaAipAndDeleteChangeIsNull(
+                    aipRepository.findById(withFund.aipId()).orElseThrow());
+            state.setInstitution(inst);
+            state.setOriginatorAccessPoint(inst.getAccessPoint());
+            return inst;
+        });
+
+        List<AbstractFilter> anyCode = List.of(eq(AipFieldName.CODE, AIP_UUID), eq(AipFieldName.CODE, "uuid-" + AIP_UUID));
+        SearchParams params = new SearchParams();
+        params.setFilters(List.of(new LogicalFilter(anyCode, OperationLogicalType.OR, FilterType.LOGICAL)));
+        Map<Integer, AipDetailVO> page = tx().execute(t -> clientFactoryVO.createAips(
+                aipService.findAipDetailsByFilter(params).getList())).stream()
+                .collect(Collectors.toMap(AipDetailVO::getAipId, a -> a));
+
+        AipDetailVO linked = page.get(withFund.aipId());
+        assertEquals(fund.getFund().getFundId(), linked.getFund().getId());
+        assertEquals(institution.getInstitutionId(), linked.getInstitution().getId());
+        assertNotNull(linked.getInstitution().getName());
+        assertEquals(institution.getAccessPointId(), linked.getOriginatorAccessPointId());
+        assertEquals(linked.getInstitution().getName(), linked.getOriginatorAccessPointName());
+
+        AipDetailVO alone = page.get(withoutFund.aipId());
+        assertNull(alone.getFund());
+        assertNull(alone.getInstitution());
+        assertNull(alone.getOriginatorAccessPointId());
+        assertTrue(alone.getLinkedNodes() == null || alone.getLinkedNodes().isEmpty());
     }
 }

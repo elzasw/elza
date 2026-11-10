@@ -4,12 +4,13 @@ import {
     DrawerHeader,
     DrawerHeaderTitle,
     InlineDrawer,
+    Spinner,
     makeStyles,
     tokens,
 } from '@fluentui/react-components';
-import { DismissRegular } from '@fluentui/react-icons';
+import { DismissRegular, ErrorCircleRegular } from '@fluentui/react-icons';
 import { DaQueueItemVO } from 'elza-api';
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import { FormattedMessage, useIntl } from 'react-intl';
 import { Link as RouterLink } from 'react-router-dom';
 import { urlAip } from '../../../constants';
@@ -37,17 +38,45 @@ const useStyles = makeStyles({
         whiteSpace: 'pre-wrap',
         overflowWrap: 'anywhere',
     },
+    actions: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        rowGap: tokens.spacingVerticalXS,
+        marginTop: tokens.spacingVerticalL,
+    },
+    hint: {
+        color: tokens.colorNeutralForeground3,
+    },
 });
 
 interface Props {
     item: DaQueueItemVO | undefined;
     onClose: () => void;
+    /** Ends the request as failed; offered only for a download that keeps failing. */
+    onMarkFailed?: () => Promise<void>;
 }
 
+export type DaQueueDetailProps = Props;
+
 /** Everything known about one request, the message in full. */
-export function DaQueueDetail({ item, onClose }: Props) {
+export function DaQueueDetail({ item, onClose, onMarkFailed }: Props) {
     const styles = useStyles();
     const intl = useIntl();
+    // the server may wait for an exchange with the DA in progress before it answers
+    const [marking, setMarking] = useState(false);
+
+    const markFailed = async () => {
+        if (!onMarkFailed) {
+            return;
+        }
+        setMarking(true);
+        try {
+            await onMarkFailed();
+        } finally {
+            setMarking(false);
+        }
+    };
 
     const row = (label: ReactNode, value: ReactNode) => (
         <>
@@ -93,6 +122,8 @@ export function DaQueueDetail({ item, onClose }: Props) {
                                 </>)}
                             {row(<FormattedMessage {...messages.colBatch} />, item.batchId)}
                             {row(<FormattedMessage {...messages.colAttempts} />, item.attemptCount)}
+                            {item.failingSince && row(<FormattedMessage {...messages.colFailingSince} />,
+                                formatDateTime(intl, item.failingSince))}
                             {item.active && row(<FormattedMessage {...messages.colNextAttempt} />,
                                 formatNextAttempt(intl, item.nextAttemptAt))}
                             {row(<FormattedMessage {...messages.colChanged} />, formatDateTime(intl, item.stateDate))}
@@ -101,6 +132,15 @@ export function DaQueueDetail({ item, onClose }: Props) {
                         </dl>
                         {item.stateMessage && (
                             <p className={styles.message}>{item.stateMessage}</p>
+                        )}
+                        {onMarkFailed && (
+                            <div className={styles.actions}>
+                                <Button icon={marking ? <Spinner size="tiny" /> : <ErrorCircleRegular />}
+                                        disabled={marking} onClick={markFailed}>
+                                    <FormattedMessage {...messages.markFailed} />
+                                </Button>
+                                <span className={styles.hint}><FormattedMessage {...messages.markFailedTitle} /></span>
+                            </div>
                         )}
                     </DrawerBody>
                 </>

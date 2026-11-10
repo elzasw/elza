@@ -16,7 +16,15 @@ const messages = defineMessages({
     nodeNotFoundFiltered: { id: "dataGrid.restore.nodeNotFound.filtered", defaultMessage: "Dříve vybraná jednotka popisu neodpovídá aktuálnímu filtru, zobrazuje se uložená stránka." },
     nodeNotFound: { id: "dataGrid.restore.nodeNotFound", defaultMessage: "Dříve vybranou jednotku popisu se nepodařilo obnovit, zobrazuje se uložená stránka." },
 });
-import { addToastrDanger, addToastrWarning } from 'components/shared/toastr/ToastrActions';
+import { addToastrDanger, addToastrSuccess, addToastrWarning } from 'components/shared/toastr/ToastrActions';
+import { BulkSelectionType } from 'elza-api';
+
+const bulkAppendMessages = defineMessages({
+    result: {
+        id: 'arr.fund.bulkModifications.appendResult',
+        defaultMessage: '{created, plural, one {Přidána # hodnota} few {Přidány # hodnoty} other {Přidáno # hodnot}}{skipped, plural, =0 {.} one {, # hodnota přeskočena, protože už existovala.} few {, # hodnoty přeskočeny, protože už existovaly.} other {, # hodnot přeskočeno, protože už existovaly.}}',
+    },
+});
 
 // Null hodnota, která se používaná v klientovi pro reprezentaci null hodnoty
 export const FILTER_NULL_VALUE = '____$<NULL>$___';
@@ -95,18 +103,6 @@ export function fundBulkModifications(
                     nodes,
                     selectionType,
                 );
-            case 'append':
-                return WebApi.placeDataValues(
-                    versionId,
-                    descItemTypeId,
-                    specsIds,
-                    replaceText,
-                    description,
-                    replaceSpecId,
-                    nodes,
-                    selectionType,
-                    true
-                );
             case 'delete':
                 return WebApi.deleteDataValues(versionId, descItemTypeId, specsIds, nodes, selectionType, valueIds);
             case 'setSpecification':
@@ -132,6 +128,30 @@ export function fundBulkModifications(
                 console.warn('#####fundBulkModifications - operation not implemented', operationType);
                 return null;
         }
+    };
+}
+
+/**
+ * Adds the values of one item type to the selected nodes and reports how many were added and skipped.
+ *
+ * @param versionId     fund version id
+ * @param itemTypeId    item type of all values
+ * @param values        values to add (BulkItemValue[])
+ * @param nodes         nodes with versions ({id, version}), empty for the whole fund
+ * @param selectionType 'NODES' or 'FUND'
+ */
+export function fundBulkAppend(versionId, itemTypeId, values, nodes, selectionType) {
+    return async dispatch => {
+        const isWholeFund = selectionType === BulkSelectionType.Fund;
+        const { data } = await Api.descItems.descItemAppendDescItems(versionId, {
+            itemTypeId,
+            selection: { selectionType, nodes: isWholeFund ? [] : nodes },
+            values,
+        });
+        dispatch(addToastrSuccess(
+            <FormattedMessage {...bulkAppendMessages.result} values={{ created: data.created, skipped: data.skippedDuplicate }} />,
+        ));
+        return data;
     };
 }
 

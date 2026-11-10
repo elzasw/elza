@@ -28,11 +28,34 @@ function dropMissingSelection(state, includeIds) {
     return missing.some(id => id == state.selectedId) ? {...state, selectedId: null} : state;
 }
 
+/**
+ * Maximum number of collapsed nodes whose expanded descendants a tree remembers.
+ */
+export const COLLAPSED_EXPANDED_LIMIT = 50;
+
+/**
+ * Expanded descendants of collapsed nodes, newest entry last: [{nodeId, expandedIds}].
+ * They are kept out of expandedIds, because the server expands all ancestors of every id
+ * it receives there and the collapsed node would open again on the next fetch.
+ */
+function rememberCollapsedExpanded(collapsedExpandedIds, nodeId, hiddenExpandedIds) {
+    const otherEntries = collapsedExpandedIds.filter((entry) => entry.nodeId !== nodeId);
+    if (hiddenExpandedIds.length === 0) {
+        return otherEntries;
+    }
+    return [...otherEntries, { nodeId, expandedIds: hiddenExpandedIds }].slice(-COLLAPSED_EXPANDED_LIMIT);
+}
+
+function forgetExpandedNodes(collapsedExpandedIds, expandedIds) {
+    return collapsedExpandedIds.filter((entry) => !expandedIds[entry.nodeId]);
+}
+
 const initialState = {
     selectedId: null,
     selectedIds: {},
     focusId: null,
     expandedIds: {},
+    collapsedExpandedIds: [],
     searchedIds: [],
     ensureItemVisible: false,
     searchedParents: {},
@@ -65,12 +88,14 @@ function removeChildren(nodes, collapsedNode, selectedIdsMap) {
     var start = index;
     var max = nodes.length;
     var containsSelectedIds = [];
+    var removedIds = [];
 
     while (++index < max) {
         let node = nodes[index];
         if (node.depth > collapsedNode.depth) {
             // potomek, odebereme
             // ale až na konci
+            removedIds.push(node.id);
             if (selectedIdsMap[node.id]) {
                 containsSelectedIds.push(node.id);
             }
@@ -82,6 +107,7 @@ function removeChildren(nodes, collapsedNode, selectedIdsMap) {
 
     return {
         containsSelectedIds: containsSelectedIds,
+        removedIds: removedIds,
         nodes: [...nodes.slice(0, start + 1), ...nodes.slice(index)],
     };
 }
@@ -101,6 +127,7 @@ export default function fundTree(state = initialState, action = {}) {
                 dirty: false,
                 fetchingIncludeIds: {},
                 nodes: [],
+                collapsedExpandedIds: (state.collapsedExpandedIds || []).slice(-COLLAPSED_EXPANDED_LIMIT),
             };
 
         case types.FUND_FUND_TREE_CONFIGURE: {
@@ -187,6 +214,7 @@ export default function fundTree(state = initialState, action = {}) {
                 selectedIds,
                 focusId,
                 expandedIds,
+                collapsedExpandedIds,
                 searchedIds,
                 filterText,
                 filterCurrentIndex,
@@ -198,6 +226,7 @@ export default function fundTree(state = initialState, action = {}) {
                 selectedIds,
                 focusId,
                 expandedIds,
+                collapsedExpandedIds,
                 multipleSelection,
                 multipleSelectionOneLevel,
             };
@@ -377,6 +406,7 @@ export default function fundTree(state = initialState, action = {}) {
                 return {
                     ...state,
                     expandedIds: {...state.expandedIds, [action.node.id]: true},
+                    collapsedExpandedIds: forgetExpandedNodes(state.collapsedExpandedIds, { [action.node.id]: true }),
                     ensureItemVisible: false,
                     nodes: [
                         ...state.nodes.slice(0, index + 1),
@@ -394,6 +424,7 @@ export default function fundTree(state = initialState, action = {}) {
                     ...state,
                     ensureItemVisible: false,
                     expandedIds: {...state.expandedIds, [action.node.id]: true},
+                    collapsedExpandedIds: forgetExpandedNodes(state.collapsedExpandedIds, { [action.node.id]: true }),
                 };
             }
         case types.FUND_FUND_TREE_COLLAPSE:
@@ -407,6 +438,7 @@ export default function fundTree(state = initialState, action = {}) {
                 fetched: true,
                 ensureItemVisible: false,
                 expandedIds: _expandedIds,
+                collapsedExpandedIds: [],
                 nodes: _nodes,
                 selectedId: initialState.selectedId,
                 selectedIds: initialState.selectedIds,
@@ -425,6 +457,10 @@ export default function fundTree(state = initialState, action = {}) {
                 }
             }
             removeInfo = removeChildren(state.nodes, action.node, selectedIdsMap);
+            const hiddenExpandedIds = removeInfo.removedIds.filter((id) => expandedIds[id]);
+            hiddenExpandedIds.forEach((id) => {
+                delete expandedIds[id];
+            });
 
             let newSelectedId;
             let newSelectedIds;
@@ -451,6 +487,11 @@ export default function fundTree(state = initialState, action = {}) {
                 ...state,
                 ensureItemVisible: false,
                 expandedIds: expandedIds,
+                collapsedExpandedIds: rememberCollapsedExpanded(
+                    state.collapsedExpandedIds,
+                    action.node.id,
+                    hiddenExpandedIds
+                ),
                 nodes: removeInfo.nodes,
                 selectedId: newSelectedId,
                 selectedIds: newSelectedIds,
@@ -502,6 +543,10 @@ export default function fundTree(state = initialState, action = {}) {
                         action.expandedIdsExtension.forEach(id => {
                             result.expandedIds[id] = true;
                         });
+                        result.collapsedExpandedIds = forgetExpandedNodes(
+                            state.collapsedExpandedIds,
+                            result.expandedIds
+                        );
 
                         return result;
                     } else {
@@ -536,6 +581,7 @@ export default function fundTree(state = initialState, action = {}) {
                 action.expandedIdsExtension.forEach(id => {
                     result.expandedIds[id] = true;
                 });
+                result.collapsedExpandedIds = forgetExpandedNodes(state.collapsedExpandedIds, result.expandedIds);
                 return dropMissingSelection(result, action.includeIds);
             }
 

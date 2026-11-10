@@ -10,7 +10,6 @@ import { arrPanelMessages } from './panelMessages';
 import FundTreeLazy from './FundTreeLazy';
 import ArrSearchForm from './ArrSearchForm';
 import * as types from 'actions/constants/ActionTypes';
-import {Dropdown} from 'react-bootstrap';
 import {
     fundTreeCollapse,
     fundTreeFetchIfNeeded,
@@ -34,7 +33,6 @@ import {FOCUS_KEYS} from '../../constants.tsx';
 import {PersistentSortDialog} from './PersistentSortDialog';
 import {WebApi} from '../../actions/WebApi';
 import {getFundVersion, JAVA_ATTR_CLASS, urlFundGrid, urlFundMovements, ZP2015_INTRO_VYPOCET_EJ} from '../../constants';
-import {Link} from 'react-router-dom';
 import { showQuoteModal, messages as quoteMessages } from './quote';
 
 class FundTreeMain extends React.Component {
@@ -120,34 +118,38 @@ class FundTreeMain extends React.Component {
         // the server refuses moves in a closed version
         const isMoveAllowed = !readMode && !fund.closed;
 
-        const menu = (
-            <ul className="dropdown-menu">
-                <Dropdown.Item onClick={this.handleSelectInNewTab.bind(this, node)}>
-                    {<FormattedMessage {...arrPanelMessages.fundTreeActionOpenInNewTab} />}
-                </Dropdown.Item>
-                <Dropdown.Item as={Link} to={dataGridUrl} onClick={() => this.props.dispatch(contextMenuHide())}>
-                    {<FormattedMessage {...arrPanelMessages.fundTreeActionOpenInDataGrid} />}
-                </Dropdown.Item>
-                {isMoveAllowed && (
-                    <Dropdown.Item as={Link} to={movementsUrl} onClick={() => this.props.dispatch(contextMenuHide())}>
-                        {<FormattedMessage {...arrPanelMessages.fundTreeActionMove} />}
-                    </Dropdown.Item>
-                )}
-                <Dropdown.Item onClick={this.handleQuote(node)}>
-                    <FormattedMessage {...quoteMessages.quoteTitle}/>
-                </Dropdown.Item>
-                {!readMode && getPersistentSortAction(fund) && (
-                    <Dropdown.Item onClick={() => this.handleOpenPersistentSortDialog(node)}>
-                        {<FormattedMessage {...arrPanelMessages.functionsPersistentSort} />}
-                    </Dropdown.Item>
-                )}
-                {!readMode && hasBulkAction(fund, ZP2015_INTRO_VYPOCET_EJ) && (
-                    <Dropdown.Item onClick={() => this.computeAndVizualizeEJ(node)}>
-                        {<FormattedMessage {...arrPanelMessages.functionsComputeAndVizualizeEJ} />}
-                    </Dropdown.Item>
-                )}
-            </ul>
-        );
+        const menu = [
+            {
+                key: 'openInNewTab',
+                label: <FormattedMessage {...arrPanelMessages.fundTreeActionOpenInNewTab} />,
+                onClick: () => this.handleSelectInNewTab(node),
+            },
+            {
+                key: 'openInDataGrid',
+                label: <FormattedMessage {...arrPanelMessages.fundTreeActionOpenInDataGrid} />,
+                to: dataGridUrl,
+            },
+            isMoveAllowed && {
+                key: 'move',
+                label: <FormattedMessage {...arrPanelMessages.fundTreeActionMove} />,
+                to: movementsUrl,
+            },
+            {
+                key: 'quote',
+                label: <FormattedMessage {...quoteMessages.quoteTitle} />,
+                onClick: this.handleQuote(node),
+            },
+            !readMode && getPersistentSortAction(fund) && {
+                key: 'persistentSort',
+                label: <FormattedMessage {...arrPanelMessages.functionsPersistentSort} />,
+                onClick: () => this.handleOpenPersistentSortDialog(node),
+            },
+            !readMode && hasBulkAction(fund, ZP2015_INTRO_VYPOCET_EJ) && {
+                key: 'computeEJ',
+                label: <FormattedMessage {...arrPanelMessages.functionsComputeAndVizualizeEJ} />,
+                onClick: () => this.computeAndVizualizeEJ(node),
+            },
+        ].filter(Boolean);
 
         this.props.dispatch(fundTreeFocusNode(types.FUND_TREE_AREA_MAIN, this.props.versionId, node));
         this.props.dispatch(contextMenuShow(this, menu, {x: e.clientX, y: e.clientY}));

@@ -22,6 +22,9 @@ public enum ExternalCode implements ErrorCode {
      */
     EXTERNAL_SYSTEM_ERROR,
 
+    /** TLS certificate of the external system is not trusted or does not match its host name. */
+    TLS_CERTIFICATE_ERROR,
+
     /** Záznam byl již importován. */
     ALREADY_IMPORTED,
     

@@ -13,7 +13,6 @@ const messages = defineMessages({
     open: { id: 'fundTree.action.open', defaultMessage: 'Otevřít v aktuální záložce' },
 });
 import * as types from 'actions/constants/ActionTypes';
-import {Dropdown} from 'react-bootstrap';
 import {
     fundTreeCollapse,
     fundTreeFetchIfNeeded,
@@ -95,16 +94,18 @@ class FundDetailTree extends React.Component {
         e.preventDefault();
         e.stopPropagation();
 
-        var menu = (
-            <ul className="dropdown-menu">
-                <Dropdown.Item onClick={this.handleSelectInNewTab.bind(this, node)}>
-                    <FormattedMessage {...messages.openInNewTab} />
-                </Dropdown.Item>
-                <Dropdown.Item onClick={this.handleSelectInTab.bind(this, node)}>
-                    <FormattedMessage {...messages.open} />
-                </Dropdown.Item>
-            </ul>
-        );
+        var menu = [
+            {
+                key: 'openInNewTab',
+                label: <FormattedMessage {...messages.openInNewTab} />,
+                onClick: () => this.handleSelectInNewTab(node),
+            },
+            {
+                key: 'open',
+                label: <FormattedMessage {...messages.open} />,
+                onClick: () => this.handleSelectInTab(node),
+            },
+        ];
 
         this.props.dispatch(fundTreeFocusNode(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId, node));
         this.props.dispatch(contextMenuShow(this, menu, {x: e.clientX, y: e.clientY}));

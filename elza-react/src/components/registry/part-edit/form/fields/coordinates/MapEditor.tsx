@@ -3,6 +3,7 @@ import { Modal } from "react-bootstrap";
 import { useThunkDispatch } from 'utils/hooks';
 import { addToastrSuccess } from 'components/shared/toastr/ToastrActions';
 import { ExternalSystem } from 'typings/store';
+import { simplifySinglePartGeometry } from 'components/shared/coordinates/utils';
 import { Button } from 'components/ui';
 import { ModalDialogWrapper } from 'components/shared';
 import { useIntl } from 'react-intl';
@@ -54,7 +55,7 @@ export const MapEditor = ({
             }
             else if (e.data?.type === "MapGeometry") {
                 console.log("#### geometry message received", e.data)
-                onChange(e.data.geometry);
+                onChange(simplifySinglePartGeometry(e.data.geometry));
             }
         }
 

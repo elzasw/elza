@@ -61,7 +61,7 @@ describe('MainNavigation', () => {
         expect(screen.getByText('Administration')).toBeInTheDocument();
     });
 
-    it('hides the funds and administration entries without the permissions', () => {
+    it('hides the funds, packages and administration entries without the permissions', () => {
         renderWithProviders(<MainNavigation />, {
             preloadedState: {
                 userDetail: { ...adminState.userDetail, permissionsMap: {} },
@@ -69,8 +69,21 @@ describe('MainNavigation', () => {
         });
 
         expect(screen.getByText('Domů')).toBeInTheDocument();
-        expect(screen.getByText('Archivní balíčky')).toBeInTheDocument();
+        expect(screen.queryByText('Archivní balíčky')).not.toBeInTheDocument();
         expect(screen.queryByText('Archivní soubory')).not.toBeInTheDocument();
         expect(screen.queryByText('Administrace')).not.toBeInTheDocument();
+    });
+
+    it('shows the packages entry to a user arranging a single fund', () => {
+        renderWithProviders(<MainNavigation />, {
+            preloadedState: {
+                userDetail: {
+                    ...adminState.userDetail,
+                    permissionsMap: { FUND_ARR: { permission: 'FUND_ARR', fundIdsMap: { 1: true } } },
+                },
+            },
+        });
+
+        expect(screen.getByText('Archivní balíčky')).toBeInTheDocument();
     });
 });

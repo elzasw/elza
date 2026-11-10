@@ -164,6 +164,30 @@ public class DaAsyncQueueTest extends AbstractServiceTest {
         assertEquals(List.of(waiting), nextDownloads());
     }
 
+    /**
+     * A due item of a repository with a batch in flight cannot be taken, so the processor sleeps
+     * until the next question about the batch instead of looking at the queue again at once.
+     */
+    @Test
+    void theIdleWaitIgnoresWaitingItemsOfABusyRepository() {
+        OffsetDateTime question = OffsetDateTime.now().plusSeconds(2);
+        Integer inFlight = item(aip("aip-1"), QueueItemState.DOWNLOAD_REQUESTED, "b1", question);
+        item(aip("aip-2"), QueueItemState.IMPORT_NEW, null, OffsetDateTime.now().minusMinutes(1));
+        Integer export = item(aip("aip-3"), QueueItemState.EXPORT_NEW, null, OffsetDateTime.now().minusMinutes(2));
+
+        assertTrue(Duration.between(question, daService.getEarliestAttempt(QueueItemState.DOWNLOAD_REQUESTED,
+                QueueItemState.UPDATE, QueueItemState.IMPORT_NEW)).abs().toMillis() < 1,
+                   "the next question about the batch, not the waiting item");
+        assertEquals(reload(export).getNextAttemptAt().toInstant(),
+                     daService.getEarliestAttempt(QueueItemState.EXPORT_SENT, QueueItemState.EXPORT_NEW).toInstant(),
+                     "a download in flight does not hold back an export");
+
+        daService.changeQueueItemsState(List.of(reload(inFlight)), QueueItemState.IMPORT_OK);
+        assertTrue(daService.getEarliestAttempt(QueueItemState.DOWNLOAD_REQUESTED,
+                QueueItemState.UPDATE, QueueItemState.IMPORT_NEW).isBefore(OffsetDateTime.now()),
+                   "the waiting item is due once the batch is over");
+    }
+
     @Test
     void anItemIsTakenWhenDueAndRetryNowTakesItAtOnce() {
         DaAip aip = aip("aip-1");
@@ -342,6 +366,65 @@ public class DaAsyncQueueTest extends AbstractServiceTest {
         assertEquals(1, waitingNow.size());
         assertEquals(cz.tacr.elza.controller.vo.QueueItemState.UPDATE, waitingNow.get(0).getState());
         assertEquals(cz.tacr.elza.controller.vo.AipType.METADATA_BASE, waitingNow.get(0).getAipType());
+    }
+
+    /**
+     * How long an item has been failing survives the retries and a batch the DA merely accepted
+     * (it may give the batch up again, over and over); it ends when the DA answers about the
+     * batch as expected.
+     */
+    @Test
+    void anItemIsFailingFromItsFirstFailureUntilTheDaAnswersAboutItsBatch() {
+        Integer itemId = item(aip("aip-1"), QueueItemState.UPDATE, null, null);
+
+        daService.recordDownloadFailure(List.of(reload(itemId)), new IllegalStateException("Nelze se spojit"));
+        OffsetDateTime since = reload(itemId).getFailingSince();
+        daService.returnToPending(List.of(reload(itemId)), new IllegalStateException("404"));
+
+        assertNotNull(since);
+        assertEquals(since.toInstant(), reload(itemId).getFailingSince().toInstant());
+        assertEquals(since.toInstant(), daQueueService.find(repository.getExternalSystemId(), waiting(), 0, 50)
+                .getItems().get(0).getFailingSince().toInstant());
+
+        daService.markBatch(List.of(reload(itemId)), QueueItemState.DOWNLOAD_REQUESTED, "d1", repository);
+        DaSyncQueueItem accepted = reload(itemId);
+        assertEquals(since.toInstant(), accepted.getFailingSince().toInstant());
+        assertNotNull(accepted.getStateMessage(), "the last failure stays described");
+
+        daService.scheduleNextCheck(List.of(reload(itemId)), repository);
+        DaSyncQueueItem answered = reload(itemId);
+        assertNull(answered.getFailingSince());
+        assertNull(answered.getStateMessage());
+    }
+
+    /**
+     * A download the DA keeps failing to prepare is ended by the user with its last failure,
+     * which no longer promises a retry; a download that has not failed is left alone.
+     */
+    @Test
+    void aDownloadThatKeepsFailingCanBeMarkedFailed() {
+        Integer failing = item(aip("aip-1"), QueueItemState.DOWNLOAD_REQUESTED, "d1", null);
+        Integer fine = item(aip("aip-2"), QueueItemState.DOWNLOAD_REQUESTED, "d2", null);
+        Exception failure = new cz.tacr.da.ApiException("Internal Server Error", 500, java.util.Map.of(),
+                "{\"errorTitle\":\"Batch preparation failed\",\"errorCode\":\"INTERNAL_ERROR\","
+                        + "\"errorDetail\":\"Package aip-1: chybí content i FONDS_ID.\"}");
+        daService.recordDownloadFailure(List.of(reload(failing)), failure);
+
+        DaQueueActionResult result = daQueueService.markFailed(repository.getExternalSystemId(), List.of(failing, fine));
+
+        assertEquals(1, result.getDone());
+        assertEquals(1, result.getSkipped());
+        DaSyncQueueItem item = reload(failing);
+        assertEquals(QueueItemState.IMPORT_ERROR, item.getState());
+        assertNull(item.getNextAttemptAt());
+        assertNull(item.getFailingSince(), "an ended request no longer fails");
+        assertTrue(item.getStateMessage().startsWith("Stahování ukončil uživatel"), item.getStateMessage());
+        assertTrue(item.getStateMessage().endsWith("(pokusů: 1). Poslední chyba: Balíček se nepodařilo stáhnout"
+                + " z digitálního archivu: Batch preparation failed: Package aip-1: chybí content i FONDS_ID."
+                + " [INTERNAL_ERROR] (HTTP 500)."), item.getStateMessage());
+        assertEquals(QueueItemState.DOWNLOAD_REQUESTED, reload(fine).getState());
+        assertEquals(1, daQueueService.repeat(repository.getExternalSystemId(), List.of(failing)).getDone(),
+                     "the user repeats it once the package is fixed");
     }
 
     @Test

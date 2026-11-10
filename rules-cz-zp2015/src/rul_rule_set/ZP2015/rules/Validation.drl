@@ -301,9 +301,10 @@ when
     // duplicitní hodnotu hledáme na aktuální úrovni i u všech předků
     // (předkové jsou v session jako Level fakta, viz ValidationRules.execute)
     Level( $searchItems: descItems )
+    // the entity is compared in this pattern, so only real duplicates become matches;
+    // a separate pattern after it would keep every pair of items of the type in memory
     $otherDi: DescItem( dataType=="RECORD_REF" && ap != null && specCode == null && type == $type
-                    && descItemId != $ownDi.descItemId && $otherAp: ap ) from $searchItems
-    Ap( id == $apId ) from $otherAp
+                    && ap.id == $apId && descItemId != $ownDi.descItemId ) from $searchItems
     // u páru vlastní/vlastní na téže úrovni hlásit jen jednou - na pozdějším výskytu
     eval( !$ownDescItems.contains($otherDi) || $ownDi.getDescItemId() > $otherDi.getDescItemId() )
 then
@@ -322,9 +323,9 @@ when
     // duplicitní hodnotu hledáme na aktuální úrovni i u všech předků
     // (předkové jsou v session jako Level fakta, viz ValidationRules.execute)
     Level( $searchItems: descItems )
+    // the entity is compared in this pattern, see the rule above
     $otherDi: DescItem( dataType=="RECORD_REF" && ap != null && type == $type && specCode == $specCode
-                    && descItemId != $ownDi.descItemId && $otherAp: ap ) from $searchItems
-    Ap( id == $apId ) from $otherAp
+                    && ap.id == $apId && descItemId != $ownDi.descItemId ) from $searchItems
     // u páru vlastní/vlastní na téže úrovni hlásit jen jednou - na pozdějším výskytu
     eval( !$ownDescItems.contains($otherDi) || $ownDi.getDescItemId() > $otherDi.getDescItemId() )
 then

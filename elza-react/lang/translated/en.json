@@ -195,6 +195,18 @@
     "defaultMessage": "{done, plural, one {Done for # request} other {Done for # requests}}{skipped, plural, =0 {} one { · # skipped} other { · # skipped}}",
     "srcHash": "jcJx3F-1dLnS"
   },
+  "admin.daQueue.action.markFailed": {
+    "defaultMessage": "Mark as failed",
+    "srcHash": "hdJcy_DNI6Rx"
+  },
+  "admin.daQueue.action.markFailed.confirm": {
+    "defaultMessage": "End the download of AIP “{aipCode}”? The download stops being retried and the request ends with an error, which is also recorded on the AIP and in the user's action. Once the package is fixed in the digital archive, the request can be repeated.",
+    "srcHash": "2AMuJNvRwD6k"
+  },
+  "admin.daQueue.action.markFailed.title": {
+    "defaultMessage": "The download stops being retried and the request ends as failed. Once the package is fixed in the digital archive, use Repeat.",
+    "srcHash": "zQGTN2ha9DKU"
+  },
   "admin.daQueue.action.nothing": {
     "defaultMessage": "The action applies to none of the selected requests",
     "srcHash": "NEpOoEQoVdwg"
@@ -258,6 +270,10 @@
   "admin.daQueue.col.changed": {
     "defaultMessage": "State changed",
     "srcHash": "FvctuYd2d4QQ"
+  },
+  "admin.daQueue.col.failingSince": {
+    "defaultMessage": "Failing since",
+    "srcHash": "5LVKs19cyfVr"
   },
   "admin.daQueue.col.id": {
     "defaultMessage": "ID",
@@ -459,6 +475,22 @@
     "defaultMessage": "Digital archive",
     "srcHash": "iPgFLR6539C0"
   },
+  "admin.extSystem.daApiAuthentication": {
+    "defaultMessage": "REST API authentication",
+    "srcHash": "asGeGtBWQba6"
+  },
+  "admin.extSystem.daApiAuthentication.apiKey": {
+    "defaultMessage": "API key (NDA-HMAC-SHA256)",
+    "srcHash": "gemwSkEQtZcu"
+  },
+  "admin.extSystem.daApiAuthentication.basic": {
+    "defaultMessage": "HTTP Basic (username and password)",
+    "srcHash": "reQNLXZO4H8c"
+  },
+  "admin.extSystem.daApiAuthentication.none": {
+    "defaultMessage": "None",
+    "srcHash": "RVXTtEKovoRq"
+  },
   "admin.extSystem.daFileTransferType": {
     "defaultMessage": "File Transfer download request type",
     "srcHash": "o7xK0GHTaht5"
@@ -598,14 +630,6 @@
   "admin.extSystem.sendNotification.true": {
     "defaultMessage": "Yes",
     "srcHash": "HFtwBBU9Smvu"
-  },
-  "admin.extSystem.submit.add": {
-    "defaultMessage": "Add",
-    "srcHash": "5L0IaEkXdddR"
-  },
-  "admin.extSystem.submit.edit": {
-    "defaultMessage": "Edit",
-    "srcHash": "7D1xFD_em0Dr"
   },
   "admin.extSystem.syncDelay": {
     "defaultMessage": "Synchronisation interval (s)",
@@ -811,6 +835,10 @@
     "defaultMessage": "Abort",
     "srcHash": "9YT0BCq6FrWl"
   },
+  "admin.import.detail.cancelHint": {
+    "defaultMessage": "Ends the batch for good; the remaining items are not processed, data already imported is kept",
+    "srcHash": "QqTU66jo-HVm"
+  },
   "admin.import.detail.col.apsCreated": {
     "defaultMessage": "Entities created",
     "srcHash": "xpFuJ4Abmtk7"
@@ -855,6 +883,10 @@
     "defaultMessage": "Test run",
     "srcHash": "7Ojblc1j9KwR"
   },
+  "admin.import.detail.dryRunHint": {
+    "defaultMessage": "Validates the item files without writing anything to the funds",
+    "srcHash": "75k1g6SSJeNu"
+  },
   "admin.import.detail.empty": {
     "defaultMessage": "The batch contains no items",
     "srcHash": "P7aTHnugokPr"
@@ -870,6 +902,10 @@
   "admin.import.detail.errorShow": {
     "defaultMessage": "Show the error",
     "srcHash": "NpDaypnO5HHo"
+  },
+  "admin.import.detail.filesDeletedAt": {
+    "defaultMessage": "Files deleted",
+    "srcHash": "2dKl4pe7eRG6"
   },
   "admin.import.detail.filesPurged": {
     "defaultMessage": "The input files of the batch were removed by the retention sweep; it cannot be run any more",
@@ -887,6 +923,10 @@
     "defaultMessage": "Items",
     "srcHash": "Yf_IqxKGgSV3"
   },
+  "admin.import.detail.maxFileSize": {
+    "defaultMessage": "Maximum file size: {size}",
+    "srcHash": "jo2qwFUW-mKZ"
+  },
   "admin.import.detail.openFund": {
     "defaultMessage": "Open the fund",
     "srcHash": "rlLGSM_wYoAB"
@@ -895,9 +935,25 @@
     "defaultMessage": "Pause",
     "srcHash": "84XhoaA240bs"
   },
+  "admin.import.detail.pauseHint": {
+    "defaultMessage": "Stops processing once the current item is finished; the batch can be started again",
+    "srcHash": "zG0k92aFHVML"
+  },
+  "admin.import.detail.progress": {
+    "defaultMessage": "Processed {done} of {total}",
+    "srcHash": "QNtS8F7wzy2H"
+  },
+  "admin.import.detail.progressErrors": {
+    "defaultMessage": "{errors, plural, one {# error} other {# errors}}",
+    "srcHash": "5BLW7mrJz3Y4"
+  },
   "admin.import.detail.remove": {
     "defaultMessage": "Delete",
     "srcHash": "oe4iuqXX4rqm"
+  },
+  "admin.import.detail.removeHint": {
+    "defaultMessage": "Deletes the batch together with its items; data imported into the funds is kept",
+    "srcHash": "N2xEyIEZdDA0"
   },
   "admin.import.detail.removeItem": {
     "defaultMessage": "Remove the item",
@@ -911,9 +967,17 @@
     "defaultMessage": "Start",
     "srcHash": "vxF0us80z5om"
   },
+  "admin.import.detail.startHint": {
+    "defaultMessage": "Imports the items not processed yet, one by one in order; a paused or failed batch resumes from the first unprocessed item",
+    "srcHash": "erzHv2TaXehu"
+  },
   "admin.import.detail.upload": {
     "defaultMessage": "Upload a file",
     "srcHash": "Bk4rARXxQsxf"
+  },
+  "admin.import.detail.uploadTooLarge": {
+    "defaultMessage": "File “{name}” ({size}) exceeds the allowed size of {limit}",
+    "srcHash": "URbKo5iCaNEp"
   },
   "admin.import.detail.uploadZip": {
     "defaultMessage": "Upload a ZIP",
@@ -1178,6 +1242,10 @@
   "admin.nav.import": {
     "defaultMessage": "Import",
     "srcHash": "LP-bqr9WygAm"
+  },
+  "admin.nav.publicationSystems": {
+    "defaultMessage": "Publication systems",
+    "srcHash": "JVEhBNPL5uVO"
   },
   "admin.packages.action.import": {
     "defaultMessage": "Import",
@@ -1486,6 +1554,22 @@
   "admin.perms.tabs.scopes.perm.AP_SCOPE_WR": {
     "defaultMessage": "Creating and changing new entities",
     "srcHash": "cIX0FW8KSTUD"
+  },
+  "admin.publicationSystem.action.add": {
+    "defaultMessage": "Add publication system",
+    "srcHash": "mMLML3zCyeY6"
+  },
+  "admin.publicationSystem.empty": {
+    "defaultMessage": "No publication systems",
+    "srcHash": "Iazj7YZDqlu3"
+  },
+  "admin.publicationSystem.inactive": {
+    "defaultMessage": "Inactive",
+    "srcHash": "n80bnCxv2JnC"
+  },
+  "admin.publicationSystem.title": {
+    "defaultMessage": "Publication systems",
+    "srcHash": "JVEhBNPL5uVO"
   },
   "admin.resetServerCache.success": {
     "defaultMessage": "Server caches have been reset",
@@ -2856,6 +2940,10 @@
   "aip.problem.UNKNOWN_INSTITUTION": {
     "defaultMessage": "Institution not found",
     "srcHash": "Y5L6HoEz8FfT"
+  },
+  "aip.problem.UNKNOWN_ORIGINATOR": {
+    "defaultMessage": "Originator not found",
+    "srcHash": "XivGMDIOok4F"
   },
   "aip.queueState.DOWNLOAD_REQUESTED": {
     "defaultMessage": "DA is preparing the download",
@@ -4356,6 +4444,22 @@
   "arr.fund.bulkModifications.action.setSpecification": {
     "defaultMessage": "Set",
     "srcHash": "-u_5AWdGRhoi"
+  },
+  "arr.fund.bulkModifications.appendResult": {
+    "defaultMessage": "{created, plural, one {# value added} other {# values added}}{skipped, plural, =0 {.} one {, # value skipped because it already existed.} other {, # values skipped because they already existed.}}",
+    "srcHash": "mptoNHjgOsxq"
+  },
+  "arr.fund.bulkModifications.appendValues.add": {
+    "defaultMessage": "Add value",
+    "srcHash": "t95ov2A7JVST"
+  },
+  "arr.fund.bulkModifications.appendValues.notNumber": {
+    "defaultMessage": "Not a number",
+    "srcHash": "sUNFSBx_iqNK"
+  },
+  "arr.fund.bulkModifications.appendValues.remove": {
+    "defaultMessage": "Remove value",
+    "srcHash": "IVYj00FdyOiM"
   },
   "arr.fund.bulkModifications.descItemType": {
     "defaultMessage": "Description element",
@@ -7013,6 +7117,10 @@
     "defaultMessage": "The record was not found",
     "srcHash": "CSvUs72mg2qt"
   },
+  "exception.ext.TLS_CERTIFICATE_ERROR": {
+    "defaultMessage": "The TLS certificate of the external system was not verified. Check the server certificate, or turn off “Verify TLS certificate” in the external system settings.",
+    "srcHash": "iTM91-mfVWFp"
+  },
   "exception.out.ALREADY_DELETED": {
     "defaultMessage": "An already deleted output cannot be deleted",
     "srcHash": "7YubGXigUa1E"
@@ -7693,6 +7801,10 @@
     "defaultMessage": "Stack",
     "srcHash": "5VFkEkLOckau"
   },
+  "global.exception.network": {
+    "defaultMessage": "The connection to the server was interrupted",
+    "srcHash": "_5SooR_EvIcQ"
+  },
   "global.geometry.label.objects": {
     "defaultMessage": "Shapes",
     "srcHash": "K90kS6v06PVw"
@@ -7873,6 +7985,10 @@
     "defaultMessage": "File",
     "srcHash": "XuE2x3rNQQt-"
   },
+  "import.maxFileSize": {
+    "defaultMessage": "Maximum file size: {size}",
+    "srcHash": "jo2qwFUW-mKZ"
+  },
   "import.registryScope": {
     "defaultMessage": "Entity scope",
     "srcHash": "SlY5BtKXdR6t"
@@ -7880,6 +7996,10 @@
   "import.running": {
     "defaultMessage": "Import in progress",
     "srcHash": "tkvNE-8-A86L"
+  },
+  "import.selectedFileSize": {
+    "defaultMessage": "Selected file size: {size}",
+    "srcHash": "XomHhTwW_vPr"
   },
   "import.title.fund": {
     "defaultMessage": "Import archival fund",
@@ -8513,6 +8633,10 @@
     "defaultMessage": "Test",
     "srcHash": "Uy6qvZV0iA2_"
   },
+  "publication.system.inactiveNotice": {
+    "defaultMessage": "The publication system is deactivated and cannot be used for publishing.",
+    "srcHash": "KW0MGUjl8TCy"
+  },
   "publication.system.label.code": {
     "defaultMessage": "Code",
     "srcHash": "lHt70Q2si8jP"
@@ -8529,14 +8653,6 @@
     "defaultMessage": "Name",
     "srcHash": "EQAs0dy3Z5es"
   },
-  "publication.system.label.permExport": {
-    "defaultMessage": "Export permission",
-    "srcHash": "3_sdb1qHY7x-"
-  },
-  "publication.system.label.permPublication": {
-    "defaultMessage": "Publication permission",
-    "srcHash": "Kuut2mrHYbOT"
-  },
   "publication.system.label.storedCount": {
     "defaultMessage": "Number of stored exports",
     "srcHash": "v3GPVe7VPJSe"
@@ -8545,21 +8661,13 @@
     "defaultMessage": "Required permission",
     "srcHash": "AKQVCTH2-p7q"
   },
+  "publication.system.section.permissionsHint": {
+    "defaultMessage": "A user can run a publication if they have at least one of the checked permissions.",
+    "srcHash": "xNkUOmpbSyar"
+  },
   "publication.system.section.storage": {
     "defaultMessage": "Storing exports",
     "srcHash": "Tz_W5kCpNNTC"
-  },
-  "publication.systems.dialog.add": {
-    "defaultMessage": "Add",
-    "srcHash": "5L0IaEkXdddR"
-  },
-  "publication.systems.dialog.close": {
-    "defaultMessage": "Close",
-    "srcHash": "0r4EKpo4ZhJv"
-  },
-  "publication.systems.dialog.title": {
-    "defaultMessage": "Publication systems management",
-    "srcHash": "3R1qxdjYgTmM"
   },
   "publication.systems.new": {
     "defaultMessage": "New publication system",
@@ -8968,10 +9076,6 @@
   "ribbon.action.arr.fund.newFundAction": {
     "defaultMessage": "Prepare a new function",
     "srcHash": "VZpC_dpwhqTw"
-  },
-  "ribbon.action.arr.fund.publicationSystems": {
-    "defaultMessage": "Publication systems management",
-    "srcHash": "3R1qxdjYgTmM"
   },
   "ribbon.action.arr.fund.request.delete": {
     "defaultMessage": "Delete request",

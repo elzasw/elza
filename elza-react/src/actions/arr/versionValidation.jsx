@@ -84,7 +84,7 @@ export function versionValidationErrorNext(versionId, nodeId) {
             if (data.items !== null && data.count > 0) {
                 var node = data.items[0];
                 dispatch(versionValidationErrorNextReceive(versionId, node));
-                dispatch(fundSelectSubNode(versionId, node.id, node.parentNode));
+                dispatch(fundSelectSubNode(versionId, node.id, node.parentNode, false, null, true, undefined, undefined, true));
             } else {
                 dispatch(addToastrInfo(<FormattedMessage {...messages.errorNotFound} />));
             }
@@ -115,7 +115,7 @@ export function versionValidationErrorPrevious(versionId, nodeId) {
             if (data.items !== null && data.count > 0) {
                 var node = data.items[0];
                 dispatch(versionValidationErrorPreviousReceive(versionId, node));
-                dispatch(fundSelectSubNode(versionId, node.id, node.parentNode));
+                dispatch(fundSelectSubNode(versionId, node.id, node.parentNode, false, null, true, undefined, undefined, true));
             } else {
                 dispatch(addToastrInfo(<FormattedMessage {...messages.errorNotFound} />));
             }

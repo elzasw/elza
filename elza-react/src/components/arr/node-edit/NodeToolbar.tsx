@@ -55,6 +55,7 @@ import {
   FormItemType,
   NodeBase,
   NodeFormData,
+  NodeItem,
   NodeStatus,
 } from "elza-api";
 import { useState } from "react";
@@ -177,6 +178,8 @@ export interface Props {
   parent?: NodeBase;
   nodeData?: NodeStatus;
   onAddDescItem: (itemTypeId: number, itemSpecId?: number) => void;
+  /** Runs a save that creates items on the node without the form. */
+  onCreateItems: (save: () => Promise<NodeItem[]>) => Promise<void>;
   daos?: ArrDaoVO[];
 }
 
@@ -187,6 +190,7 @@ export const NodeToolbar = ({
   parent,
   nodeData,
   onAddDescItem,
+  onCreateItems,
   daos = [],
 }: Props) => {
   const intl = useIntl();
@@ -263,13 +267,15 @@ export const NodeToolbar = ({
     if (!formData || !nodeData) {
       return;
     }
-    await pasteItems({
-      formData,
-      nodeId: nodeData.id,
-      nodeVersion: nodeData.version,
-      fundId: activeFund.id,
-      fundVersionId: activeFund.versionId,
-    });
+    await onCreateItems(() =>
+      pasteItems({
+        formData,
+        nodeId: nodeData.id,
+        nodeVersion: nodeData.version,
+        fundId: activeFund.id,
+        fundVersionId: activeFund.versionId,
+      }),
+    );
   }
 
   function handleShowHistory() {

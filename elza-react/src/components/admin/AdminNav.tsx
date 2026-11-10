@@ -12,6 +12,7 @@ import {
     URL_ADMIN_FUND,
     URL_ADMIN_INSTITUTION,
     URL_ADMIN_IMPORT,
+    URL_ADMIN_PUBLICATION_SYSTEM,
 } from '../../constants';
 
 // Ids are kept exactly as the legacy catalog had them: renaming an id drops its
@@ -36,6 +37,10 @@ const messages = defineMessages({
     import: {
         id: 'admin.nav.import',
         defaultMessage: 'Import',
+    },
+    publicationSystems: {
+        id: 'admin.nav.publicationSystems',
+        defaultMessage: 'Publikační systémy',
     },
     reports: {
         id: 'ribbon_action_admin_reports',
@@ -132,6 +137,7 @@ export function AdminNav() {
         { to: '/admin/reports', glyph: 'fa-line-chart', label: <FormattedMessage {...messages.reports} />, visible: canSeeReports },
         { to: '/admin/packages', glyph: 'fa-archive', label: <FormattedMessage {...messages.packages} />, visible: isSuperuser },
         { to: '/admin/extSystem', glyph: 'fa-external-link', label: <FormattedMessage {...messages.externalSystems} />, visible: isSuperuser },
+        { to: URL_ADMIN_PUBLICATION_SYSTEM, glyph: 'fa-newspaper-o', label: <FormattedMessage {...messages.publicationSystems} />, visible: isSuperuser },
         { to: '/admin/backgroundProcesses', glyph: 'fa-list-alt', label: <FormattedMessage {...messages.backgroundProcesses} />, visible: isSuperuser },
         { to: '/admin/requestsQueue', glyph: 'fa-shopping-basket', label: <FormattedMessage {...messages.requestsQueue} />, visible: isSuperuser },
         { to: URL_ADMIN_DA, glyph: 'fa-exchange', label: <FormattedMessage {...messages.daQueue} />, visible: isSuperuser },

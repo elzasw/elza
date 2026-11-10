@@ -2,11 +2,9 @@ import { Icon, Ribbon } from 'components';
 import { Button } from 'components/ui';
 import * as perms from 'actions/user/Permission';
 import { RibbonGroup } from 'components/shared';
-import { JSX, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { AppState } from 'typings/store';
 import { useSearchFundsModal } from 'components/shared/dialog/FluentModalDialog';
-import { PublicationSystemsDialog } from 'components/arr/publication/PublicationSystemsDialog';
 import { FormattedMessage } from 'react-intl';
 import { fundMessages } from './messages';
 
@@ -22,7 +20,6 @@ export function FundPageRibbon({
     const userDetail = useSelector(({ userDetail }: AppState) => userDetail);
 
     const showSearchModal = useSearchFundsModal();
-    const [publicationSystemsOpen, setPublicationSystemsOpen] = useState(false);
 
     const altActions = [];
     if (userDetail.hasOne(perms.FUND_ADMIN, perms.FUND_CREATE)) {
@@ -56,19 +53,6 @@ export function FundPageRibbon({
         );
     }
 
-    if (userDetail.hasOne(perms.ADMIN)) {
-        altActions.push(
-            <Button key="publication-systems" onClick={() => setPublicationSystemsOpen(true)}>
-                <Icon glyph="fa-newspaper-o" />
-                <div>
-                    <span className="btnText">
-                        <FormattedMessage {...fundMessages.publicationSystems} />
-                    </span>
-                </div>
-            </Button>,
-        );
-    }
-
     let altSection: React.ReactNode[];
     if (altActions.length > 0) {
         altSection = [
@@ -78,11 +62,5 @@ export function FundPageRibbon({
         ];
     }
 
-    return <>
-        <Ribbon altSection={altSection} />
-        <PublicationSystemsDialog
-            open={publicationSystemsOpen}
-            onClose={() => setPublicationSystemsOpen(false)}
-        />
-    </>;
+    return <Ribbon altSection={altSection} />;
 }

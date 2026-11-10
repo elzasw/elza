@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { http, HttpResponse } from 'msw';
-import React, { isValidElement } from 'react';
+import React from 'react';
 import { useSelector } from 'react-redux';
 
 import { renderWithProviders, screen, fireEvent, createTestStore } from 'test/test-utils';
@@ -9,6 +9,8 @@ import { server } from 'test/mocks/server';
 import { fundInitState } from 'stores/app/arr/fund';
 import type { Fund } from 'typings/store';
 import type { TreeNodeVO } from 'typings/Outputs';
+import { ContextMenu } from 'components/shared/context-menu/ContextMenu';
+import type { ContextMenuItem } from 'components/shared/context-menu/ContextMenu';
 import FundTreeMain from './FundTreeMain';
 
 /**
@@ -22,7 +24,7 @@ const VERSION_ID = 7;
 interface TestState {
     arrRegion: { funds: Fund[] };
     focus: unknown;
-    contextMenu: { visible: boolean; menu: unknown };
+    contextMenu: { visible: boolean; menu: ContextMenuItem[] | null; position: { x: number; y: number } | null };
 }
 
 function treeNode(id: number, depth: number, name: string, hasChildren: boolean): TreeNodeVO {
@@ -78,12 +80,9 @@ async function openContextMenu(store: TestStore, readMode: boolean, nodeName: st
     fireEvent.contextMenu(label);
 
     const { contextMenu } = store.getState() as TestState;
-    if (!isValidElement(contextMenu.menu)) {
-        throw new Error('Kontextové menu není element');
-    }
-    renderWithProviders(contextMenu.menu, { store });
+    renderWithProviders(<ContextMenu {...contextMenu} />, { store });
     // a link offered in every mode, so an absent "Přesunout" is not just an unrendered menu
-    expect(screen.getByRole('link', { name: 'Otevřít v tabulce' })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'Otevřít v tabulce' })).toBeInTheDocument();
 }
 
 beforeEach(() => {
@@ -109,7 +108,7 @@ describe('FundTreeMain – kontextové menu Přesunout', () => {
         const store = createStoreWithFund();
         await openContextMenu(store, false, 'Série B');
 
-        expect(screen.getByRole('link', { name: 'Přesunout' })).toHaveAttribute(
+        expect(screen.getByRole('menuitem', { name: 'Přesunout' })).toHaveAttribute(
             'href',
             `/fund/${FUND_ID}/movements?l=3`
         );
@@ -119,13 +118,13 @@ describe('FundTreeMain – kontextové menu Přesunout', () => {
         const store = createStoreWithFund();
         await openContextMenu(store, true, 'Série B');
 
-        expect(screen.queryByRole('link', { name: 'Přesunout' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('menuitem', { name: 'Přesunout' })).not.toBeInTheDocument();
     });
 
     it('v uzavřené verzi Přesunout nenabídne', async () => {
         const store = createStoreWithFund('2026-01-01T00:00:00');
         await openContextMenu(store, false, 'Série B');
 
-        expect(screen.queryByRole('link', { name: 'Přesunout' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('menuitem', { name: 'Přesunout' })).not.toBeInTheDocument();
     });
 });

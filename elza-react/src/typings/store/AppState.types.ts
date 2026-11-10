@@ -399,6 +399,7 @@ export interface ExternalSystem {
     fileTransferUrl?: string;
     fileTransferType?: string;
     tlsVerify?: boolean;
+    apiAuthentication?: string;
 }
 
 type KMLExternalSystem = Omit<ExternalSystem, "username" | "password" | "elzaCode" | "publishOnlyApproved" | "userInfo" | "viewFileUrl" | "viewThumbnailUrl" | "sendNotification">;

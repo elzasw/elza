@@ -155,6 +155,7 @@ export function fundSelectSubNodeByNodeId(
     newFilterCurrentIndex = null,
     ensureItemVisible = false,
     subNodeIndex = null,
+    redirect = false,
 ) {
     return (dispatch, getState) => {
         const {arrRegion} = getState();
@@ -184,6 +185,8 @@ export function fundSelectSubNodeByNodeId(
                 newFilterCurrentIndex,
                 ensureItemVisible,
                 subNodeIndex,
+                false,
+                redirect,
             ),
         );
     };

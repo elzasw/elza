@@ -23,7 +23,7 @@ vi.mock('../../api', async (importOriginal) => {
 });
 
 // až po mocku, aby akce sáhla na podvrženou Api
-const { aipsFocus, DEFAULT_PAGE_SIZE } = await import('./aip');
+const { aipsFetchIfNeeded, aipsFocus, DEFAULT_PAGE_SIZE } = await import('./aip');
 
 const fundFilter: AipFilterEntry = {
     id: 'fund',
@@ -84,5 +84,17 @@ describe('aipsFocus', () => {
         const calls = findByFilter.mock.calls;
         expect(calls[calls.length - 1][0]).toMatchObject({size: DEFAULT_PAGE_SIZE});
         expect(aipList(store).filter.pageSize).toBe(DEFAULT_PAGE_SIZE);
+    });
+});
+
+describe('aipsFetchIfNeeded', () => {
+    it('first load without a filter asks for one page, not the whole list', async () => {
+        response({offset: 0});
+        const store = createTestStore();
+
+        await store.dispatch(aipsFetchIfNeeded() as never);
+
+        const calls = findByFilter.mock.calls;
+        expect(calls[calls.length - 1][0]).toMatchObject({offset: 0, size: DEFAULT_PAGE_SIZE});
     });
 });

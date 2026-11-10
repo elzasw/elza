@@ -6,10 +6,12 @@ import cz.tacr.elza.domain.*;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.service.AipService;
 import cz.tacr.elza.service.ExternalSystemService;
+import cz.tacr.elza.service.da.AipAuthorization;
 import cz.tacr.elza.service.da.DaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -33,6 +35,8 @@ public class AipController implements AipsApi {
     private AipService aipService;
     @Autowired
     private ClientFactoryVO clientFactoryVO;
+    @Autowired
+    private AipAuthorization aipAuthorization;
 
     @Override
     public ResponseEntity<DaAipActionVO> aipCreateDaoStructure(List<Integer> aipIds) {
@@ -95,7 +99,12 @@ public class AipController implements AipsApi {
         return ResponseEntity.ok(clientFactoryVO.createAipAction(daService.aipExportAip(aipIds)));
     }
 
+    /**
+     * The search and the details of the found page are read in one transaction: the details read
+     * the objects connected to the AIPs of the page as they were when the page was found.
+     */
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<AipDetailFilteredResult> aipFindByFilter(SearchParams searchParams, Integer focusAipId) {
         AipService.AipSearchResult found = aipService.findAipDetailsByFilter(searchParams, focusAipId);
         FilteredResult<DaAip> aips = found.page();
@@ -109,6 +118,7 @@ public class AipController implements AipsApi {
 
     @Override
     public ResponseEntity<Void> aipImportPackage(Integer digitalRepositoryId, AipType aipType, Resource file) {
+        aipAuthorization.checkImport();
         try {
             try (InputStream is = file.getInputStream()) {
                 ArrDigitalRepository digitalRepository = externalSystemService.getDigitalRepository(digitalRepositoryId);
@@ -143,6 +153,7 @@ public class AipController implements AipsApi {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<AipDetailVO> aipGetAip(Integer aipId) {
         return ResponseEntity.ok(aipService.getAipDetail(aipId));
     }
@@ -270,7 +281,8 @@ public class AipController implements AipsApi {
      */
     @Override
     public ResponseEntity<Void> aipConnectToJp(Integer arrNodeId, Integer daAipId) {
-        daService.connectToJP(arrNodeId, daAipId);
+        // createDaoLink does the same as connectToJP and checks the permission to arrange the fund
+        daService.createDaoLink(daAipId, null, arrNodeId, ArrDaoLink.LinkType.AIP);
         return ResponseEntity.ok().build();
     }
 }

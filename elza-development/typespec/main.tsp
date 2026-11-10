@@ -282,6 +282,8 @@ model DaQueueItemVO {
     attemptCount: integer;
     /** Not before this time is the request taken again; null = now */
     nextAttemptAt?: utcDateTime;
+    /** Since when the exchanges about the request keep failing; null when the last one succeeded */
+    failingSince?: utcDateTime;
     /** When the state was last set */
     stateDate?: utcDateTime;
     /** Why the request is in its state (failures, DA answers) */
@@ -1397,7 +1399,11 @@ enum AipProblemType {
     /**
      * Instituce AIPu nebyla v ELZA nalezena
      */
-    UNKNOWN_INSTITUTION
+    UNKNOWN_INSTITUTION,
+    /**
+     * Původce uvedený identifikátorem CAM nebyl mezi přístupovými body nalezen
+     */
+    UNKNOWN_ORIGINATOR
 }
 
 /**
@@ -1473,13 +1479,21 @@ model AipDetailVO {
      */
     institution?: ParInstitutionGen;
     /**
-     * Instituce původce
+     * Id přístupového bodu původce, je-li původce dohledán podle identifikátoru CAM
      */
-    originatorInstitution?: ParInstitutionGen;
+    originatorAccessPointId?: integer;
     /**
-     * Původce
+     * Jméno přístupového bodu původce
+     */
+    originatorAccessPointName?: string;
+    /**
+     * Původce dle balíčku
      */
     originator?: string;
+    /**
+     * Identifikátor původce v CAM dle balíčku
+     */
+    originatorCamId?: string;
     /**
      * Datace od
      */
@@ -2948,6 +2962,16 @@ model ImportServerFolderEntry {
     size?: int64;
 }
 
+/**
+ * Upload size limits enforced by the server. A value of -1 means no limit.
+ */
+model UploadLimits {
+    /** Maximum size of a single uploaded file in bytes. */
+    maxFileSize: int64;
+    /** Maximum size of the whole multipart request in bytes. */
+    maxRequestSize: int64;
+}
+
 /** Stav API klíče. */
 enum ApiKeyState {
     ACTIVE,
@@ -3568,6 +3592,13 @@ namespace ElzaAPI.ImportBatch {
     };
 
     /**
+     * Upload size limits enforced by the server, so the UI can reject a file that is too
+     * large before sending it. Available to any authenticated user.
+     */
+    @route("/upload-limits")
+    @get op uploadLimits(): UploadLimits;
+
+    /**
      * Removes an item from its batch. Allowed only while the batch is in
      * PREPARATION and only for items that were not already imported.
      */
@@ -3741,6 +3772,19 @@ namespace ElzaAPI.ExternalSystem {
      */
     @route("/digitalrepository/{id}/queue/withdraw")
     @post op daQueueWithdraw(
+        /** digital repository (external system) ID */
+        @path id: integer;
+        /** Queue item IDs */
+        @body itemIds: integer[];
+    ): DaQueueActionResult;
+
+    /**
+     * Ends the selected waiting downloads that keep failing (e.g. a package the DA cannot
+     * prepare until it is fixed there) as failed, with their last failure. Once the cause is
+     * removed, they can be repeated.
+     */
+    @route("/digitalrepository/{id}/queue/mark-failed")
+    @post op daQueueMarkFailed(
         /** digital repository (external system) ID */
         @path id: integer;
         /** Queue item IDs */
@@ -5132,6 +5176,71 @@ namespace ElzaAPI.BulkAction {
     };
 }
 
+/**
+ * How the nodes of a bulk change are selected
+ */
+enum BulkSelectionType {
+    /** Nodes listed in the request */
+    NODES,
+    /** Root node of the fund version and all its descendants */
+    FUND
+}
+
+/**
+ * Node reference with the client's version for the optimistic-lock check
+ */
+model NodeRef {
+    /** Node id */
+    id: integer;
+    /** Node version known to the client */
+    version: integer;
+}
+
+/**
+ * Nodes a bulk change applies to
+ */
+model BulkNodeSelection {
+    selectionType: BulkSelectionType;
+    /**
+     * Nodes of the selection; required and non-empty for NODES, empty for FUND.
+     * Every node must belong to the fund version.
+     */
+    nodes?: NodeRef[];
+}
+
+/**
+ * One value of a bulk change
+ */
+model BulkItemValue {
+    /** Item specification; required exactly when the item type has specifications */
+    itemSpecId?: integer;
+    /** Value; its dataType must match the data type of the item type */
+    data: ItemData;
+}
+
+/**
+ * Values of one item type appended to the selected nodes
+ */
+model BulkAppendRequest {
+    /** Item type of all values */
+    itemTypeId: integer;
+    selection: BulkNodeSelection;
+    /** Values added after the last value of the item type in each node, in this order; no two may be equal */
+    values: BulkItemValue[];
+}
+
+/**
+ * Result of a bulk change
+ */
+model BulkChangeResult {
+    /** Number of created values, counted per node and value */
+    created: integer;
+    /** Number of values not created because the node already had an equal value */
+    skippedDuplicate: integer;
+    /** Number of nodes that received at least one value */
+    changedNodes: integer;
+}
+
 @tag("descitems")
 @route("/descItems")
 namespace ElzaAPI.DescItem {
@@ -5174,6 +5283,23 @@ namespace ElzaAPI.DescItem {
         @body body: NodeItem;
     ): ItemDataResult | {
         /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Append values of one item type to the selected nodes as one change.
+     * The request is applied completely or not at all. A node gets a value only when it has
+     * no equal value of the item type yet; only nodes that get a value are changed.
+     */
+    @route("/{fundVersionId}/bulk-append")
+    @put op appendDescItems(
+        /** id version AS */
+        @path fundVersionId: integer,
+        /** values and the node selection */
+        @body body: BulkAppendRequest
+    ): BulkChangeResult | {
+        /** Fund version, node or access point does not exist */
         @Http.statusCode statusCode: 404;
         @body data: BaseException;
     };

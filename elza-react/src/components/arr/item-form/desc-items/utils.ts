@@ -61,6 +61,13 @@ export function clearLocalStorageItemValues(item: NodeItem) {
   );
 }
 
+/** Whether the item has a pending value in local storage, i.e. a value typed but not saved yet. */
+export function hasLocalStorageItemValues(item: NodeItem) {
+  const itemKey = createLocalStorageItemKey(item);
+
+  return collectStorageKeys((storedKey) => belongsToItemKey(storedKey, itemKey)).length > 0;
+}
+
 /**
  * Follow items that keep their pending values but change their key, i.e. unsaved items moved to
  * another position.

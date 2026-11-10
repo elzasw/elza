@@ -75,13 +75,27 @@ File Transfer URL
    the URL as ``<URL>/ws/ft``; the form shows the derived address as a
    hint, and the detail of the repository shows the address in use.
    Fill it in only when the archive runs File Transfer elsewhere.
+REST API authentication
+   How ELZA authenticates its calls to the REST API:
+
+   - *None* - the requests carry no authentication.
+   - *API key (NDA-HMAC-SHA256)* - ELZA signs every request with the key
+     (headers ``Authorization: NDA-HMAC-SHA256`` and ``X-NDA-Date``); the
+     key value itself is not sent. Requires *ApiKey - ID* and
+     *ApiKey - value*.
+   - *HTTP Basic (username and password)* - every request carries
+     *Username* and *Password*, the same ones File Transfer uses.
+     Requires *Username*. Use it only over HTTPS: Basic sends the
+     password with every request, merely encoded.
+
+   The setting does not affect File Transfer.
 ApiKey - ID, ApiKey - value
-   API key for the REST API. With both filled in, ELZA signs every request
-   with the key (``Authorization: NDA-HMAC-SHA256``); without them, the
-   requests carry no authentication.
+   API key for the *API key* authentication. Offered and stored only
+   with that method.
 Username, Password
-   Credentials for File Transfer (HTTP Basic). Without a username, File
-   Transfer connects without authentication.
+   Credentials for File Transfer (HTTP Basic), and for the REST API with
+   the *HTTP Basic* authentication. Without a username, File Transfer
+   connects without authentication.
 Verify TLS certificate
    *Yes* (the default) - the certificate of the archive is verified for
    the REST API and File Transfer alike. *No* - any certificate is
@@ -126,12 +140,16 @@ AIP download method
    the download then fails with a message asking to switch the repository
    to File Transfer.
 File Transfer download request type
-   Offered only with the File Transfer method. Optional value sent with
-   every download request as the type of the request (``type`` of
-   ``GenericDataType``, next to the batch identifier in ``id``). Archives
-   that serve several kinds of downloads on one endpoint use it to choose
-   the handler; agree on the value with the operator of the archive. When
-   empty, no type is sent.
+   Offered only with the File Transfer method. Value sent with every
+   download request as the type of the request (``type`` of
+   ``GenericDataType``, next to the batch identifier in ``id``). When
+   empty, ``download`` is sent, which is the type the DA communication
+   standard defines. Fill it in only for an archive that expects another
+   value; agree on it with the operator of the archive.
+
+   The archive delivers the batch as a directory tree, one directory per
+   package, as the standard prescribes; a batch delivered as a single zip
+   file is accepted as well.
 Batch status check interval (s)
    Pause between two questions about the state of a batch, for downloads
    and exports alike; the default is 2 seconds, the minimum 1 second.
@@ -163,6 +181,8 @@ one AIP must belong to one fund.
 The packages being downloaded and exported are kept in the
 :file:`aip` directory under ``elza.workingDir``.
 
+.. _da-queue:
+
 Request queue
 -------------
 
@@ -178,7 +198,8 @@ To download, To update    Waiting to be requested from the archive.
 DA is preparing the       The archive is preparing the batch; ELZA checks
 download                  its state.
 Updated/Downloaded        Done.
-Download error            The package arrived but could not be processed;
+Download error            The package arrived but could not be processed,
+                          or the user ended a download that kept failing;
                           the problem is also recorded on the AIP.
 To export                 Waiting to be uploaded.
 Sent, DA is processing    Uploaded; the archive is processing it.
@@ -191,9 +212,16 @@ marked *inactive*. Requests are not deleted.
 
 When the archive cannot be reached or answers with a server error, the
 request is retried after a growing pause: the batch status check interval,
-doubled after each failure, at most five minutes. The number of attempts
-and the time of the next one are shown in the queue. Downloads are never
-given up.
+doubled after each failure, at most five minutes. The number of attempts,
+the time of the next one and what the archive answered are shown in the
+queue; the detail of a request also shows since when it has been failing.
+ELZA never gives up a download by itself.
+
+Some failures do not pass by retrying: the archive cannot prepare a
+package until the package is fixed there (for example metadata it cannot
+read). Report such a package to the administrator of the digital archive.
+A request that keeps failing is reported by the monitoring metric
+``elza_da_failing_age_seconds`` (see :ref:`monitoring-metrics`).
 
 Actions on the selected requests:
 
@@ -204,6 +232,15 @@ Cancel request
 Repeat
    Requests a failed download again; for a failed export, builds a new
    change package from the current description and sends it.
+
+In the detail of a download that keeps failing (it has a *Failing since*
+time):
+
+Mark as failed
+   After a confirmation, stops retrying the download; the request ends as
+   *Download error* with the user's name and the last failure, which is
+   also recorded on the AIP. Once the package is fixed in the archive, use
+   *Repeat*.
 
 .. _fs-repository:
 

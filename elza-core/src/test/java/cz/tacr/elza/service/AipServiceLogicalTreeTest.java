@@ -16,6 +16,7 @@ import cz.tacr.elza.domain.DaAip;
 import cz.tacr.elza.domain.DaDao;
 import cz.tacr.elza.domain.DaLevelView;
 import cz.tacr.elza.repository.AipRepository;
+import cz.tacr.elza.service.da.AipAuthorization;
 
 /**
  * Logical structure of the selected packages. Level views are shared by all packages of the
@@ -31,6 +32,7 @@ class AipServiceLogicalTreeTest {
     AipServiceLogicalTreeTest() {
         setField(service, "aipRepository", aipRepository);
         setField(service, "daoService", daoService);
+        setField(service, "aipAuthorization", mock(AipAuthorization.class));
     }
 
     private static DaAip aip(int id) {

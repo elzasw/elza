@@ -33,7 +33,14 @@ public enum AipProblemType {
      * The institution of the AIP was not found. The AIP is still usable when its fund was
      * resolved - the institution is descriptive only.
      */
-    UNKNOWN_INSTITUTION(false);
+    UNKNOWN_INSTITUTION(false),
+
+    /**
+     * The originator the package names by a CAM identifier was not found among the access
+     * points. The AIP is usable - the originator is descriptive only - but the entity should be
+     * taken over from CAM so that the description can refer to it.
+     */
+    UNKNOWN_ORIGINATOR(false);
 
     private final boolean processingFailure;
 

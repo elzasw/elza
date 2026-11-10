@@ -64,6 +64,7 @@ public class ElzaWebApp {
         //System.setProperty("spring.config.location", "classpath:/elza-ui.yaml");
         SpringApplication application = new SpringApplication(ElzaWebApp.class);
         application.setDefaultProperties(actuatorDefaults());
+        application.addListeners(new ManagementPortListener());
         application.run(args);
     }
 
@@ -74,10 +75,10 @@ public class ElzaWebApp {
      * management endpoints are bound to loopback only; they serve the local CSC
      * reporting client and are not meant for public exposure. Any value can be
      * overridden from elza.yaml or the environment (e.g. MANAGEMENT_SERVER_PORT).
+     * The management port itself is resolved by {@link ManagementPortListener}.
      */
     private static Map<String, Object> actuatorDefaults() {
         Map<String, Object> defaults = new HashMap<>();
-        defaults.put("management.server.port", 8081);
         defaults.put("management.server.address", "127.0.0.1");
         defaults.put("management.endpoints.web.exposure.include", "health,prometheus");
         defaults.put("management.endpoint.health.probes.enabled", true);

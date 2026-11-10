@@ -2,6 +2,7 @@ package cz.tacr.elza.controller.vo;
 
 import org.junit.jupiter.api.Test;
 
+import cz.tacr.elza.api.DaApiAuthentication;
 import cz.tacr.elza.api.DaDownloadMethod;
 import cz.tacr.elza.api.DaOnReceivedAction;
 import cz.tacr.elza.api.DigitalRepositoryType;
@@ -143,6 +144,71 @@ public class ArrDigitalRepositoryVOTest {
 
         assertNull(entity.getApiKeyId());
         assertNull(entity.getApiKeyValue());
+        assertEquals(DaApiAuthentication.NONE, entity.getApiAuthentication());
+    }
+
+    /** A client that sends no method gets the one its API key implies. */
+    @Test
+    void createEntity_da_withoutMethod_derivesItFromApiKey() {
+        ArrDigitalRepositoryVO vo = createVO(DigitalRepositoryType.DA);
+        vo.setApiKeyId("elza");
+        vo.setApiKeyValue("secret");
+
+        ArrDigitalRepository entity = (ArrDigitalRepository) vo.createEntity(null);
+
+        assertEquals(DaApiAuthentication.API_KEY, entity.getApiAuthentication());
+        assertEquals("elza", entity.getApiKeyId());
+        assertEquals(DaApiAuthentication.API_KEY, ArrDigitalRepositoryVO.newInstance(entity).getApiAuthentication());
+    }
+
+    @Test
+    void createEntity_da_apiKeyWithoutValue_isRejected() {
+        ArrDigitalRepositoryVO vo = createVO(DigitalRepositoryType.DA);
+        vo.setApiAuthentication(DaApiAuthentication.API_KEY);
+        vo.setApiKeyId("elza");
+
+        assertThrows(BusinessException.class, () -> vo.createEntity(null));
+    }
+
+    /** The API key is not used with Basic, so it is not kept. */
+    @Test
+    void createEntity_da_basic_clearsApiKey() {
+        ArrDigitalRepositoryVO vo = createVO(DigitalRepositoryType.DA);
+        vo.setApiAuthentication(DaApiAuthentication.BASIC);
+        vo.setApiKeyId("elza");
+        vo.setApiKeyValue("secret");
+
+        ArrDigitalRepository entity = (ArrDigitalRepository) vo.createEntity(null);
+
+        assertEquals(DaApiAuthentication.BASIC, entity.getApiAuthentication());
+        assertNull(entity.getApiKeyId());
+        assertNull(entity.getApiKeyValue());
+        assertEquals("user", entity.getUsername());
+        assertEquals("secret", entity.getPassword());
+    }
+
+    @Test
+    void createEntity_da_basicWithoutUsername_isRejected() {
+        ArrDigitalRepositoryVO vo = createVO(DigitalRepositoryType.DA);
+        vo.setApiAuthentication(DaApiAuthentication.BASIC);
+        vo.setUsername(" ");
+
+        assertThrows(BusinessException.class, () -> vo.createEntity(null));
+    }
+
+    /** Username and password stay for File Transfer even when the REST API is not authenticated. */
+    @Test
+    void createEntity_da_none_keepsCredentialsAndClearsApiKey() {
+        ArrDigitalRepositoryVO vo = createVO(DigitalRepositoryType.DA);
+        vo.setApiAuthentication(DaApiAuthentication.NONE);
+        vo.setApiKeyId("elza");
+        vo.setApiKeyValue("secret");
+
+        ArrDigitalRepository entity = (ArrDigitalRepository) vo.createEntity(null);
+
+        assertEquals(DaApiAuthentication.NONE, entity.getApiAuthentication());
+        assertNull(entity.getApiKeyId());
+        assertEquals("user", entity.getUsername());
     }
 
     @Test

@@ -436,6 +436,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	protected static final String SET_ISSUE_TYPE = ISSUE_CONTROLLER_URL + "/issues/{issueId}/type";
 	protected static final String UPDATE_COMMENT = ISSUE_CONTROLLER_URL + "/comments/{commentId}";
 	protected static final String EXPORT_ISSUE_LIST = ISSUE_CONTROLLER_URL + "/issue_lists/{issueListId}/export";
+	protected static final String NEXT_ISSUE_NODE = ISSUE_CONTROLLER_URL + "/funds/{fundVersionId}/issues/nextNode";
 
 	// ACCESSPOINTS
 	protected static final String DELETE_ACCESSPOINTS_ID = FUND_CONTROLLER_URL + "/accesspoints/{id}";
@@ -3099,6 +3100,16 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 */
 	protected WfIssueVO addIssue(WfIssueVO issueVO) {
 		return post(spec -> spec.body(issueVO), CREATE_ISSUE).getBody().as(WfIssueVO.class);
+	}
+
+	/**
+	 * Number of nodes with an open issue that the logged user sees in the fund version.
+	 *
+	 * @param fundVersionId fund version identifier
+	 */
+	protected int getIssueNodeCount(Integer fundVersionId) {
+		return get(spec -> spec.pathParam("fundVersionId", fundVersionId), NEXT_ISSUE_NODE).jsonPath()
+				.getInt("nodeCount");
 	}
 
 	/**

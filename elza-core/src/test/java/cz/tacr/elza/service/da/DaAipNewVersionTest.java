@@ -247,6 +247,19 @@ public class DaAipNewVersionTest extends AbstractServiceTest {
         });
     }
 
+    /** The label of a part is stored as the package gives it, however long it is. */
+    @Test
+    public void longLabelIsStoredWhole() throws Exception {
+        FundInfo fund = tx().execute(t -> createFund("F-da-version-long-label"));
+        Integer repositoryId = tx().execute(t -> createRepository());
+        Integer aipId = tx().execute(t -> createAip(repositoryId, fund, null));
+        String longName = "dlouhy-nazev-".repeat(40) + "3.jpg";
+
+        receiveMets(aipId, xml -> xml.replace("LABEL=\"3.jpg\"", "LABEL=\"" + longName + "\""));
+
+        tx().executeWithoutResult(t -> assertEquals("komponenta:" + longName, liveDao(aipId, PART).getLabel()));
+    }
+
     /**
      * A part the new version no longer has cannot stay attached. Its link is closed by a change of
      * the unit it hung on - before, the whole update failed and the AIP stayed at its old content.

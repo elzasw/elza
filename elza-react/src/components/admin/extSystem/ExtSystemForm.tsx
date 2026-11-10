@@ -13,6 +13,7 @@ import {
     DigitalRepositoryType,
     DaDownloadMethod,
     DaOnReceivedAction,
+    DaApiAuthentication,
 } from '../../../constants';
 import { useAppThunkDispatch } from 'utils/hooks';
 import { WebApi } from 'actions/index.jsx';
@@ -126,8 +127,6 @@ export const fieldMessages = defineMessages({
     publishOnlyApproved: { id: 'admin.extSystem.publishOnlyApproved', defaultMessage: 'Odeslání jen schválených' },
     publishOnlyApprovedTrue: { id: 'admin.extSystem.publishOnlyApproved.true', defaultMessage: 'Ano' },
     publishOnlyApprovedFalse: { id: 'admin.extSystem.publishOnlyApproved.false', defaultMessage: 'Ne' },
-    submitAdd: { id: 'admin.extSystem.submit.add', defaultMessage: 'Přidat' },
-    submitEdit: { id: 'admin.extSystem.submit.edit', defaultMessage: 'Upravit' },
 });
 
 export const daSettingsMessages = defineMessages({
@@ -191,6 +190,22 @@ export const daSettingsMessages = defineMessages({
         id: 'admin.extSystem.daTlsVerify.false',
         defaultMessage: 'Ne - důvěřovat jakémukoli certifikátu (např. self-signed)',
     },
+    apiAuthentication: {
+        id: 'admin.extSystem.daApiAuthentication',
+        defaultMessage: 'Ověření REST API',
+    },
+    apiAuthenticationNone: {
+        id: 'admin.extSystem.daApiAuthentication.none',
+        defaultMessage: 'Bez ověření',
+    },
+    apiAuthenticationApiKey: {
+        id: 'admin.extSystem.daApiAuthentication.apiKey',
+        defaultMessage: 'API klíč (NDA-HMAC-SHA256)',
+    },
+    apiAuthenticationBasic: {
+        id: 'admin.extSystem.daApiAuthentication.basic',
+        defaultMessage: 'HTTP Basic (uživatelské jméno a heslo)',
+    },
 });
 
 const FILE_TRANSFER_PATH = '/ws/ft';
@@ -209,6 +224,12 @@ export const DA_DOWNLOAD_METHOD_MESSAGE: Record<string, MessageDescriptor> = {
 export const DA_ON_RECEIVED_MESSAGE: Record<string, MessageDescriptor> = {
     [DaOnReceivedAction.None]: daSettingsMessages.onReceivedNone,
     [DaOnReceivedAction.DownloadMetadata]: daSettingsMessages.onReceivedDownloadMetadata,
+};
+
+export const DA_API_AUTHENTICATION_MESSAGE: Record<string, MessageDescriptor> = {
+    [DaApiAuthentication.None]: daSettingsMessages.apiAuthenticationNone,
+    [DaApiAuthentication.ApiKey]: daSettingsMessages.apiAuthenticationApiKey,
+    [DaApiAuthentication.Basic]: daSettingsMessages.apiAuthenticationBasic,
 };
 
 type ExtSystemFormValues = {
@@ -239,6 +260,7 @@ type ExtSystemFormValues = {
     fileTransferUrl?: string;
     fileTransferType?: string;
     tlsVerify?: boolean;
+    apiAuthentication?: string;
 };
 
 type Scope = {
@@ -255,7 +277,9 @@ const REQUIRED_FIELDS = {
     abstractExtSystem: [JAVA_ATTR_CLASS, 'code', 'name'] as string[],
     [EXT_SYSTEM_CLASS.ApExternalSystem]: ['type', 'apiKeyId', 'apiKeyValue', 'url'] as string[],
     [EXT_SYSTEM_CLASS.ArrDigitalRepository]: ['digitalRepositoryType', 'sendNotification'] as string[],
-    daRepository: ['downloadMethod', 'onReceived'] as string[],
+    daRepository: ['downloadMethod', 'onReceived', 'apiAuthentication'] as string[],
+    [DaApiAuthentication.ApiKey]: ['apiKeyId', 'apiKeyValue'] as string[],
+    [DaApiAuthentication.Basic]: ['username'] as string[],
     [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: [] as string[],
     [EXT_SYSTEM_CLASS.GisExternalSystem]: ['type', 'url'] as string[],
     [EXT_SYSTEM_CLASS.AiExternalSystem]: ['url'] as string[],
@@ -298,6 +322,11 @@ function validate(values: ExtSystemFormValues) {
         );
         if (isDaRepository(values)) {
             requiredFields = requiredFields.concat(REQUIRED_FIELDS.daRepository);
+            if (values.apiAuthentication === DaApiAuthentication.ApiKey) {
+                requiredFields = requiredFields.concat(REQUIRED_FIELDS[DaApiAuthentication.ApiKey]);
+            } else if (values.apiAuthentication === DaApiAuthentication.Basic) {
+                requiredFields = requiredFields.concat(REQUIRED_FIELDS[DaApiAuthentication.Basic]);
+            }
         }
     } else if (classJ === EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk) {
         requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]);
@@ -398,6 +427,18 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
                             />
                         </Col>
                     </Row>
+                    {/* an unset value is shown and saved as the server default: verify */}
+                    <Field
+                        name="tlsVerify"
+                        type="select"
+                        component={FormInputField}
+                        label={intl.formatMessage(daSettingsMessages.tlsVerify)}
+                        format={(v?: boolean) => (v === false ? 'false' : 'true')}
+                        parse={(v: string) => v !== 'false'}
+                    >
+                        <option value="true">{intl.formatMessage(daSettingsMessages.tlsVerifyTrue)}</option>
+                        <option value="false">{intl.formatMessage(daSettingsMessages.tlsVerifyFalse)}</option>
+                    </Field>
                 </div>
             )}
             {classJ === EXT_SYSTEM_CLASS.GisExternalSystem && (
@@ -530,6 +571,19 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
                                 <option value="false">{intl.formatMessage(daSettingsMessages.tlsVerifyFalse)}</option>
                             </Field>
                             <Field
+                                name="apiAuthentication"
+                                type="select"
+                                component={FormInputField}
+                                label={intl.formatMessage(daSettingsMessages.apiAuthentication)}
+                            >
+                                <option key={null} />
+                                {Object.values(DaApiAuthentication).map((i) => (
+                                    <option key={i} value={i}>
+                                        {intl.formatMessage(DA_API_AUTHENTICATION_MESSAGE[i])}
+                                    </option>
+                                ))}
+                            </Field>
+                            <Field
                                 name="onReceived"
                                 type="select"
                                 component={FormInputField}
@@ -597,10 +651,11 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
                     label={intl.formatMessage(fieldMessages.elzaCode)}
                 />
             )}
+            {/* a DA repository uses its API key only for the API key authentication; the server drops it otherwise */}
             {(classJ === EXT_SYSTEM_CLASS.ApExternalSystem ||
                 classJ === EXT_SYSTEM_CLASS.GisExternalSystem ||
                 classJ === EXT_SYSTEM_CLASS.AiExternalSystem ||
-                isDaRepo) && (
+                (isDaRepo && values.apiAuthentication === DaApiAuthentication.ApiKey)) && (
                 <>
                     <Field
                         name="apiKeyId"
@@ -674,7 +729,16 @@ const ExtSystemForm = ({ initialValues, onSubmitForm }: Props) => {
                     <ExtSystemFormFields isUpdate={isUpdate} defaultScopes={defaultScopes} />
                     <Modal.Footer>
                         <Button type="submit" variant="outline-secondary" disabled={pristine || submitting}>
-                            {intl.formatMessage(isUpdate ? fieldMessages.submitEdit : fieldMessages.submitAdd)}
+                            {intl.formatMessage(globalMessages.save)}
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="link"
+                            // keeps the focus in the field, so its blur shows no validation error that would shift the button away from the click
+                            onMouseDown={(e: React.MouseEvent) => e.preventDefault()}
+                            onClick={() => dispatch(modalDialogHide())}
+                        >
+                            {intl.formatMessage(globalMessages.cancel)}
                         </Button>
                     </Modal.Footer>
                 </Form>

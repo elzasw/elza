@@ -28,6 +28,14 @@ and exports interleave while the DA works.
   balíčku."
 - Download status 403/404: the batch is gone, its items return to their pending state with a
   retry delay — downloads never give up.
+- A failed download finishes the action item the queue item carries out (`ERROR`, with the
+  problem text and the note that the download is retried) while the queue item goes on: the
+  retries are followed on the AIP and in the queue view, not in the dialog of the action.
+- File Transfer download: the DA delivers the batch as a directory tree, one directory per
+  package (DA standard, chapter 6.3), with transfer type `download` unless the repository
+  configures another; `DaService.packDelivered` packs the tree into the zip the processing
+  expects, a single delivered zip is used as it is. The File Transfer client returns normally
+  from a failed transfer; `DaDownloadRequestImpl` records the outcome and the connector throws.
 - Invalidation and supersede leave `EXPORT_SENT` alone; a `DOWNLOAD_REQUESTED` item may be
   deactivated — the finished batch then processes only its active items.
 - In-flight state is in the DB, so a restart continues the batch instead of losing it.

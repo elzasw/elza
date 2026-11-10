@@ -141,14 +141,14 @@
     <item-type code="ZP2015_CONTENT" data-type="TEXT">
         <name>Obsah, tematický popis</name>
         <shortcut>Obsah</shortcut>
-        <description>ZP4.2.3 Obsah, tematický popis</description>
+        <description>ZP4.3.4 Obsah, tematický popis</description>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
     <item-type code="ZP2015_CONTENT_PUBLIC" data-type="TEXT">
         <name>Obsah, tematický popis s omezením přístupnosti</name>
         <shortcut>Obsah s omezením</shortcut>
-        <description>ZP4.2.3 Obsah, tematický popis s omezením přístupnosti (určený pro publikaci namísto prvku Obsah)</description>
+        <description>ZP4.3.4 Obsah, tematický popis s omezením přístupnosti (určený pro publikaci namísto prvku Obsah)</description>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>

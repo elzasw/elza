@@ -1280,6 +1280,22 @@ paths:
                 $ref: '#/components/schemas/BaseException'
       tags:
         - import-batches
+  /admin/import/upload-limits:
+    get:
+      operationId: ImportBatch_uploadLimits
+      description: |-
+        Upload size limits enforced by the server, so the UI can reject a file that is too
+        large before sending it. Available to any authenticated user.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadLimits'
+      tags:
+        - import-batches
   /admin/import/{id}:
     get:
       operationId: ImportBatch_get
@@ -3484,6 +3500,42 @@ paths:
             schema:
               $ref: '#/components/schemas/NodeItem'
         description: attribute value
+  /descItems/{fundVersionId}/bulk-append:
+    put:
+      operationId: DescItem_appendDescItems
+      description: |-
+        Append values of one item type to the selected nodes as one change.
+        The request is applied completely or not at all. A node gets a value only when it has
+        no equal value of the item type yet; only nodes that get a value are changed.
+      parameters:
+        - name: fundVersionId
+          in: path
+          required: true
+          description: id version AS
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkChangeResult'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - descitems
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkAppendRequest'
+        description: values and the node selection
   /descItems/{fundVersionId}/create:
     put:
       operationId: DescItem_createDescItem
@@ -3655,6 +3707,38 @@ paths:
                 $ref: '#/components/schemas/DaQueueItemPage'
       tags:
         - externalsystems
+  /extsystem/digitalrepository/{id}/queue/mark-failed:
+    post:
+      operationId: ExternalSystem_daQueueMarkFailed
+      description: |-
+        Ends the selected waiting downloads that keep failing (e.g. a package the DA cannot
+        prepare until it is fixed there) as failed, with their last failure. Once the cause is
+        removed, they can be repeated.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: digital repository (external system) ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaQueueActionResult'
+      tags:
+        - externalsystems
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: integer
+        description: Queue item IDs
   /extsystem/digitalrepository/{id}/queue/repeat:
     post:
       operationId: ExternalSystem_daQueueRepeat
@@ -8242,13 +8326,18 @@ components:
           allOf:
             - $ref: '#/components/schemas/ParInstitutionGen'
           description: Instituce
-        originatorInstitution:
-          allOf:
-            - $ref: '#/components/schemas/ParInstitutionGen'
-          description: Instituce původce
+        originatorAccessPointId:
+          type: integer
+          description: Id přístupového bodu původce, je-li původce dohledán podle identifikátoru CAM
+        originatorAccessPointName:
+          type: string
+          description: Jméno přístupového bodu původce
         originator:
           type: string
-          description: Původce
+          description: Původce dle balíčku
+        originatorCamId:
+          type: string
+          description: Identifikátor původce v CAM dle balíčku
         unitdateFrom:
           type: string
           description: Datace od
@@ -8413,6 +8502,7 @@ components:
         - METADATA_ERROR
         - UNKNOWN_FUND
         - UNKNOWN_INSTITUTION
+        - UNKNOWN_ORIGINATOR
       description: Problém, který brání zpracování AIPu nebo jeho navázání na archivní popis
     AipType:
       type: string
@@ -9129,6 +9219,75 @@ components:
       description: |-
         Druh hromadné akce - značka YAML jejího nastavení bez "!" (`!PersistentSort` -> `PersistentSort`).
         Části `!MultiAction` (`!DateRange`, `!UnitCount`, ...) nejsou samostatné akce, a tak ani druhy.
+    BulkAppendRequest:
+      type: object
+      required:
+        - itemTypeId
+        - selection
+        - values
+      properties:
+        itemTypeId:
+          type: integer
+          description: Item type of all values
+        selection:
+          $ref: '#/components/schemas/BulkNodeSelection'
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/BulkItemValue'
+          description: Values added after the last value of the item type in each node, in this order; no two may be equal
+      description: Values of one item type appended to the selected nodes
+    BulkChangeResult:
+      type: object
+      required:
+        - created
+        - skippedDuplicate
+        - changedNodes
+      properties:
+        created:
+          type: integer
+          description: Number of created values, counted per node and value
+        skippedDuplicate:
+          type: integer
+          description: Number of values not created because the node already had an equal value
+        changedNodes:
+          type: integer
+          description: Number of nodes that received at least one value
+      description: Result of a bulk change
+    BulkItemValue:
+      type: object
+      required:
+        - data
+      properties:
+        itemSpecId:
+          type: integer
+          description: Item specification; required exactly when the item type has specifications
+        data:
+          allOf:
+            - $ref: '#/components/schemas/ItemData'
+          description: Value; its dataType must match the data type of the item type
+      description: One value of a bulk change
+    BulkNodeSelection:
+      type: object
+      required:
+        - selectionType
+      properties:
+        selectionType:
+          $ref: '#/components/schemas/BulkSelectionType'
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/NodeRef'
+          description: |-
+            Nodes of the selection; required and non-empty for NODES, empty for FUND.
+            Every node must belong to the fund version.
+      description: Nodes a bulk change applies to
+    BulkSelectionType:
+      type: string
+      enum:
+        - NODES
+        - FUND
+      description: How the nodes of a bulk change are selected
     ConnectionType:
       type: string
       enum:
@@ -9464,6 +9623,10 @@ components:
           type: string
           format: date-time
           description: Not before this time is the request taken again; null = now
+        failingSince:
+          type: string
+          format: date-time
+          description: Since when the exchanges about the request keep failing; null when the last one succeeded
         stateDate:
           type: string
           format: date-time
@@ -11996,6 +12159,19 @@ components:
       allOf:
         - $ref: '#/components/schemas/BaseItem'
       description: Náhrada za `ArrItemVO`
+    NodeRef:
+      type: object
+      required:
+        - id
+        - version
+      properties:
+        id:
+          type: integer
+          description: Node id
+        version:
+          type: integer
+          description: Node version known to the client
+      description: Node reference with the client's version for the optimistic-lock check
     NodeSearchResult:
       type: object
       required:
@@ -13506,6 +13682,21 @@ components:
           format: binary
       required:
         - file
+    UploadLimits:
+      type: object
+      required:
+        - maxFileSize
+        - maxRequestSize
+      properties:
+        maxFileSize:
+          type: integer
+          format: int64
+          description: Maximum size of a single uploaded file in bytes.
+        maxRequestSize:
+          type: integer
+          format: int64
+          description: Maximum size of the whole multipart request in bytes.
+      description: Upload size limits enforced by the server. A value of -1 means no limit.
     UploadZipBody:
       type: object
       properties:

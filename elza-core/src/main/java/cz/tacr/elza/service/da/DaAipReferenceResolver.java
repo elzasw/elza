@@ -1,7 +1,10 @@
 package cz.tacr.elza.service.da;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -11,9 +14,16 @@ import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.api.AipProblemType;
+import cz.tacr.elza.api.ApExternalSystemType;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApBinding;
+import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.DaAipState;
 import cz.tacr.elza.domain.ParInstitution;
+import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApBindingRepository;
+import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 
@@ -29,6 +39,11 @@ import cz.tacr.elza.repository.InstitutionRepository;
  * than the package names. Every fund has an institution, so a
  * resolved fund also says which institution the AIP belongs to - an unresolved institution
  * therefore does not prevent the AIP from being used, while an unresolved fund does.
+ *
+ * The originator is a third, descriptive reference: the package may name it by its CAM
+ * identifier, and the access point taken over from CAM under that identifier is looked up. A
+ * package without the identifier names the originator by name only and has no originator
+ * problem.
  */
 @Service
 public class DaAipReferenceResolver {
@@ -40,6 +55,18 @@ public class DaAipReferenceResolver {
 
     @Autowired
     private InstitutionRepository institutionRepository;
+
+    @Autowired
+    private ApBindingRepository bindingRepository;
+
+    @Autowired
+    private ApBindingStateRepository bindingStateRepository;
+
+    @Autowired
+    private ApAccessPointRepository accessPointRepository;
+
+    /** Every type of external system binds access points to CAM, by the entity id or its UUID. */
+    private static final Set<ApExternalSystemType> CAM_TYPES = EnumSet.allOf(ApExternalSystemType.class);
 
     /**
      * Resolves the references that are still missing and updates the problem state. References
@@ -60,6 +87,7 @@ public class DaAipReferenceResolver {
     public boolean resolveReferences(DaAipState aipState, @Nullable ArrFund formerFund) {
         boolean hadInstitution = aipState.getInstitution() != null;
         boolean hadFund = aipState.getFund() != null;
+        boolean hadOriginator = aipState.getOriginatorAccessPoint() != null;
         String note = null;
 
         if (!hadInstitution && StringUtils.isNotBlank(aipState.getInstitutionCode())) {
@@ -71,9 +99,31 @@ public class DaAipReferenceResolver {
             note = lookup.note();
         }
 
+        if (!hadOriginator && StringUtils.isNotBlank(aipState.getOriginatorCamId())) {
+            aipState.setOriginatorAccessPoint(findOriginator(aipState.getOriginatorCamId()));
+        }
+
         updateProblemState(aipState, note);
         return (!hadInstitution && aipState.getInstitution() != null)
-                || (!hadFund && aipState.getFund() != null);
+                || (!hadFund && aipState.getFund() != null)
+                || (!hadOriginator && aipState.getOriginatorAccessPoint() != null);
+    }
+
+    /**
+     * The originator by its CAM identifier: the access point bound to that identifier in a CAM
+     * external system (the entity id, or its UUID where the system binds by it), or else the
+     * access point with that UUID - an entity taken over from CAM keeps its UUID even where the
+     * binding is by id.
+     */
+    @Nullable
+    private ApAccessPoint findOriginator(String camId) {
+        for (ApBinding binding : bindingRepository.findByValueAndExternalSystemTypes(camId, CAM_TYPES)) {
+            Optional<ApBindingState> bindingState = bindingStateRepository.findActiveByBinding(binding);
+            if (bindingState.isPresent()) {
+                return bindingState.get().getAccessPoint();
+            }
+        }
+        return accessPointRepository.findAccessPointByUuid(camId);
     }
 
     /**
@@ -129,6 +179,10 @@ public class DaAipReferenceResolver {
                     ? "Balíček neuvádí kód instituce."
                     : "Instituce s kódem '" + aipState.getInstitutionCode() + "' nebyla nalezena.");
         }
+        if (aipState.getOriginatorAccessPoint() == null && StringUtils.isNotBlank(aipState.getOriginatorCamId())) {
+            problems.add("Původce s identifikátorem CAM '" + aipState.getOriginatorCamId()
+                    + "' nebyl mezi přístupovými body nalezen; převezměte entitu z CAM.");
+        }
 
         aipState.setProblemType(derivedProblemType(aipState));
         aipState.setProblemDescription(problems.isEmpty() ? null : String.join(" ", problems));
@@ -136,7 +190,8 @@ public class DaAipReferenceResolver {
 
     /**
      * An unresolved fund outranks an unresolved institution: without the fund the AIP cannot be
-     * mapped onto the archival description at all.
+     * mapped onto the archival description at all. The originator comes last - it is only
+     * descriptive, and only a package that names it by a CAM identifier can miss it.
      */
     private static AipProblemType derivedProblemType(DaAipState aipState) {
         if (aipState.getFund() == null) {
@@ -144,6 +199,9 @@ public class DaAipReferenceResolver {
         }
         if (aipState.getInstitution() == null) {
             return AipProblemType.UNKNOWN_INSTITUTION;
+        }
+        if (aipState.getOriginatorAccessPoint() == null && StringUtils.isNotBlank(aipState.getOriginatorCamId())) {
+            return AipProblemType.UNKNOWN_ORIGINATOR;
         }
         return null;
     }

@@ -12,7 +12,7 @@ import { useHistory} from 'react-router';
 import {urlAip, urlEntity, urlFundAb} from '../../constants.tsx';
 import { Link } from 'react-router-dom';
 import { useThunkDispatch } from 'utils/hooks';
-import {aipsFetchIfNeeded, aipsFilter, aipsFocus, AREA_AIP, AREA_AIPS, setSelectedAips, } from "../../actions/aip/aip.ts";
+import {aipsFetchIfNeeded, aipsFilter, aipsFocus, AREA_AIP, AREA_AIPS, DEFAULT_PAGE_SIZE, setSelectedAips, } from "../../actions/aip/aip.ts";
 import {
     MenuCheckedValueChangeData,
     MenuCheckedValueChangeEvent,
@@ -84,7 +84,7 @@ const getAipRows = (aips: Aips) => {
 const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, initialFilters, hiddenValues, detailOpen, setDetailOpen, focusAipId, toolbarActions}) => {
     const aips = useAppSelector(state => storeFromArea(state, AREA_AIPS) as Aips);
     const aip = useAppSelector(state => storeFromArea(state, AREA_AIP) as Aip);
-    const {from, pageSize} = aips.filter;
+    const {from, pageSize = DEFAULT_PAGE_SIZE} = aips.filter;
     const dispatch = useThunkDispatch();
     const items = getAipRows(aips);
     const history = useHistory();

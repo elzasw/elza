@@ -28,6 +28,7 @@ import {
     daSettingsMessages,
     DA_DOWNLOAD_METHOD_MESSAGE,
     DA_ON_RECEIVED_MESSAGE,
+    DA_API_AUTHENTICATION_MESSAGE,
     deriveFileTransferUrl,
 } from './ExtSystemForm';
 
@@ -289,6 +290,15 @@ export function AdminExtSystemDetail() {
 
                         <ScopeValue scopes={scopes} id={extSystem.scope} />
                         <FieldValue extSystem={extSystem} field="syncDelay" />
+
+                        <h4><FormattedMessage {...daSettingsMessages.tlsVerify} /></h4>
+                        <span>
+                            <FormattedMessage
+                                {...(extSystem.tlsVerify === false
+                                    ? daSettingsMessages.tlsVerifyFalse
+                                    : daSettingsMessages.tlsVerifyTrue)}
+                            />
+                        </span>
                     </div>
                 )}
                 {classJ === EXT_SYSTEM_CLASS.GisExternalSystem && (
@@ -368,6 +378,13 @@ export function AdminExtSystemDetail() {
                                     />
                                 </span>
 
+                                <h4><FormattedMessage {...daSettingsMessages.apiAuthentication} /></h4>
+                                <span>
+                                    {DA_API_AUTHENTICATION_MESSAGE[extSystem.apiAuthentication!] && (
+                                        <FormattedMessage {...DA_API_AUTHENTICATION_MESSAGE[extSystem.apiAuthentication!]} />
+                                    )}
+                                </span>
+
                                 <h4><FormattedMessage {...daSettingsMessages.onReceived} /></h4>
                                 <span>
                                     {DA_ON_RECEIVED_MESSAGE[extSystem.onReceived!] && (
@@ -397,8 +414,8 @@ export function AdminExtSystemDetail() {
                     </div>
                 )}
                 <div>
-                    <FieldValue extSystem={extSystem} field="name" />
                     <FieldValue extSystem={extSystem} field="code" />
+                    <FieldValue extSystem={extSystem} field="name" />
                     <FieldValue extSystem={extSystem} field="url" />
                     {!isFsRepo && <FieldValue extSystem={extSystem} field="username" />}
                     {!isFsRepo && <SecretValue extSystem={extSystem} field="password" />}

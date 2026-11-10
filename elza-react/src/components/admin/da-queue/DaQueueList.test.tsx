@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import { renderWithProviders, screen, fireEvent, waitFor } from 'test/test-utils';
+import { renderWithProviders, screen, fireEvent, waitFor, within } from 'test/test-utils';
+import { FluentDialogProvider } from 'components/shared/dialog/FluentModalDialog';
 import { DaQueueDirection, DaQueueItemVO, QueueItemState } from 'elza-api';
 import { DaQueueList } from './DaQueueList';
 
@@ -14,6 +15,7 @@ const api = vi.hoisted(() => ({
     externalSystemDaQueueRetryNow: vi.fn(),
     externalSystemDaQueueWithdraw: vi.fn(),
     externalSystemDaQueueRepeat: vi.fn(),
+    externalSystemDaQueueMarkFailed: vi.fn(),
 }));
 vi.mock('api', () => ({ Api: { externalSystems: api } }));
 
@@ -41,6 +43,9 @@ const serve = (items: DaQueueItemVO[]) =>
     api.externalSystemDaQueue.mockResolvedValue({ data: { items, totalCount: items.length } });
 
 const button = (name: RegExp) => screen.getByRole('button', { name });
+// the list asks for confirmations through the dialog provider the application layout supplies
+const renderQueue = () =>
+    renderWithProviders(<FluentDialogProvider hidden={false}><DaQueueList repositoryId={7} /></FluentDialogProvider>);
 const select = async (code: string) => {
     const row = (await screen.findByText(code)).closest('tr')!;
     fireEvent.click(row.querySelector('[role="checkbox"], input[type="checkbox"]')!);
@@ -55,7 +60,7 @@ describe('DaQueueList', () => {
 
     it('asks for the waiting requests of the repository, newest page first', async () => {
         serve([item(2, QueueItemState.Update)]);
-        renderWithProviders(<DaQueueList repositoryId={7} />);
+        renderQueue();
 
         expect(await screen.findByText('aip-2')).toBeInTheDocument();
         expect(api.externalSystemDaQueue).toHaveBeenCalledWith(7, false, undefined, undefined, undefined, undefined,
@@ -64,7 +69,7 @@ describe('DaQueueList', () => {
 
     it('offers retry but not cancel for an export the DA received', async () => {
         serve([item(1, QueueItemState.ExportSent, { batchId: 'e1' })]);
-        renderWithProviders(<DaQueueList repositoryId={7} />);
+        renderQueue();
 
         await select('aip-1');
 
@@ -75,7 +80,7 @@ describe('DaQueueList', () => {
 
     it('offers repeat for a failed request', async () => {
         serve([item(1, QueueItemState.ImportError)]);
-        renderWithProviders(<DaQueueList repositoryId={7} />);
+        renderQueue();
 
         await select('aip-1');
 
@@ -86,7 +91,7 @@ describe('DaQueueList', () => {
     it('cancels the selected requests and says what it did', async () => {
         serve([item(1, QueueItemState.Update), item(2, QueueItemState.ExportNew)]);
         api.externalSystemDaQueueWithdraw.mockResolvedValue({ data: { done: 2, skipped: 0 } });
-        renderWithProviders(<DaQueueList repositoryId={7} />);
+        renderQueue();
 
         await select('aip-1');
         await select('aip-2');
@@ -96,9 +101,48 @@ describe('DaQueueList', () => {
         expect(api.externalSystemDaQueueWithdraw).toHaveBeenCalledWith(7, [1, 2]);
     });
 
+    const failing = () => item(1, QueueItemState.DownloadRequested,
+                               { batchId: 'd1', attemptCount: 3, failingSince: '2026-10-25T18:46:20Z' });
+    it('marks a download that keeps failing as failed from its detail, once confirmed', async () => {
+        serve([failing()]);
+        api.externalSystemDaQueueMarkFailed.mockResolvedValue({ data: { done: 1, skipped: 0 } });
+        renderQueue();
+
+        fireEvent.click(await screen.findByText('aip-1'));
+        fireEvent.click(button(/Označit jako chybné/));
+        const dialog = await screen.findByRole('alertdialog');
+        expect(within(dialog).getByText(/aip-1/)).toBeInTheDocument();
+        fireEvent.click(within(dialog).getByRole('button', { name: /Označit jako chybné/ }));
+
+        await waitFor(() => expect(api.externalSystemDaQueueMarkFailed).toHaveBeenCalledWith(7, [1]));
+    });
+
+    it('leaves the download alone when marking as failed is not confirmed', async () => {
+        serve([failing()]);
+        renderQueue();
+
+        fireEvent.click(await screen.findByText('aip-1'));
+        fireEvent.click(button(/Označit jako chybné/));
+        const dialog = await screen.findByRole('alertdialog');
+        fireEvent.click(within(dialog).getByRole('button', { name: /Zrušit/ }));
+
+        await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
+        expect(api.externalSystemDaQueueMarkFailed).not.toHaveBeenCalled();
+    });
+
+    it('does not offer marking as failed for a download that failed once but no longer fails', async () => {
+        serve([item(1, QueueItemState.DownloadRequested, { batchId: 'd1', attemptCount: 1 })]);
+        renderQueue();
+
+        fireEvent.click(await screen.findByText('aip-1'));
+
+        expect(await screen.findByText('Požadavek 1')).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: /Označit jako chybné/ })).not.toBeInTheDocument();
+    });
+
     it('filters the whole history by a batch clicked in the list', async () => {
         serve([item(1, QueueItemState.DownloadRequested, { batchId: 'd1' })]);
-        renderWithProviders(<DaQueueList repositoryId={7} />);
+        renderQueue();
 
         fireEvent.click(await screen.findByRole('button', { name: 'd1' }));
 
@@ -108,7 +152,7 @@ describe('DaQueueList', () => {
 
     it('reloads after a pause in typing, not on every key', async () => {
         serve([item(1, QueueItemState.Update)]);
-        renderWithProviders(<DaQueueList repositoryId={7} />);
+        renderQueue();
         await screen.findByText('aip-1');
         const calls = api.externalSystemDaQueue.mock.calls.length;
 

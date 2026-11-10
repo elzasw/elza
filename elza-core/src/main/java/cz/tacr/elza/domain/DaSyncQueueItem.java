@@ -94,6 +94,17 @@ public class DaSyncQueueItem {
     @Column
     private OffsetDateTime nextAttemptAt;
 
+    /**
+     * Since when the exchanges about the item keep failing: set by the first failure, cleared
+     * when the DA answers about the batch as expected (a batch it merely accepted is not enough,
+     * it may give it up again) and when the request ends or is deactivated. Null when the item
+     * is not failing.
+     * Tells how long a waiting item has been stuck, which the attempt count cannot - the delay
+     * between attempts grows.
+     */
+    @Column
+    private OffsetDateTime failingSince;
+
 
     public Integer getSyncQueueItemId() {
         return syncQueueItemId;
@@ -205,6 +216,14 @@ public class DaSyncQueueItem {
 
     public void setNextAttemptAt(OffsetDateTime nextAttemptAt) {
         this.nextAttemptAt = nextAttemptAt;
+    }
+
+    public OffsetDateTime getFailingSince() {
+        return failingSince;
+    }
+
+    public void setFailingSince(OffsetDateTime failingSince) {
+        this.failingSince = failingSince;
     }
 
     /**

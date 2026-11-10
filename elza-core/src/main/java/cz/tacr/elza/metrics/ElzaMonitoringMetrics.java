@@ -15,8 +15,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.elza.domain.DaSyncQueueItem;
 import cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState;
 import cz.tacr.elza.repository.ApExternalSystemRepository;
+import cz.tacr.elza.repository.DaSyncQueueItemRepository;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
 import cz.tacr.elza.websocket.WebSocketThreadPoolTaskExecutor;
 import io.micrometer.core.instrument.Gauge;
@@ -27,7 +29,7 @@ import io.micrometer.core.instrument.binder.MeterBinder;
  * Instance-level monitoring gauges exposed through Actuator/Prometheus and reported to the
  * Customer Service Center (CSC).
  *
- * The CAM values are aggregated across all configured external systems into a single series
+ * The CAM and DA values are aggregated across all configured external systems into a single series
  * (worst age, or total count), so one threshold applies uniformly on every Elza instance
  * regardless of how many external systems it has. Ages are reported in seconds; an age gauge
  * returns {@code -1} when there is nothing to measure (no configured system, or no matching
@@ -51,11 +53,25 @@ public class ElzaMonitoringMetrics implements MeterBinder {
             ExtAsyncQueueState.EXPORT_START,
             ExtAsyncQueueState.EXPORT_PROCESSING);
 
+    /** Requests of a DA queue that wait to be exchanged with the DA. */
+    private static final Set<DaSyncQueueItem.QueueItemState> DA_WAITING_STATES = EnumSet.of(
+            DaSyncQueueItem.QueueItemState.IMPORT_NEW,
+            DaSyncQueueItem.QueueItemState.UPDATE,
+            DaSyncQueueItem.QueueItemState.DOWNLOAD_REQUESTED,
+            DaSyncQueueItem.QueueItemState.EXPORT_NEW,
+            DaSyncQueueItem.QueueItemState.EXPORT_SENT);
+
+    private static final Set<DaSyncQueueItem.QueueItemState> DA_ERROR_STATES = EnumSet.of(
+            DaSyncQueueItem.QueueItemState.IMPORT_ERROR,
+            DaSyncQueueItem.QueueItemState.EXPORT_ERROR);
+
     private final ExtSyncsQueueItemRepository extSyncsQueueItemRepository;
 
     private final ApExternalSystemRepository apExternalSystemRepository;
 
     private final InFlightTaskRegistry inFlightTaskRegistry;
+
+    private final DaSyncQueueItemRepository daQueueItemRepository;
 
     /** Outbound WebSocket executor holding the live client sessions; absent outside the web application. */
     @Autowired(required = false)
@@ -68,10 +84,12 @@ public class ElzaMonitoringMetrics implements MeterBinder {
     @Autowired
     public ElzaMonitoringMetrics(final ExtSyncsQueueItemRepository extSyncsQueueItemRepository,
     		                     final ApExternalSystemRepository apExternalSystemRepository,
-                                 final InFlightTaskRegistry inFlightTaskRegistry) {
+                                 final InFlightTaskRegistry inFlightTaskRegistry,
+                                 final DaSyncQueueItemRepository daQueueItemRepository) {
         this.extSyncsQueueItemRepository = extSyncsQueueItemRepository;
         this.apExternalSystemRepository = apExternalSystemRepository;
         this.inFlightTaskRegistry = inFlightTaskRegistry;
+        this.daQueueItemRepository = daQueueItemRepository;
     }
 
     @Override
@@ -121,6 +139,22 @@ public class ElzaMonitoringMetrics implements MeterBinder {
                 .description("Seconds since the oldest not-yet-processed CAM sync item (waiting to be downloaded or"
                         + " uploaded) entered its state; grows when the sync worker stops draining the queue;"
                         + " -1 when none or the application is not fully started")
+                .register(registry);
+
+        Gauge.builder("elza.da.failing_count", this, m -> m.daQueueItemRepository.countFailing(DA_WAITING_STATES))
+                .description("Waiting DA queue requests whose exchanges with the DA keep failing (they are retried),"
+                        + " summed across all digital archives")
+                .register(registry);
+
+        Gauge.builder("elza.da.failing_age_seconds", this, ElzaMonitoringMetrics::daFailingAgeSeconds)
+                .description("Seconds the longest failing waiting DA queue request has been failing (e.g. a package"
+                        + " the DA cannot prepare); -1 when none or the application is not fully started")
+                .register(registry);
+
+        Gauge.builder("elza.da.error_count", this,
+                m -> m.daQueueItemRepository.countByStateInAndActiveIsTrue(DA_ERROR_STATES))
+                .description("DA queue requests that ended in error (download, processing or export) and were not"
+                        + " repeated, summed across all digital archives")
                 .register(registry);
     }
 
@@ -186,6 +220,17 @@ public class ElzaMonitoringMetrics implements MeterBinder {
             return NOT_APPLICABLE;
         }
         return Math.max(0d, Duration.between(oldest.toInstant(), Instant.now()).getSeconds());
+    }
+
+    private double daFailingAgeSeconds() {
+        if (!inFlightTaskRegistry.isActive()) {
+            return NOT_APPLICABLE;
+        }
+        OffsetDateTime since = daQueueItemRepository.findFailingSince(DA_WAITING_STATES);
+        if (since == null) {
+            return NOT_APPLICABLE;
+        }
+        return Math.max(0d, Duration.between(since.toInstant(), Instant.now()).getSeconds());
     }
 
     private double connectedUsers() {

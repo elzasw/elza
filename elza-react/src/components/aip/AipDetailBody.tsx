@@ -88,9 +88,11 @@ export function AipDetailBody({ detail, onOpenProblemFile }: Props) {
             {detail.unitdateFrom &&
                 <DetailRow label={formatMessage(messages.unitdate)}
                            value={formatUnitDate(detail.unitdateFrom, detail.unitdateTo)} />}
-            {detail.originatorInstitution
+            {detail.originatorAccessPointId != null
                 ? <DetailRow label={formatMessage(messages.originator)} value={
-                    <Link to={urlEntity(detail.originatorInstitution.accessPointId)}>{detail.originatorInstitution.name}</Link>
+                    <Link to={urlEntity(detail.originatorAccessPointId)}>
+                        {detail.originatorAccessPointName ?? detail.originator ?? detail.originatorCamId}
+                    </Link>
                 } />
                 : detail.originator &&
                     <DetailRow label={formatMessage(messages.originator)} value={detail.originator} />}

@@ -12,6 +12,121 @@ change, a step during the upgrade) name the configuration key and link to
 the relevant chapter. Before an upgrade, read the entries of all builds
 between the installed and the new version; see :doc:`/03-upgrade`.
 
+3.4.12
+======
+
+Before the upgrade
+------------------
+
+* Change: Monitoring - without ``management.server.port`` in
+  :file:`elza.yaml`, the management port is the first free port after the
+  application port (``server.port`` + 1, + 2, ...) instead of a fixed
+  ``8081``. With the default application port ``8080`` nothing changes.
+  An installation whose application port is not ``8080`` gets a different
+  management port; **if a monitoring tool or the CSC client uses**
+  ``8081``, **set** ``management.server.port: 8081`` **before the
+  upgrade**. An installation with ``server.port: 8081`` did not start in
+  3.4.0 - 3.4.11 ("Management-specific server address cannot be
+  configured ..."); it now starts with the management port ``8082``. A
+  configured management port that equals the application port or is
+  used by another process stops the start with a message naming the
+  port. See :doc:`/09-monitoring`.
+
+New
+---
+
+* New: 10161 - CAM - the external system has the option *Verify TLS
+  certificate*; a new system verifies the certificate of CAM. Existing
+  systems are set to *No* by the upgrade and keep trusting any
+  certificate, as before. **Where CAM has a valid certificate, switch the
+  option to** *Yes*. See :doc:`/07-integrations`.
+* New: 10188 - DA - the repository has the option *REST API authentication*:
+  *None*, *API key* (NDA-HMAC-SHA256 signature) or *HTTP Basic* with the
+  username and password of the repository, which File Transfer uses as
+  well. The upgrade sets *API key* for repositories with both parts of
+  the API key filled in and *None* for the others, so their behaviour
+  does not change. The API key is stored only with the *API key* method.
+  See :doc:`/08-digital-repositories`.
+
+Fixes
+-----
+
+* Fix: 10181 - CAM synchronization stopped completely (since 3.4.9) when CAM
+  reported an entity as replaced (merged) and its ELZA record was in another
+  scope than the external system; the record was retried forever. Such
+  entities are now replaced and invalidated as before. A record whose
+  synchronization fails for any other reason no longer blocks the others:
+  its item in the synchronization queue ends in the state ``ERROR`` with
+  the reason, and the record is synchronized again from the user interface
+  once the cause is resolved.
+* Fix: 10189 - Digital archive: when the request to the REST API could not
+  be signed with the API key (e.g. an empty key value), it was sent with
+  ``Signature=null`` and rejected by the archive without the cause in the
+  log. The call now fails with the cause.
+* Fix: 10190 - Digital archive: the signature with the API key depended on
+  the default charset of the system; a request whose path contained
+  characters outside ASCII (e.g. an AIP identifier with diacritics) was
+  rejected by the archive on Windows. The signed text is always UTF-8.
+* Fix: 10191 - DA - a batch downloaded over File Transfer is accepted as the
+  directory tree the DA communication standard prescribes (one directory
+  per package); a single zip file delivered in place of the tree is
+  accepted as well, while a zip inside the directory of a package is a
+  part of that package. The
+  download request sends the transfer type ``download`` defined by the
+  standard when *File Transfer download request type* is empty; see
+  :doc:`/08-digital-repositories`.
+* Fix: 10195 - DA - a unit date in the archival description of a package written
+  as an interval that closes within the period it opens (a day as
+  D-D, a year as Y-Y) is read as that single period; the import
+  of the package no longer ends with an unexpected error.
+* Fix: 10191 - DA - a package delivered inside the batch as one zip file in the
+  directory of the AIP, or with its own root directory (named by the UUID
+  of the package) inside, is unwrapped and loaded; a package that cannot
+  be read reports what it holds instead of the missing file. An AIP whose
+  package the batch does not carry fails with the names the batch does
+  carry, instead of being closed as loaded.
+* Fix: 10191 - DA - a File Transfer download that failed is reported with the
+  outcome of the transfer instead of a missing file; the cause is in the
+  server log (``com.lightcomp.ft``).
+* Fix: 10191 - DA - an action over AIPs (loading of metadata, update and repair)
+  whose download fails finishes with the error instead of running until
+  the queue succeeds; the queue keeps retrying the download, which is
+  followed on the AIP and in the queue view.
+* Change: 10192 - DA - the originator of a package (the agent of the creation
+  event in PACKAGE-INFO.xml) is resolved by its CAM identifier
+  (``agentIdentifierType`` ``CAM_ID``, the entity id or UUID in CAM) to
+  the access point taken over from CAM, whatever its type. An identifier
+  that matches no access point is recorded as the AIP problem *Nenalezen
+  původce*; take the entity over from CAM and run *Aktualizace a oprava
+  AIP*. A package without the identifier keeps the originator by name and
+  has no problem. Such a package failed before with "Cannot parse null
+  string".
+* Fix: 10191 - DA - the result dialog of an action over AIPs shows the message of
+  each AIP in a readable colour.
+* Fix: 10209 - DA - the list of AIPs (*Digital archive - Packages*) opens
+  with one page of packages instead of loading all of them, and reads the
+  details of a page at once; with tens of thousands of AIPs it took minutes.
+  A search without a page size returns 25 AIPs. The upgrade adds indexes
+  on ``da_sync_queue_item`` and ``da_aip_state``.
+* Fix: 10212 - DA - loading the metadata of a package failed with "value
+  too long for type character varying(250)" when the name of a level, a
+  representation or a file in the package was longer than 250 characters;
+  the AIP stayed without metadata. The upgrade changes ``da_dao.label`` to
+  ``text``, so the name is stored whole. Load the affected AIPs again with
+  *Aktualizace a oprava AIP*.
+* Fix: 10210 - DA - while a download batch was being prepared by the DA,
+  the import of packages read the queue about 12 times a second instead of
+  waiting for the next status question (every 2 s by default), which kept
+  the database server permanently busy. The export of change packages
+  behaved the same way while a sent batch was being ingested. The upgrade
+  adds an index on ``da_sync_queue_item`` (``state``, ``active``,
+  ``next_attempt_at``).
+* Fix: 10211 - DA - the list of AIPs no longer loads the whole tree of
+  every fund with linked AIPs to show the names of the linked units. With
+  more funds than the tree cache holds (``elza.levelTreeCache.size``, 30
+  by default), the trees were repeatedly evicted and loaded again, and the
+  tree and arrangement of other users waited meanwhile.
+
 3.4.11
 ======
 

@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.dataexchange.common.items.DescriptionItemStringImpl;
 import cz.tacr.elza.dataexchange.common.items.ImportableItemData;
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
@@ -99,6 +100,9 @@ public class SectionLevelProcessor implements ItemProcessor {
         StaticDataProvider ruleSystem = section.getStaticData();
 
         for (DescriptionItem item : items) {
+            if (DescriptionItemStringImpl.hasBlankValue(item)) {
+                continue;
+            }
             // resolve item type
             ItemType itemType = ruleSystem.getItemTypeByCode(item.getT());
             if (itemType == null) {

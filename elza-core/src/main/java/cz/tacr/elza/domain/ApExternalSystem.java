@@ -38,7 +38,14 @@ public class ApExternalSystem extends SysExternalSystem {
     private Boolean publishOnlyApproved;
 
     @Column(nullable = true)
-    private Integer syncDelay;    
+    private Integer syncDelay;
+
+    /**
+     * Whether the TLS certificate of the CAM is verified; false trusts any certificate
+     * and host name (internal servers with a self-signed one).
+     */
+    @Column(nullable = false)
+    private Boolean tlsVerify = Boolean.TRUE;
 
     public ApExternalSystem() {
     	
@@ -52,6 +59,7 @@ public class ApExternalSystem extends SysExternalSystem {
 		this.userInfo = aes.getUserInfo();
 		this.publishOnlyApproved = aes.getPublishOnlyApproved();
 		this.syncDelay = aes.getSyncDelay();
+		this.tlsVerify = aes.getTlsVerify();
 	}
 
 	public ApExternalSystemType getType() {
@@ -102,6 +110,14 @@ public class ApExternalSystem extends SysExternalSystem {
 	public void setSyncDelay(Integer syncDelay) {
 		this.syncDelay = syncDelay;
 	}
+
+    public Boolean getTlsVerify() {
+        return tlsVerify;
+    }
+
+    public void setTlsVerify(Boolean tlsVerify) {
+        this.tlsVerify = tlsVerify;
+    }
 
 	@Override
     public String toString() {

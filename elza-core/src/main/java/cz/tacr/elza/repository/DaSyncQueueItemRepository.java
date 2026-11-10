@@ -51,9 +51,29 @@ public interface DaSyncQueueItemRepository extends JpaRepository<DaSyncQueueItem
     List<DaSyncQueueItem> findByBatchIdAndStateAndActiveIsTrueOrderBySyncQueueItemId(String batchId,
                                                                                     DaSyncQueueItem.QueueItemState state);
 
-    /** When the earliest of the waiting items is to be taken; null when none waits for a time. */
-    @Query("SELECT MIN(i.nextAttemptAt) FROM da_sync_queue_item i WHERE i.state IN :states AND i.active = true")
-    OffsetDateTime findEarliestAttempt(@Param("states") Collection<DaSyncQueueItem.QueueItemState> states);
+    /**
+     * When the earliest of the items a processor can take is due: the next question about a batch
+     * in flight, or a waiting item of a repository without a batch in flight. Waiting items of a
+     * busy repository are left out - they cannot be taken before its batch is over, however long
+     * they have been due. Null when none waits for a time.
+     */
+    @Query("SELECT MIN(i.nextAttemptAt) FROM da_sync_queue_item i WHERE i.active = true"
+            + " AND (i.state = :inFlightState"
+            + " OR (i.state IN :states AND i.digitalRepository.externalSystemId NOT IN :busyRepositoryIds))")
+    OffsetDateTime findEarliestAttempt(@Param("inFlightState") DaSyncQueueItem.QueueItemState inFlightState,
+                                       @Param("states") Collection<DaSyncQueueItem.QueueItemState> states,
+                                       @Param("busyRepositoryIds") Collection<Integer> busyRepositoryIds);
+
+    /** Active items in the given states whose exchanges keep failing. */
+    @Query("SELECT COUNT(i) FROM da_sync_queue_item i"
+            + " WHERE i.state IN :states AND i.active = true AND i.failingSince IS NOT NULL")
+    long countFailing(@Param("states") Collection<DaSyncQueueItem.QueueItemState> states);
+
+    /** Since when the longest failing of the active items in the given states fails; null when none does. */
+    @Query("SELECT MIN(i.failingSince) FROM da_sync_queue_item i WHERE i.state IN :states AND i.active = true")
+    OffsetDateTime findFailingSince(@Param("states") Collection<DaSyncQueueItem.QueueItemState> states);
+
+    long countByStateInAndActiveIsTrue(Collection<DaSyncQueueItem.QueueItemState> states);
 
     /**
      * Action items carried by the AIP's active queue items in the given states - what a newly
@@ -73,7 +93,7 @@ public interface DaSyncQueueItemRepository extends JpaRepository<DaSyncQueueItem
                                                @Param("states") Collection<DaSyncQueueItem.QueueItemState> states);
 
     @Modifying
-    @Query("UPDATE da_sync_queue_item i SET i.active = false " +
+    @Query("UPDATE da_sync_queue_item i SET i.active = false, i.failingSince = null " +
             "WHERE i.code = :code " +
             "AND i.digitalRepository = :digitalRepository " +
             "AND i.state IN :states " +
@@ -89,6 +109,15 @@ public interface DaSyncQueueItemRepository extends JpaRepository<DaSyncQueueItem
      */
     DaSyncQueueItem findFirstByAipAndStateInAndActiveIsTrueOrderBySyncQueueItemIdDesc(DaAip aip,
                                                                                    Collection<DaSyncQueueItem.QueueItemState> states);
+
+    /**
+     * Active requests of the AIPs among the given states - what
+     * {@link #findFirstByAipAndStateInAndActiveIsTrueOrderBySyncQueueItemIdDesc} reads, for many
+     * AIPs at once; the caller picks the newest one of each AIP.
+     */
+    @Query("SELECT i FROM da_sync_queue_item i WHERE i.aip.aipId IN :aipIds AND i.state IN :states AND i.active = true")
+    List<DaSyncQueueItem> findActiveByAipIdsAndStates(@Param("aipIds") Collection<Integer> aipIds,
+                                                      @Param("states") Collection<DaSyncQueueItem.QueueItemState> states);
 
     /**
      * Pairs (aipId, actionItemId) of the action items the given queue items are carrying out.

@@ -4,6 +4,7 @@ import static cz.tacr.elza.service.dao.FileSystemRepoService.FILE_URI_PREFIX;
 
 import org.apache.commons.lang3.StringUtils;
 
+import cz.tacr.elza.api.DaApiAuthentication;
 import cz.tacr.elza.api.DaDownloadMethod;
 import cz.tacr.elza.api.DaOnReceivedAction;
 import cz.tacr.elza.api.DigitalRepositoryType;
@@ -44,6 +45,8 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
     private String fileTransferType;
 
     private Boolean tlsVerify;
+
+    private DaApiAuthentication apiAuthentication;
 
     public String getViewDaoUrl() {
         return viewDaoUrl;
@@ -149,6 +152,14 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
         this.tlsVerify = tlsVerify;
     }
 
+    public DaApiAuthentication getApiAuthentication() {
+        return apiAuthentication;
+    }
+
+    public void setApiAuthentication(DaApiAuthentication apiAuthentication) {
+        this.apiAuthentication = apiAuthentication;
+    }
+
     @Override
     public SysExternalSystem createEntity(ApScope scope) {
         ArrDigitalRepository entity = new ArrDigitalRepository();
@@ -200,9 +211,7 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
                 }
                 entity.setStatusPollInterval(statusPollInterval);
             }
-            // an empty key would sign the API requests with an empty secret; no key = no signature
-            entity.setApiKeyId(StringUtils.trimToNull(getApiKeyId()));
-            entity.setApiKeyValue(StringUtils.trimToNull(getApiKeyValue()));
+            fillApiAuthentication(entity);
             // an empty value means the default (derived endpoint, no type)
             entity.setFileTransferUrl(StringUtils.trimToNull(fileTransferUrl));
             entity.setFileTransferType(StringUtils.trimToNull(fileTransferType));
@@ -212,6 +221,41 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
         }
 
         return entity;
+    }
+
+    /**
+     * Sets the authentication of the DA REST API and checks that its credentials are filled in.
+     * A client that sends no method gets the one its API key implies. The API key is kept only
+     * for {@link DaApiAuthentication#API_KEY}, so no unused secret stays stored.
+     */
+    private void fillApiAuthentication(ArrDigitalRepository entity) {
+        // an empty key would sign the API requests with an empty secret
+        String keyId = StringUtils.trimToNull(getApiKeyId());
+        String keyValue = StringUtils.trimToNull(getApiKeyValue());
+        DaApiAuthentication authentication = apiAuthentication;
+        if (authentication == null) {
+            authentication = keyId != null && keyValue != null
+                    ? DaApiAuthentication.API_KEY : DaApiAuthentication.NONE;
+        }
+        switch (authentication) {
+            case API_KEY -> {
+                if (keyId == null || keyValue == null) {
+                    throw new BusinessException("Pro ověření API klíčem musí být vyplněno ID i hodnota klíče",
+                            BaseCode.PROPERTY_NOT_EXIST).set(BaseCode.PARAM_PROPERTY, keyId == null ? "apiKeyId" : "apiKeyValue");
+                }
+            }
+            case BASIC -> {
+                if (StringUtils.isBlank(entity.getUsername())) {
+                    throw new BusinessException("Pro ověření Basic musí být vyplněno uživatelské jméno",
+                            BaseCode.PROPERTY_NOT_EXIST).set(BaseCode.PARAM_PROPERTY, "username");
+                }
+            }
+            case NONE -> {
+            }
+        }
+        entity.setApiAuthentication(authentication);
+        entity.setApiKeyId(authentication == DaApiAuthentication.API_KEY ? keyId : null);
+        entity.setApiKeyValue(authentication == DaApiAuthentication.API_KEY ? keyValue : null);
     }
 
     public static ArrDigitalRepositoryVO newInstance(ArrDigitalRepository src) {
@@ -241,6 +285,7 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
         vo.setFileTransferUrl(src.getFileTransferUrl());
         vo.setFileTransferType(src.getFileTransferType());
         vo.setTlsVerify(src.getTlsVerify());
+        vo.setApiAuthentication(src.getApiAuthentication());
         return vo;
     }
 }

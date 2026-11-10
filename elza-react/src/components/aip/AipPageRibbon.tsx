@@ -9,6 +9,7 @@ import { storeFromArea } from "shared/utils";
 import { AppState } from "typings/store";
 import {Api} from "../../api";
 import {useThunkDispatch} from "../../utils/hooks";
+import { useAppSelector } from "utils/hooks/useAppSelector";
 import {modalDialogShow} from "../../actions/global/modalDialog";
 import AipUpdateTypeForm from "./AipUpdateTypeForm.tsx";
 import { runAipAction } from "./AipActionRunner";
@@ -29,6 +30,7 @@ import { useWebsocket } from "components/shared/web-socket/WebsocketProvider";
 const AipPageRibbon: FC = () => {
     const selectedAips = useSelector((state: AppState) => storeFromArea(state, AREA_SELECTED_AIPS));
     const aip =  useSelector((state: AppState) => storeFromArea(state, AREA_AIP));
+    const userDetail = useAppSelector(state => state.userDetail);
     const dispatch = useThunkDispatch();
     const intl = useIntl();
     const websocket = useWebsocket();
@@ -51,10 +53,14 @@ const AipPageRibbon: FC = () => {
      *
      * Akce je dostupná, pokud dává smysl aspoň pro jeden z předaných AIPů; u ostatních
      * ji server přeskočí. Tím se z pásu karet pozná, co lze v daném stavu udělat.
+     *
+     * Oprávnění musí mít uživatel ke všem předaným AIPům - jinak server odmítne celý požadavek.
      */
     const actionsFor = (aips: AipDetailVO[], keyPrefix: string): JSX.Element[] => {
     const aipIds = aips.map(a => a.aipId);
-    const some = (predicate: (aip: AipDetailVO) => boolean) => aips.some(predicate);
+    // an AIP attached to no fund needs a permission to arrange all funds
+    const allowed = aips.every(a => userDetail.hasArrPage(a.fund?.id));
+    const some = (predicate: (aip: AipDetailVO) => boolean) => allowed && aips.some(predicate);
 
     const canLoadMetadata = some(a => a.metadataLoad !== true);
     const canDeleteMetadata = some(a => a.metadataLoad === true);
@@ -91,7 +97,7 @@ const AipPageRibbon: FC = () => {
                 <span className="btnText">{<FormattedMessage {...messages.deleteAips} />}</span>
             </div>
         </Button>,
-        <Button key={`${keyPrefix}-updateAips`} onClick={() => handleUpdateAips(aips)}>
+        <Button key={`${keyPrefix}-updateAips`} disabled={!allowed} onClick={() => handleUpdateAips(aips)}>
             <Icon glyph="fa-refresh" />
             <div>
                 <span className="btnText">{<FormattedMessage {...messages.updateAips} />}</span>

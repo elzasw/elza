@@ -62,6 +62,21 @@ export function fundTreeSelectNode(
 }
 
 /**
+ * Adds the remembered expanded descendants of the nodes being expanded, so they open again with them.
+ */
+function withRememberedExpandedIds(fundTree, nodeIds, expandedIds) {
+    const result = { ...expandedIds };
+    fundTree.collapsedExpandedIds
+        .filter((entry) => nodeIds.includes(entry.nodeId))
+        .forEach((entry) => {
+            entry.expandedIds.forEach((id) => {
+                result[id] = true;
+            });
+        });
+    return result;
+}
+
+/**
  * Rozbalení uzlu.
  * @param {String} area oblast stromu
  * @param {int} versionId verze AS
@@ -386,7 +401,7 @@ export function fundTreeNodeExpand(area, node) {
         dispatch(_fundTreeNodeExpand(area, versionId, node, true));
 
         var nodeId = node.id;
-        var expandedIds = {...fundTree.expandedIds, [nodeId]: true};
+        var expandedIds = withRememberedExpandedIds(fundTree, [nodeId], { ...fundTree.expandedIds, [nodeId]: true });
         if (activeNode && activeNode.selectedSubNodeId === nodeId) {
             /*let json = {
                 nodes:[...activeNode.subNodeInfo.childNodes],
@@ -427,7 +442,11 @@ export function fundTreeNodesExpand(area, nodes) {
             dispatch(_fundTreeNodeExpand(area, versionId, nodes[0], true));
         }
 
-        var expandedIds = {...fundTree.expandedIds};
+        var expandedIds = withRememberedExpandedIds(
+            fundTree,
+            nodes.map((node) => node.id),
+            fundTree.expandedIds
+        );
 
         nodes.forEach((node) => {
             expandedIds[node.id] = true;

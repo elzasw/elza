@@ -142,7 +142,7 @@ export const processNodeNavigation = (nodeInfo: NodeInfo, versionId: number | nu
 
                     dispatch(fundSelectSubNode(
                         targetVersionId, nodeInfo.id, parentNode,
-                        false, null, false, undefined, undefined, true,
+                        false, null, true, undefined, undefined, true,
                     ));
                 } catch (e) {
                     console.error("Failed to navigate to node", nodeInfo, e);
