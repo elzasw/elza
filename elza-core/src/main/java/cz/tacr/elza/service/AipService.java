@@ -8,9 +8,11 @@ import cz.tacr.elza.domain.DaDaoRelation;
 import cz.tacr.elza.domain.DaLevelView;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.repository.AipRepository;
+import cz.tacr.elza.repository.AipRepositoryCustom.AipVisibility;
 import cz.tacr.elza.repository.AipStateRepository;
 import cz.tacr.elza.repository.DaDaoRepository;
 import cz.tacr.elza.repository.FilteredResult;
+import cz.tacr.elza.service.da.AipAuthorization;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import org.checkerframework.checker.units.qual.A;
@@ -34,6 +36,8 @@ public class AipService {
     private DaDaoRepository daDaoRepository;
     @Autowired
     private DaoService daoService;
+    @Autowired
+    private AipAuthorization aipAuthorization;
 
     /**
      * Stránka seznamu AIP; při hledání konkrétního balíčku nese i to, zda se ho podařilo najít.
@@ -45,7 +49,7 @@ public class AipService {
 
     @Transactional
     public FilteredResult<DaAip> findAipDetailsByFilter(SearchParams params) {
-        return aipRepository.findAipsByFilter(params);
+        return aipRepository.findAipsByFilter(params, aipAuthorization.visibility());
     }
 
     /**
@@ -57,19 +61,22 @@ public class AipService {
      */
     @Transactional
     public AipSearchResult findAipDetailsByFilter(SearchParams params, Integer focusAipId) {
+        AipVisibility visibility = aipAuthorization.visibility();
         if (focusAipId == null) {
-            return new AipSearchResult(aipRepository.findAipsByFilter(params), null);
+            return new AipSearchResult(aipRepository.findAipsByFilter(params, visibility), null);
         }
-        Integer offset = aipRepository.findAipPageOffset(params, focusAipId);
+        Integer offset = aipRepository.findAipPageOffset(params, focusAipId, visibility);
         if (offset != null) {
             params.setOffset(offset);
         }
-        return new AipSearchResult(aipRepository.findAipsByFilter(params), offset != null);
+        return new AipSearchResult(aipRepository.findAipsByFilter(params, visibility), offset != null);
     }
 
     @Transactional
     public AipDetailVO getAipDetail(@NotNull Integer id) {
-        return clientFactoryVO.createAipDetail(getAip(id));
+        DaAip aip = getAip(id);
+        aipAuthorization.checkRead(List.of(aip));
+        return clientFactoryVO.createAipDetail(aip);
     }
 
     /**
@@ -87,6 +94,7 @@ public class AipService {
 
     @Transactional
     public TreeDataCustomGen getAipsLogicalTree(List<Integer> aipIds) {
+        aipAuthorization.checkRead(aipRepository.findAllById(aipIds));
         TreeDataCustomGen result = new TreeDataCustomGen();
         List<DaDao> daoList = daoService.getDaosByTypeAndAipIn(aipIds, DaDao.DaoType.LOGICAL);
         // a logical part outside the level views (e.g. the root of the structure) has no place in the tree

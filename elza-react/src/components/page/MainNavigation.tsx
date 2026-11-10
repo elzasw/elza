@@ -50,6 +50,13 @@ export const MainNavigation = React.forwardRef<HTMLButtonElement>(function MainN
     const userDetail = useAppSelector(state => state.userDetail);
 
     const canSeeFunds = userDetail.hasOne(perms.FUND_RD_ALL, perms.FUND_RD, perms.FUND_CREATE);
+    const canSeeAips = userDetail.hasOne(
+        perms.FUND_ADMIN,
+        perms.FUND_RD_ALL,
+        perms.FUND_RD,
+        perms.FUND_ARR_ALL,
+        perms.FUND_ARR,
+    );
     const canSeeAdmin = userDetail.hasOne(
         perms.ADMIN,
         perms.USR_PERM,
@@ -78,14 +85,16 @@ export const MainNavigation = React.forwardRef<HTMLButtonElement>(function MainN
                     </Button>
                 </LinkContainer>
             )}
-            <LinkContainer key="ribbon-btn-aip" to={URL_AIP}>
-                <Button variant={'default'}>
-                    <Icon glyph="fa-archive" />
-                    <span className="btnText">
-                        <FormattedMessage {...messages.aip} />
-                    </span>
-                </Button>
-            </LinkContainer>
+            {canSeeAips && (
+                <LinkContainer key="ribbon-btn-aip" to={URL_AIP}>
+                    <Button variant={'default'}>
+                        <Icon glyph="fa-archive" />
+                        <span className="btnText">
+                            <FormattedMessage {...messages.aip} />
+                        </span>
+                    </Button>
+                </LinkContainer>
+            )}
             <LinkContainer key="ribbon-btn-registry" to={URL_ENTITY}>
                 <Button variant={'default'}>
                     <Icon glyph="fa-th-list" />

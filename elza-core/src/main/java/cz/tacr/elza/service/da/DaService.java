@@ -29,15 +29,12 @@ import cz.tacr.elza.core.security.Authorization;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDaLink;
 import cz.tacr.elza.domain.ArrDaoLink;
-import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDigitalRepository;
-import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.DaAip;
 import cz.tacr.elza.domain.DaAipAction;
-import cz.tacr.elza.domain.DaAipActionItem;
 import cz.tacr.elza.domain.DaAipState;
 import cz.tacr.elza.domain.DaChange;
 import cz.tacr.elza.domain.DaChangeType;
@@ -49,8 +46,6 @@ import cz.tacr.elza.domain.DaLevelView;
 import cz.tacr.elza.domain.DaLocalCache;
 import cz.tacr.elza.domain.DaRemoteRepositorySync;
 import cz.tacr.elza.domain.DaSyncQueueItem;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -68,9 +63,6 @@ import cz.tacr.elza.repository.DaLocalCacheRepository;
 import cz.tacr.elza.repository.DaRemoteRepositorySyncRepository;
 import cz.tacr.elza.repository.DaSyncQueueItemRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
-import cz.tacr.elza.repository.DataStringRepository;
-import cz.tacr.elza.repository.DataUnitdateRepository;
-import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
@@ -85,14 +77,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.DaoLinkPolicy;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.da.vo.DaUploadRequestImpl;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
-import cz.tacr.elza.service.eventnotification.events.EventIdNodeIdInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.utils.EadReaderWriter;
 import gov.loc.mets.v1_11.schema.AmdSecType;
@@ -108,7 +98,6 @@ import gov.loc.premis.v3.EventIdentifierComplexType;
 import gov.loc.premis.v3.IntellectualEntity;
 import gov.loc.premis.v3.LinkingAgentIdentifierComplexType;
 import gov.loc.premis.v3.LinkingObjectIdentifierComplexType;
-import gov.loc.premis.v3.ObjectComplexType;
 import gov.loc.premis.v3.ObjectIdentifierComplexType;
 import gov.loc.premis.v3.PremisComplexType;
 import gov.loc.premis.v3.SignificantPropertiesComplexType;
@@ -149,7 +138,6 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -242,6 +230,8 @@ public class DaService {
     @Autowired
     private AipStateRepository aipStateRepository;
     @Autowired
+    private AipAuthorization aipAuthorization;
+    @Autowired
     private DaoLinkRepository daoLinkRepository;
     @Autowired
     private ArrDaLinkRepository daLinkRepository;
@@ -262,12 +252,6 @@ public class DaService {
     @Autowired
     private NodeCacheService nodeCacheService;
     @Autowired
-    private FundRepository fundRepository;
-    @Autowired
-    private DataStringRepository dataStringRepository;
-    @Autowired
-    private DataUnitdateRepository dataUnitdateRepository;
-    @Autowired
     private DaAipReferenceResolver referenceResolver;
     @Autowired
     private DaAipActionService actionService;
@@ -285,8 +269,7 @@ public class DaService {
 
     /** Reads and writes what an action was asked to do; see {@link ConnectParams}. */
     private final ObjectMapper objectMapper = new ObjectMapper();
-    @Autowired
-    private AsyncRequestService asyncRequestService;
+
     @Autowired
     @Qualifier("transactionManager")
     private PlatformTransactionManager txManager;
@@ -622,6 +605,18 @@ public class DaService {
         return aipRepository.findById(aipId).orElseThrow(() -> new ObjectNotFoundException("Nebyl nalezen AIP=" + aipId, AIP_NOT_FOUND));
     }
 
+    /** The AIPs with the given ids. A request naming an AIP that does not exist fails as a whole. */
+    private List<DaAip> findAipsCheckExist(Collection<Integer> aipIds) {
+        List<DaAip> aipList = aipRepository.findAllById(aipIds);
+        Set<Integer> requested = new HashSet<>(aipIds);
+        if (aipList.size() != requested.size()) {
+            aipList.forEach(aip -> requested.remove(aip.getAipId()));
+            throw new ObjectNotFoundException("Nebyly nalezeny AIP=" + requested, AIP_NOT_FOUND)
+                    .set("aipIds", requested);
+        }
+        return aipList;
+    }
+
     public DaDao findDaoById(Integer daoId) {
         return daoRepository.findById(daoId).orElseThrow(() -> new ObjectNotFoundException("Nebylo nalezeno DAO=" + daoId, AIP_NOT_FOUND));
     }
@@ -641,8 +636,12 @@ public class DaService {
      */
     @Transactional
     public DaAipAction requestMetadata(List<Integer> aipIds) {
-        DaAipAction action = actionService.start(DaAipActionType.LOAD_METADATA, aipRepository.findAllById(aipIds));
-        createDaoStructure(aipIds, actionService.sinkFor(action));
+        List<DaAip> aipList = findAipsCheckExist(aipIds);
+        Map<DaAip, DaAipState> stateMap = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList).stream()
+                .collect(Collectors.toMap(DaAipState::getDaAip, Function.identity()));
+        aipAuthorization.checkArrangeStates(stateMap.values());
+        DaAipAction action = actionService.start(DaAipActionType.LOAD_METADATA, aipList);
+        createDaoStructure(aipList, stateMap, actionService.sinkFor(action));
         return action;
     }
 
@@ -679,10 +678,16 @@ public class DaService {
 
     @Transactional
     public void createDaoStructure(List<Integer> aipIds, AipOutcomeSink sink) {
-        List<DaAip> aipList = aipRepository.findAllById(aipIds);
+        List<DaAip> aipList = findAipsCheckExist(aipIds);
         Map<DaAip, DaAipState> stateMap = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList).stream()
                 .collect(Collectors.toMap(DaAipState::getDaAip, Function.identity()));
+        createDaoStructure(aipList, stateMap, sink);
+    }
 
+    /**
+     * @param stateMap the active states of the AIPs; an AIP without one is invalidated
+     */
+    private void createDaoStructure(List<DaAip> aipList, Map<DaAip, DaAipState> stateMap, AipOutcomeSink sink) {
         List<DaAipState> resolvedStates = new ArrayList<>();
 
         for (DaAip aip : aipList) {
@@ -716,7 +721,9 @@ public class DaService {
      */
     @Transactional
     public DaAipAction deleteMetadata(List<Integer> aipIds) {
-        DaAipAction action = actionService.start(DaAipActionType.DELETE_METADATA, aipRepository.findAllById(aipIds));
+        List<DaAip> aipList = findAipsCheckExist(aipIds);
+        aipAuthorization.checkArrange(aipList);
+        DaAipAction action = actionService.start(DaAipActionType.DELETE_METADATA, aipList);
         deleteDaoStructure(aipIds, actionService.sinkFor(action));
         return action;
     }
@@ -827,7 +834,7 @@ public class DaService {
 
     @Transactional
     public int remapReferences(List<Integer> aipIds, AipOutcomeSink sink) {
-        List<DaAip> aipList = aipRepository.findAllById(aipIds);
+        List<DaAip> aipList = findAipsCheckExist(aipIds);
         List<DaAipState> stateList = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList);
         Set<Integer> activeAipIds = stateList.stream().map(s -> s.getDaAip().getAipId()).collect(Collectors.toSet());
         aipList.stream().map(DaAip::getAipId).filter(id -> !activeAipIds.contains(id))
@@ -868,11 +875,12 @@ public class DaService {
 
     @Transactional
     public DaAipAction aipDownloadCompleteAip(List<Integer> aipIds) {
-        DaAipAction action = actionService.start(DaAipActionType.LOAD_COMPLETE_AIP, aipRepository.findAllById(aipIds));
-        AipOutcomeSink sink = actionService.sinkFor(action);
-        List<DaAip> aipList = aipRepository.findAllById(aipIds);
+        List<DaAip> aipList = findAipsCheckExist(aipIds);
         Map<DaAip, DaAipState> stateMap = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList).stream()
                 .collect(Collectors.toMap(DaAipState::getDaAip, Function.identity()));
+        aipAuthorization.checkArrangeStates(stateMap.values());
+        DaAipAction action = actionService.start(DaAipActionType.LOAD_COMPLETE_AIP, aipList);
+        AipOutcomeSink sink = actionService.sinkFor(action);
 
         for (DaAip aip : aipList) {
             DaAipState aipState = stateMap.get(aip);
@@ -896,11 +904,12 @@ public class DaService {
 
     @Transactional
     public DaAipAction aipDeleteCompleteAip(List<Integer> aipIds) {
-        DaAipAction action = actionService.start(DaAipActionType.DELETE_COMPLETE_AIP, aipRepository.findAllById(aipIds));
-        AipOutcomeSink sink = actionService.sinkFor(action);
-        List<DaAip> aipList = aipRepository.findAllById(aipIds);
+        List<DaAip> aipList = findAipsCheckExist(aipIds);
         Map<DaAip, DaAipState> stateMap = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList).stream()
                 .collect(Collectors.toMap(DaAipState::getDaAip, Function.identity()));
+        aipAuthorization.checkArrangeStates(stateMap.values());
+        DaAipAction action = actionService.start(DaAipActionType.DELETE_COMPLETE_AIP, aipList);
+        AipOutcomeSink sink = actionService.sinkFor(action);
 
         // The complete package is replaced by the metadata package when that one arrives, and the
         // flags follow the package on disk - so nothing is cleared here, the pending downgrade
@@ -928,13 +937,17 @@ public class DaService {
      * so an AIP that fails does not take the ones already done with it.
      */
     public DaAipAction aipUpdateAip(AipUpdateType type, List<Integer> aipIds) {
-        DaAipAction action = actionService.start(actionTypeOf(type), aipRepository.findAllById(aipIds));
+        DaAipAction action = inTransaction(() -> {
+            List<DaAip> aipList = findAipsCheckExist(aipIds);
+            aipAuthorization.checkArrange(aipList);
+            return actionService.start(actionTypeOf(type), aipList);
+        });
         AipOutcomeSink sink = actionService.sinkFor(action);
         if (type == AipUpdateType.DOWNLOAD_UPDATE) {
             // Enqueueing is a few inserts per AIP and cannot fail halfway through the work of
             // one, so the whole request is one transaction rather than one per AIP.
             inTransaction(() -> {
-                List<DaAip> aipList = aipRepository.findAllById(aipIds);
+                List<DaAip> aipList = findAipsCheckExist(aipIds);
                 Map<DaAip, DaAipState> stateMap = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList).stream()
                         .collect(Collectors.toMap(DaAipState::getDaAip, Function.identity()));
 
@@ -983,7 +996,9 @@ public class DaService {
 
     @Transactional
     public DaAipAction aipExportAip(List<Integer> aipIds) {
-        DaAipAction action = actionService.start(DaAipActionType.EXPORT, aipRepository.findAllById(aipIds));
+        List<DaAip> requested = findAipsCheckExist(aipIds);
+        aipAuthorization.checkArrange(requested);
+        DaAipAction action = actionService.start(DaAipActionType.EXPORT, requested);
         AipOutcomeSink sink = actionService.sinkFor(action);
         List<DaAip> aipList = aipRepository.findByIdAndLinkExists(aipIds);
         // Only an AIP attached to a unit of description can be exported; the query filters the
@@ -2390,6 +2405,7 @@ public class DaService {
     @Transactional
     public void connectPartListToJP(Integer nodeId, Integer daAipId, List<Integer> daDaoIdList) {
         ArrNode arrNode = nodeRepository.getOneCheckExist(nodeId);
+        checkArrPermission(arrNode);
         DaAip daAip = findAipById(daAipId);
         for (Integer daDaoId : daDaoIdList) {
             DaDao daDao = findDaoById(daDaoId);
@@ -2406,6 +2422,7 @@ public class DaService {
     @Transactional
     public void createJPFromSelectedList(Integer nodeId, Integer daAipId, List<Integer> daDaoIdList) {
         ArrNode arrNode = nodeRepository.getOneCheckExist(nodeId);
+        checkArrPermission(arrNode);
         DaAip daAip = findAipById(daAipId);
         for (Integer daDaoId : daDaoIdList) {
             DaDao daDao = findDaoById(daDaoId);
@@ -2428,6 +2445,7 @@ public class DaService {
     @Transactional
     public void connectSelectedListToJP(Integer nodeId, Integer daAipId, List<Integer> daDaoIdList) {
         ArrNode arrNode = nodeRepository.getOneCheckExist(nodeId);
+        checkArrPermission(arrNode);
         DaAip daAip = findAipById(daAipId);
         for (Integer daDaoId : daDaoIdList) {
             DaDao daDao = findDaoById(daDaoId);
@@ -2444,6 +2462,7 @@ public class DaService {
     @Transactional
     public void createAndLinkFromSelectedList(Integer nodeId, Integer daAipId, List<Integer> daDaoIdList) {
         ArrNode arrNode = nodeRepository.getOneCheckExist(nodeId);
+        checkArrPermission(arrNode);
         DaAip daAip = findAipById(daAipId);
         for (Integer daDaoId : daDaoIdList) {
             DaDao daDao = findDaoById(daDaoId);
@@ -2552,7 +2571,7 @@ public class DaService {
     @Transactional
     public List<BlockedAip> checkConnect(Integer nodeId, List<Integer> aipIds, boolean newNode) {
         List<BlockedAip> blocked = new ArrayList<>();
-        for (DaAip aip : aipRepository.findAllById(aipIds)) {
+        for (DaAip aip : findAipsCheckExist(aipIds)) {
             List<ArrDaLink> liveLinks =
                     daLinkRepository.findByAip_AipIdAndDaDaoIsNullAndDeleteChangeIsNull(aip.getAipId());
             boolean refused = newNode
@@ -2595,7 +2614,7 @@ public class DaService {
      * afterwards, so the request is answered without waiting for it.
      */
     private DaAipAction submitConnect(DaAipActionType actionType, List<Integer> aipIds, ConnectParams params) {
-        List<DaAip> aipList = aipRepository.findAllById(aipIds);
+        List<DaAip> aipList = findAipsCheckExist(aipIds);
         DaAipAction action = actionService.start(actionType, aipList, writeParams(params));
         actionService.enqueueSteps(action.getAipActionId());
         return action;
@@ -2620,8 +2639,8 @@ public class DaService {
     /** Attaches whole packages to an existing unit of description. */
     public DaAipAction submitBulkConnectToJP(Integer nodeId, List<Integer> aipIds) {
         inTransaction(() -> {
-            nodeRepository.getOneCheckExist(nodeId);
-            checkAllCanBeAttached(aipRepository.findAllById(aipIds), nodeId);
+            checkArrPermission(nodeRepository.getOneCheckExist(nodeId));
+            checkAllCanBeAttached(findAipsCheckExist(aipIds), nodeId);
             return null;
         });
         return inTransaction(() -> submitConnect(DaAipActionType.CONNECT_TO_NODE, aipIds,
@@ -2666,8 +2685,8 @@ public class DaService {
     /** Creates a unit of description per package and attaches the package there. */
     public DaAipAction submitBulkCreateFromSelected(Integer nodeId, List<Integer> aipIds) {
         inTransaction(() -> {
-            nodeRepository.getOneCheckExist(nodeId);
-            checkAllCanBeAttached(aipRepository.findAllById(aipIds), null);
+            checkArrPermission(nodeRepository.getOneCheckExist(nodeId));
+            checkAllCanBeAttached(findAipsCheckExist(aipIds), null);
             return null;
         });
         return inTransaction(() -> submitConnect(DaAipActionType.CREATE_NODES, aipIds,
@@ -2703,7 +2722,8 @@ public class DaService {
                                                Integer levelViewId, boolean createOwnNode) {
         ConnectParams params = inTransaction(() -> {
             ArrNode arrNode = nodeRepository.getOneCheckExist(nodeId);
-            checkAllCanBeAttached(aipRepository.findAllById(aipIds), null);
+            checkArrPermission(arrNode);
+            checkAllCanBeAttached(findAipsCheckExist(aipIds), null);
 
             DaLevelView levelView = daLevelViewRepository.findById(levelViewId).orElseThrow(
                     () -> new ObjectNotFoundException("Nebylo nalezeno level view s předaným ID. ID=" + levelViewId,
@@ -2818,6 +2838,7 @@ public class DaService {
     public ResponseEntity<Resource> getComponent(Integer fileId) {
         DaDaoFile daoFile = daoFileRepository.findById(fileId).orElseThrow(() -> new IllegalStateException("Nenalezen soubor s id " + fileId));
         DaAip aip = daoFile.getDao().getAip();
+        aipAuthorization.checkRead(List.of(aip));
         DaLocalCache localCache = daLocalCacheRepository.findByAipAndQueueItemStatesIn(aip, getQueueImportStates());
 
         try {
@@ -2962,6 +2983,7 @@ public class DaService {
 
     private Path getPackagePath(Integer aipId) {
         DaAip aip = findAipById(aipId);
+        aipAuthorization.checkRead(List.of(aip));
         DaLocalCache localCache = daLocalCacheRepository.findByAipAndQueueItemStatesIn(aip, getQueueImportStates());
         if (localCache == null || localCache.getFilePath() == null) {
             throw new ObjectNotFoundException("Pro AIP=" + aipId + " není stažený žádný balíček", AIP_NOT_FOUND);
