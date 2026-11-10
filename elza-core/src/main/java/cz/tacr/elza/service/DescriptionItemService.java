@@ -57,6 +57,7 @@ import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.data.StructType;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ApAccessPoint;
@@ -2182,11 +2183,12 @@ public class DescriptionItemService {
     }
 
     /**
-     * Data types accepted by bulk append, the same set as the text-based {@link #placeDescItemValues} supports.
+     * Data types accepted by bulk append: the set the text-based {@link #placeDescItemValues} supports plus
+     * STRUCTURED with a non-anonymous structure type.
      */
     private static final Set<DataType> BULK_APPEND_DATA_TYPES = Set.of(DataType.TEXT, DataType.FORMATTED_TEXT,
             DataType.STRING, DataType.INT, DataType.UNITID, DataType.UNITDATE, DataType.RECORD_REF, DataType.BIT,
-            DataType.URI_REF, DataType.DECIMAL, DataType.ENUM);
+            DataType.URI_REF, DataType.DECIMAL, DataType.ENUM, DataType.STRUCTURED);
 
     /**
      * Result of a bulk append.
@@ -2299,6 +2301,17 @@ public class DescriptionItemService {
                     .set("itemTypeId", itemType.getItemTypeId())
                     .set("dataType", dataType.getCode());
         }
+        if (dataType == DataType.STRUCTURED) {
+            StructType structType = fundContext.getSdp().getStructuredTypeById(itemType.getEntity().getStructuredTypeId());
+            // an object of an anonymous type belongs to a single value, so it cannot be shared by several nodes
+            boolean anonymous = BooleanUtils.isTrue(structType.getStructuredType().getAnonymous());
+            if (anonymous) {
+                throw new BusinessException("Hromadné přidání nepodporuje anonymní strukturovaný typ " + structType.getCode(),
+                        BaseCode.PROPERTY_HAS_INVALID_TYPE)
+                        .set("itemTypeId", itemType.getItemTypeId())
+                        .set("structureTypeCode", structType.getCode());
+            }
+        }
 
         List<ArrDescItem> templates = new ArrayList<>(values.size());
         for (BulkItemValue value : values) {
@@ -2322,7 +2335,7 @@ public class DescriptionItemService {
                 }
                 template.setItemSpec(itemSpec);
             }
-            template.setData(createBulkAppendData(itemData));
+            template.setData(createBulkAppendData(itemData, itemType, fundContext.getFund()));
             itemService.checkValidTypeAndSpec(fundContext, template, false);
 
             boolean repeated = templates.stream().anyMatch(other -> isEqualItemValue(other, template));
@@ -2335,7 +2348,7 @@ public class DescriptionItemService {
         return templates;
     }
 
-    private ArrData createBulkAppendData(final ItemData itemData) {
+    private ArrData createBulkAppendData(final ItemData itemData, final ItemType itemType, final ArrFund fund) {
         ArrData data = factoryDO.createArrData(itemData);
         if (data instanceof ArrDataRecordRef recordRef) {
             Integer accessPointId = recordRef.getRecordId();
@@ -2346,6 +2359,9 @@ public class DescriptionItemService {
             // createArrData only references the entity, existence is checked here
             recordRef.setRecord(apAccessPointRepository.findById(accessPointId).orElseThrow(ExceptionThrow.ap(accessPointId)));
         }
+        if (data instanceof ArrDataStructureRef structureRef) {
+            structureRef.setStructuredObject(findBulkAppendStructuredObject(structureRef.getStructuredObjectId(), itemType, fund));
+        }
         if (data instanceof ArrDataText dataText) {
             Validate.isTrue(StringUtils.isNotBlank(dataText.getTextValue()), "Textové pole nesmí být prázdné");
         }
@@ -2353,6 +2369,33 @@ public class DescriptionItemService {
             Validate.isTrue(StringUtils.isNotBlank(dataString.getStringValue()), "Stringové pole nesmí být prázdné");
         }
         return data;
+    }
+
+    /**
+     * Loads a structured object for bulk append. It must be one the client offers for the item type: from the
+     * fund, of the item type's structure type, confirmed, not deleted and assignable.
+     */
+    private ArrStructuredObject findBulkAppendStructuredObject(final Integer structuredObjectId,
+                                                               final ItemType itemType,
+                                                               final ArrFund fund) {
+        if (structuredObjectId == null) {
+            throw new BusinessException("Musí být vyplněn strukturovaný objekt", BaseCode.PROPERTY_NOT_EXIST)
+                    .set(BaseCode.PARAM_PROPERTY, "value");
+        }
+        ArrStructuredObject structuredObject = structuredObjectRepository.findById(structuredObjectId)
+                .orElseThrow(ExceptionThrow.structureData(structuredObjectId));
+
+        boolean sameFund = Objects.equals(structuredObject.getFundId(), fund.getFundId());
+        boolean sameType = Objects.equals(structuredObject.getStructuredTypeId(), itemType.getEntity().getStructuredTypeId());
+        boolean deleted = structuredObject.getDeleteChangeId() != null;
+        boolean temporary = structuredObject.getState() == ArrStructuredObject.State.TEMP;
+        boolean assignable = BooleanUtils.isTrue(structuredObject.getAssignable());
+        if (!sameFund || !sameType || deleted || temporary || !assignable) {
+            throw new BusinessException("Strukturovaný objekt nelze přiřadit", BaseCode.INVALID_STATE)
+                    .set("structuredObjectId", structuredObjectId)
+                    .set("itemTypeId", itemType.getItemTypeId());
+        }
+        return structuredObject;
     }
 
     /**

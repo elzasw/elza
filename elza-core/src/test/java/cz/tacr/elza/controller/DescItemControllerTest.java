@@ -5,6 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.awaitility.Awaitility.await;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.MINUTES;
 
 import java.util.Comparator;
 import java.util.HashSet;
@@ -14,6 +17,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -25,24 +29,39 @@ import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataStructureRef;
+import cz.tacr.elza.repository.SobjVrequestRepository;
 import cz.tacr.elza.test.controller.vo.BulkAppendRequest;
 import cz.tacr.elza.test.controller.vo.BulkChangeResult;
 import cz.tacr.elza.test.controller.vo.BulkItemValue;
 import cz.tacr.elza.test.controller.vo.BulkNodeSelection;
 import cz.tacr.elza.test.controller.vo.BulkSelectionType;
 import cz.tacr.elza.test.controller.vo.DataRecordRef;
+import cz.tacr.elza.test.controller.vo.DataStructureRef;
 import cz.tacr.elza.test.controller.vo.DataText;
 import cz.tacr.elza.test.controller.vo.DataType;
 import cz.tacr.elza.test.controller.vo.Fund;
 import cz.tacr.elza.test.controller.vo.ItemDataResult;
 import cz.tacr.elza.test.controller.vo.NodeItem;
 import cz.tacr.elza.test.controller.vo.NodeRef;
+import cz.tacr.elza.test.controller.vo.StructuredObject;
 
 public class DescItemControllerTest extends AbstractControllerTest {
 
     private static final String SRD_ENTITY_ROLE_2 = "SRD_ENTITY_ROLE_2";
 
     private static final String SRD_LANGUAGE_2 = "SRD_LANGUAGE_2";
+
+    private static final String SRD_STORAGE_ID = "SRD_STORAGE_ID";
+
+    private static final String SRD_PACKET = "SRD_PACKET";
+
+    private static final String SRD_PACKET_NUMBER = "SRD_PACKET_NUMBER";
+
+    private static final String SRD_ACCESS_RESTRICTION_ID = "SRD_ACCESS_RESTRICTION_ID";
+
+    @Autowired
+    private SobjVrequestRepository sobjVrequestRepository;
 
 	@Test
 	public void createUpdateDeleteDescItemTest() {
@@ -208,6 +227,58 @@ public class DescItemControllerTest extends AbstractControllerTest {
         assertAppendFails(fundVersion, languageType, nodeId, List.of(language));
     }
 
+    @Test
+    public void appendStructuredValuesTest() {
+        Fund fund = createFund("Bulk append structured", "bulkAppendStructured");
+        ArrFundVersionVO fundVersion = getOpenVersion(fund);
+        List<ArrNodeVO> nodes = createLevels(fundVersion);
+        Integer firstNodeId = nodes.get(1).getId();
+        Integer secondNodeId = nodes.get(2).getId();
+        List<Integer> nodeIds = List.of(firstNodeId, secondNodeId);
+        RulDescItemTypeExtVO storageType = findDescItemTypeByCode(SRD_STORAGE_ID);
+
+        Integer firstPacketId = createPacket(fund, 1, true);
+        Integer secondPacketId = createPacket(fund, 2, true);
+        List<BulkItemValue> values = List.of(structuredValue(firstPacketId), structuredValue(secondPacketId));
+        BulkChangeResult result = descitemsApi.descItemAppendDescItems(fundVersion.getId(),
+                bulkAppendRequest(storageType, selectNodes(nodeRefs(nodeIds)), values));
+        helperTestService.waitForWorkers();
+
+        assertEquals(4, result.getCreated());
+        assertEquals(0, result.getSkippedDuplicate());
+        assertEquals(2, result.getChangedNodes());
+        List<ItemSnapshot> items = findOpenItems(nodeIds, storageType);
+        assertEquals(List.of(firstNodeId, firstNodeId, secondNodeId, secondNodeId),
+                items.stream().map(ItemSnapshot::nodeId).toList());
+        assertEquals(List.of(firstPacketId, secondPacketId, firstPacketId, secondPacketId),
+                items.stream().map(ItemSnapshot::structuredObjectId).toList());
+
+        BulkChangeResult repeatedResult = descitemsApi.descItemAppendDescItems(fundVersion.getId(),
+                bulkAppendRequest(storageType, selectNodes(nodeRefs(nodeIds)), values));
+        assertEquals(0, repeatedResult.getCreated());
+        assertEquals(4, repeatedResult.getSkippedDuplicate());
+
+        // only objects offered by the client can be appended
+        Integer temporaryPacketId = createPacket(fund, 3, false);
+        Integer notAssignablePacketId = createPacket(fund, 4, true);
+        structureApi.sdoSetDataAssignable(fund.getId(), false, List.of(notAssignablePacketId));
+        Fund otherFund = createFund("Bulk append structured other fund", "bulkAppendStructuredOther");
+        Integer otherFundPacketId = createPacket(otherFund, 1, true);
+        assertAppendFails(fundVersion, storageType, firstNodeId, List.of(structuredValue(temporaryPacketId)));
+        assertAppendFails(fundVersion, storageType, firstNodeId, List.of(structuredValue(notAssignablePacketId)));
+        assertAppendFails(fundVersion, storageType, firstNodeId, List.of(structuredValue(otherFundPacketId)));
+        assertThrows(HttpClientErrorException.NotFound.class, () -> descitemsApi.descItemAppendDescItems(
+                fundVersion.getId(), bulkAppendRequest(storageType, selectNodes(nodeRefs(List.of(firstNodeId))),
+                        List.of(structuredValue(Integer.MAX_VALUE)))));
+
+        // an object of an anonymous structure type belongs to a single value
+        RulDescItemTypeExtVO restrictionType = findDescItemTypeByCode(SRD_ACCESS_RESTRICTION_ID);
+        assertAppendFails(fundVersion, restrictionType, firstNodeId, List.of(structuredValue(firstPacketId)));
+
+        assertEquals(4, findOpenItems(nodeIds, storageType).size());
+        waitForValidationQueue();
+    }
+
     private void assertAppendFails(final ArrFundVersionVO fundVersion,
                                    final RulDescItemTypeExtVO type,
                                    final Integer nodeId,
@@ -232,6 +303,34 @@ public class DescItemControllerTest extends AbstractControllerTest {
                 .data(createItemDataByDataTypeAndValue(dataType, value));
     }
 
+    private BulkItemValue structuredValue(final Integer structuredObjectId) {
+        return new BulkItemValue()
+                .data(new DataStructureRef().dataType(DataType.STRUCTURED).structuredObjectId(structuredObjectId));
+    }
+
+    /**
+     * Creates a packet with a number, confirmed when asked; a confirmed packet is assignable.
+     */
+    private Integer createPacket(final Fund fund, final int number, final boolean confirm) {
+        StructuredObject packet = structureApi.sdoCreateObject(fund.getId(), SRD_PACKET, null);
+        structureApi.sdoCreateItem(fund.getId(), packet.getId(),
+                buildStructuredObjectItem(SRD_PACKET_NUMBER, null, number, null, null, null));
+        if (confirm) {
+            structureApi.sdoConfirm(fund.getId(), packet.getId());
+        }
+        return packet.getId();
+    }
+
+    /**
+     * Waits until the structured object values are generated, so no revalidation runs after the test.
+     */
+    private void waitForValidationQueue() {
+        await().atMost(2, MINUTES)
+                .pollInterval(50, MILLISECONDS)
+                .untilAsserted(() -> assertEquals(0, sobjVrequestRepository.count(),
+                        "Fronta revalidací strukturovaných objektů nebyla zpracována"));
+    }
+
     private BulkNodeSelection selectNodes(final List<NodeRef> nodeRefs) {
         return new BulkNodeSelection().selectionType(BulkSelectionType.NODES).nodes(nodeRefs);
     }
@@ -244,7 +343,7 @@ public class DescItemControllerTest extends AbstractControllerTest {
     }
 
     private record ItemSnapshot(Integer nodeId, Integer position, Integer specId, Integer recordId,
-                                Integer createChangeId) {
+                                Integer structuredObjectId, Integer createChangeId) {
     }
 
     /**
@@ -256,8 +355,11 @@ public class DescItemControllerTest extends AbstractControllerTest {
                 .map(item -> {
                     ArrData data = HibernateUtils.unproxy(item.getData());
                     Integer recordId = data instanceof ArrDataRecordRef recordRef ? recordRef.getRecordId() : null;
+                    Integer structuredObjectId = data instanceof ArrDataStructureRef structureRef
+                            ? structureRef.getStructuredObjectId()
+                            : null;
                     return new ItemSnapshot(item.getNodeId(), item.getPosition(), item.getItemSpecId(), recordId,
-                            item.getCreateChangeId());
+                            structuredObjectId, item.getCreateChangeId());
                 })
                 .sorted(Comparator.comparing(ItemSnapshot::nodeId).thenComparing(ItemSnapshot::position))
                 .toList());
