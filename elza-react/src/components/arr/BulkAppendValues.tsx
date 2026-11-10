@@ -28,11 +28,16 @@ export interface BulkAppendLink {
     description?: string;
 }
 
+export interface BulkAppendStructuredObject {
+    id: number;
+    name: string;
+}
+
 export interface BulkAppendValue {
     /** Stable row key, so the legacy value inputs keep their state when an earlier row is removed */
     rowId?: number;
     specId?: number | string;
-    value?: string | BulkAppendRecord | BulkAppendLink;
+    value?: string | BulkAppendRecord | BulkAppendStructuredObject | BulkAppendLink;
 }
 
 const useStyles = makeStyles({
@@ -58,6 +63,8 @@ interface Props {
     name: string;
     dataType: RulDataTypeVO;
     refType: RulDescItemTypeExtVO;
+    /** Structured objects the value of a STRUCTURED item can be chosen from */
+    getStructuredObjects: (search: string) => Promise<BulkAppendStructuredObject[]>;
     disabled?: boolean;
 }
 
@@ -65,7 +72,7 @@ interface Props {
  * Rows of values for the bulk append, each with a specification (when the item type has them)
  * and a value input by the data type.
  */
-export function BulkAppendValues({ name, dataType, refType, disabled }: Props) {
+export function BulkAppendValues({ name, dataType, refType, getStructuredObjects, disabled }: Props) {
     const intl = useIntl();
     const styles = useStyles();
     const nextRowId = useRef(1);
@@ -96,6 +103,7 @@ export function BulkAppendValues({ name, dataType, refType, disabled }: Props) {
                                             specId={fields.value?.[index]?.specId}
                                             dataType={dataType}
                                             refType={refType}
+                                            getStructuredObjects={getStructuredObjects}
                                             disabled={disabled}
                                         />
                                     </div>
@@ -166,10 +174,11 @@ interface ValueFieldProps {
     specId?: number | string;
     dataType: RulDataTypeVO;
     refType: RulDescItemTypeExtVO;
+    getStructuredObjects: (search: string) => Promise<BulkAppendStructuredObject[]>;
     disabled?: boolean;
 }
 
-function ValueField({ name, specId, dataType, refType, disabled }: ValueFieldProps) {
+function ValueField({ name, specId, dataType, refType, getStructuredObjects, disabled }: ValueFieldProps) {
     const intl = useIntl();
     // shared props of the legacy desc item inputs
     const descItemProps = {
@@ -230,6 +239,17 @@ function ValueField({ name, specId, dataType, refType, disabled }: ValueFieldPro
                         />
                     )}
                 </Field>
+            );
+        case RulDataTypeCodeEnum.STRUCTURED:
+            return (
+                <Field
+                    name={name}
+                    type="asyncAutocomplete"
+                    component={FormInputField}
+                    label={<FormattedMessage {...arrMessages.fundBulkModificationsReplaceReplaceText} />}
+                    disabled={disabled}
+                    getItems={getStructuredObjects}
+                />
             );
         case RulDataTypeCodeEnum.BIT:
             return (

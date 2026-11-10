@@ -40,6 +40,7 @@ import {
     DataInteger,
     DataRecordRef,
     DataString,
+    DataStructureRef,
     DataText,
     DataType,
     DataUnitdate,
@@ -182,6 +183,7 @@ const parseAppendDecimal = (text: string) => Number(text.trim().replace(',', '.'
 const hasAppendValue = (value: BulkAppendValue['value'], dataTypeCode: string) => {
     switch (dataTypeCode) {
         case RulDataTypeCodeEnum.RECORD_REF:
+        case RulDataTypeCodeEnum.STRUCTURED:
             return isAppendRecord(value) && !!value.id;
         case RulDataTypeCodeEnum.URI_REF:
             return isAppendLink(value) && !!value.value;
@@ -270,6 +272,13 @@ const createAppendItemData = (value: BulkAppendValue['value'], dataTypeCode: str
         }
         case RulDataTypeCodeEnum.RECORD_REF: {
             const data: DataRecordRef = { dataType: DataType.RecordRef, value: isAppendRecord(value) ? value.id : 0 };
+            return data;
+        }
+        case RulDataTypeCodeEnum.STRUCTURED: {
+            const data: DataStructureRef = {
+                dataType: DataType.Structured,
+                structuredObjectId: isAppendRecord(value) ? value.id : 0,
+            };
             return data;
         }
         case RulDataTypeCodeEnum.URI_REF: {
@@ -382,10 +391,10 @@ const FundBulkModificationsForm = ({
     };
 
     const getIsAppendSupported = () => {
-        // !useSpecification && (INT, STRING, TEXT, UNITDATE, UNITID, BIT, FORMATTED_TEXT, )
         switch (dataType.code) {
-            // the server does not append these data types
             case RulDataTypeCodeEnum.STRUCTURED:
+                return getIsSharedStructureType();
+            // the server does not append these data types
             case RulDataTypeCodeEnum.DATE:
             case RulDataTypeCodeEnum.COORDINATES:
             case RulDataTypeCodeEnum.FILE_REF:
@@ -411,15 +420,22 @@ const FundBulkModificationsForm = ({
         return refType.useSpecification;
     };
 
+    /**
+     * True when the objects of the item's structure type are shared, so one object can be assigned to many nodes.
+     */
+    const getIsSharedStructureType = () => {
+        if (!structureTypes) {
+            return true;
+        }
+        const structTypes = objectById(structureTypes.data, versionId, 'versionId');
+        const structureType = structTypes ? objectById(structTypes.data, refType.structureTypeId) : null;
+        return structureType ? !structureType.anonymous : false;
+    };
+
     const getIsSetValueSupported = () => {
         switch (dataType.code) {
             case RulDataTypeCodeEnum.STRUCTURED:
-                if (structureTypes) {
-                    let structTypes = objectById(structureTypes.data, versionId, 'versionId');
-                    let structureType = structTypes ? objectById(structTypes.data, refType.structureTypeId) : null;
-                    return structureType ? !structureType.anonymous : false;
-                }
-                return true;
+                return getIsSharedStructureType();
             default:
                 return false;
         }
@@ -469,7 +485,7 @@ const FundBulkModificationsForm = ({
         return dataType.code === RulDataTypeCodeEnum.ENUM;
     };
 
-    const findStructureData = async (value: string = ""): Promise<StructureDataSimple[] | undefined> => {
+    const findStructureData = async (value: string = ""): Promise<StructureDataSimple[]> => {
         const _structureTypes = objectById(structureTypes?.data, versionId, 'versionId');
         const structureType = _structureTypes ? objectById(_structureTypes.data, refType.structureTypeId) : undefined;
 
@@ -563,6 +579,7 @@ const FundBulkModificationsForm = ({
                         name="appendValues"
                         dataType={dataType}
                         refType={refType}
+                        getStructuredObjects={findStructureData}
                         disabled={submitting}
                     />,
                 );

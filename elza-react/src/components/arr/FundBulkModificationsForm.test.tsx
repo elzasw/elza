@@ -1,10 +1,13 @@
 import { describe, it, expect, vi } from 'vitest';
 
-import { renderWithProviders, screen, fireEvent } from 'test/test-utils';
+import { createTestStore, renderWithProviders, screen, fireEvent } from 'test/test-utils';
+import type { TestStore } from 'test/test-utils';
+import * as types from 'actions/constants/ActionTypes';
 import { RulDataTypeCodeEnum } from 'api/RulDataTypeCodeEnum';
 import type { RulDataTypeVO } from 'api/RulDataTypeVO';
 import type { RulDescItemSpecExtVO } from 'api/RulDescItemSpecExtVO';
 import type { RulDescItemTypeExtVO } from 'api/RulDescItemTypeExtVO';
+import type { BulkAppendValue } from './BulkAppendValues';
 import FundBulkModificationsForm, { OperationType } from './FundBulkModificationsForm';
 
 /**
@@ -30,26 +33,60 @@ const itemType = (name: string): RulDescItemTypeExtVO =>
         descItemSpecs: [spec(11, 'čeština'), spec(12, 'angličtina')],
     }) as RulDescItemTypeExtVO;
 
+const VERSION_ID = 7;
+const STRUCTURE_TYPE_ID = 3;
+
+const packetItemType = {
+    id: 6,
+    name: 'Ukládací jednotka',
+    shortcut: 'Ukládací jednotka',
+    useSpecification: false,
+    descItemSpecs: [],
+    structureTypeId: STRUCTURE_TYPE_ID,
+} as RulDescItemTypeExtVO;
+
 const dataType = (code: RulDataTypeCodeEnum) => ({ id: 1, code, name: code }) as RulDataTypeVO;
 
-const renderForm = (code: RulDataTypeCodeEnum, operationType: OperationType, onSubmitForm = vi.fn()) =>
+interface RenderOptions {
+    refType?: RulDescItemTypeExtVO;
+    appendValues?: BulkAppendValue[];
+    store?: TestStore;
+}
+
+const renderForm = (
+    code: RulDataTypeCodeEnum,
+    operationType: OperationType,
+    onSubmitForm = vi.fn(),
+    { refType = itemType('Jazyk'), appendValues = [{}], store }: RenderOptions = {}
+) =>
     renderWithProviders(
         <FundBulkModificationsForm
             initialValues={{
                 itemsArea: 'page',
                 specs: { type: 'unselected', ids: [] },
-                appendValues: [{}],
+                appendValues,
                 operationType,
             }}
             dataType={dataType(code)}
-            refType={itemType('Jazyk')}
-            versionId={7}
+            refType={refType}
+            versionId={VERSION_ID}
             allItemsCount={3}
             checkedItemsCount={0}
             onClose={vi.fn()}
             onSubmitForm={onSubmitForm}
-        />
+        />,
+        { store }
     );
+
+const storeWithPacketType = (anonymous: boolean) => {
+    const store = createTestStore();
+    store.dispatch({
+        type: types.REF_STRUCTURE_TYPES_RECEIVE,
+        versionId: VERSION_ID,
+        data: [{ id: STRUCTURE_TYPE_ID, name: 'Obal', code: 'SRD_PACKET', anonymous }],
+    });
+    return store;
+};
 
 const field = (container: HTMLElement, tag: 'select' | 'input', name: string) => {
     const element = container.querySelector<HTMLSelectElement | HTMLInputElement>(`${tag}[name="${name}"]`);
@@ -129,6 +166,41 @@ describe('FundBulkModificationsForm - přidání více hodnot', () => {
         const removeButtons = screen.getAllByRole('button', { name: 'Odebrat hodnotu' });
         expect(removeButtons).toHaveLength(2);
         removeButtons.forEach((button) => expect(button).toBeEnabled());
+    });
+
+    it('odešle strukturovaný objekt jako DataStructureRef, prázdný řádek odmítne', async () => {
+        const onSubmitForm = vi.fn().mockResolvedValue(undefined);
+        renderForm(RulDataTypeCodeEnum.STRUCTURED, OperationType.APPEND, onSubmitForm, {
+            refType: packetItemType,
+            appendValues: [{ rowId: 0, value: { id: 70, name: 'Krabice 1' } }, { rowId: 1 }],
+        });
+
+        fireEvent.click(screen.getByRole('button', { name: 'Uložit' }));
+        expect(await screen.findByText('Pole je povinné')).toBeInTheDocument();
+        expect(onSubmitForm).not.toHaveBeenCalled();
+
+        fireEvent.click(screen.getAllByRole('button', { name: 'Odebrat hodnotu' })[1]);
+        fireEvent.click(screen.getByRole('button', { name: 'Uložit' }));
+        await vi.waitFor(() => expect(onSubmitForm).toHaveBeenCalledTimes(1));
+        expect(onSubmitForm.mock.calls[0][0]).toMatchObject({
+            appendItemValues: [{ data: { dataType: 'STRUCTURED', structuredObjectId: 70 } }],
+        });
+    });
+
+    it('přidání strukturovaného prvku nabízí jen pro neanonymní typ', () => {
+        const appendOption = { name: 'Přidat obsah prvku popisu' };
+        const { unmount } = renderForm(RulDataTypeCodeEnum.STRUCTURED, OperationType.DELETE, vi.fn(), {
+            refType: packetItemType,
+            store: storeWithPacketType(false),
+        });
+        expect(screen.getByRole('option', appendOption)).toBeInTheDocument();
+        unmount();
+
+        renderForm(RulDataTypeCodeEnum.STRUCTURED, OperationType.DELETE, vi.fn(), {
+            refType: packetItemType,
+            store: storeWithPacketType(true),
+        });
+        expect(screen.queryByRole('option', appendOption)).not.toBeInTheDocument();
     });
 
     it('seznam specifikací k filtrování nabízí smazání, přidání ne', () => {
