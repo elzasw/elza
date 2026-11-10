@@ -1,8 +1,8 @@
-import { PropsWithChildren, useEffect, useRef} from 'react';
+import { PropsWithChildren, useEffect, useRef, useState} from 'react';
 import ReactDOM from 'react-dom';
 import {Modal} from 'react-bootstrap';
 import {setInputFocus} from 'components/Utils.jsx';
-import { FluentProvider } from '@fluentui/react-components';
+import { FluentProvider, PortalMountNodeProvider } from '@fluentui/react-components';
 
 /**
  * Obal modálního dialogu
@@ -25,6 +25,10 @@ export const ModalDialogWrapper = ({
 }: Props) => {
     const modalBody = useRef<HTMLDivElement>(null);
     const hide = useRef(false);
+    // Fluent portals (dialogs, menus, popovers) opened from the content are mounted inside this
+    // bootstrap modal: its focus trap moves focus back to the modal whenever the focused element
+    // lies outside of it, so a Fluent dialog in the default body portal could not keep focus.
+    const [portalMountNode, setPortalMountNode] = useState<HTMLDivElement | null>(null);
 
     useEffect(()=>{
         if (modalBody) {
@@ -58,8 +62,11 @@ export const ModalDialogWrapper = ({
                 )}
 
                 <div style={{flexGrow: 1, minHeight: 0, minWidth: 0}} ref={modalBody} className="modal-body-container">
-                    {children}
+                    <PortalMountNodeProvider value={portalMountNode ?? undefined}>
+                        {children}
+                    </PortalMountNodeProvider>
                 </div>
+                <div ref={setPortalMountNode} />
             </FluentProvider>
         </Modal>
     );
