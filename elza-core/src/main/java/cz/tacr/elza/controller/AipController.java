@@ -6,6 +6,7 @@ import cz.tacr.elza.domain.*;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.service.AipService;
 import cz.tacr.elza.service.ExternalSystemService;
+import cz.tacr.elza.service.da.AipAuthorization;
 import cz.tacr.elza.service.da.DaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -34,6 +35,8 @@ public class AipController implements AipsApi {
     private AipService aipService;
     @Autowired
     private ClientFactoryVO clientFactoryVO;
+    @Autowired
+    private AipAuthorization aipAuthorization;
 
     @Override
     public ResponseEntity<DaAipActionVO> aipCreateDaoStructure(List<Integer> aipIds) {
@@ -115,6 +118,7 @@ public class AipController implements AipsApi {
 
     @Override
     public ResponseEntity<Void> aipImportPackage(Integer digitalRepositoryId, AipType aipType, Resource file) {
+        aipAuthorization.checkImport();
         try {
             try (InputStream is = file.getInputStream()) {
                 ArrDigitalRepository digitalRepository = externalSystemService.getDigitalRepository(digitalRepositoryId);
@@ -277,7 +281,8 @@ public class AipController implements AipsApi {
      */
     @Override
     public ResponseEntity<Void> aipConnectToJp(Integer arrNodeId, Integer daAipId) {
-        daService.connectToJP(arrNodeId, daAipId);
+        // createDaoLink does the same as connectToJP and checks the permission to arrange the fund
+        daService.createDaoLink(daAipId, null, arrNodeId, ArrDaoLink.LinkType.AIP);
         return ResponseEntity.ok().build();
     }
 }
