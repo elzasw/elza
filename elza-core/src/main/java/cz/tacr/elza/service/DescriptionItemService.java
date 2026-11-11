@@ -3,6 +3,7 @@ package cz.tacr.elza.service;
 import static cz.tacr.elza.common.string.Normalizer.normalizeLineEnds;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -2178,6 +2179,11 @@ public class DescriptionItemService {
             ArrDataDecimal itemDecimal = new ArrDataDecimal();
             itemDecimal.setValue(new BigDecimal(text));
             return itemDecimal;
+        case DATE:
+            Validate.isTrue(StringUtils.isNotEmpty(text), "Musí být vyplněno datum");
+            ArrDataDate itemDate = new ArrDataDate();
+            itemDate.setValue(LocalDate.parse(text));
+            return itemDate;
         case ENUM:
             Validate.isTrue(StringUtils.isBlank(text), "Pro výčtový typ nelze zadat ext");
             ArrDataNull dataNull = new ArrDataNull();

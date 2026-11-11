@@ -289,3 +289,23 @@ describe('FundBulkModificationsForm - přidání více hodnot', () => {
         expect(screen.queryByText('Aplikovat na hodnoty')).not.toBeInTheDocument();
     });
 });
+
+describe('FundBulkModificationsForm - nastavení celého obsahu', () => {
+    it('datum vybere v date inputu a odešle jako ISO text', async () => {
+        const onSubmitForm = vi.fn().mockResolvedValue(undefined);
+        const { container } = renderForm(RulDataTypeCodeEnum.DATE, OperationType.REPLACE, onSubmitForm, {
+            refType: itemTypeWithoutSpec('Datum'),
+        });
+
+        const dateInput = field(container, 'input', 'replaceText');
+        expect(dateInput).toHaveAttribute('type', 'date');
+        fireEvent.change(dateInput, { target: { value: '2026-11-11' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Nastavit' }));
+
+        await vi.waitFor(() => expect(onSubmitForm).toHaveBeenCalledTimes(1));
+        expect(onSubmitForm.mock.calls[0][0]).toMatchObject({
+            operationType: OperationType.REPLACE,
+            replaceText: '2026-11-11',
+        });
+    });
+});

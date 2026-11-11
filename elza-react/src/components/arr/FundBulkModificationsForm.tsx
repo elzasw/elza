@@ -186,6 +186,17 @@ const getAppendText = (value: BulkAppendValue['value']) => (typeof value === 'st
 // the decimal comma is accepted as in the description item form
 const parseAppendDecimal = (text: string) => Number(text.trim().replace(',', '.'));
 
+const getReplaceInputType = (dataTypeCode: string) => {
+    switch (dataTypeCode) {
+        case RulDataTypeCodeEnum.TEXT:
+            return 'textarea';
+        case RulDataTypeCodeEnum.DATE:
+            return 'date';
+        default:
+            return 'text';
+    }
+};
+
 const hasAppendValue = (value: BulkAppendValue['value'], dataTypeCode: string) => {
     switch (dataTypeCode) {
         case RulDataTypeCodeEnum.RECORD_REF:
@@ -716,7 +727,7 @@ const FundBulkModificationsForm = ({
                             <Field
                                 key="replaceText"
                                 name="replaceText"
-                                type={dataType.code === "TEXT" ? "textarea" : "text"}
+                                type={getReplaceInputType(dataType.code)}
                                 component={FormInputField}
                                 label={<FormattedMessage {...arrMessages.fundBulkModificationsReplaceReplaceText} />}
                                 disabled={submitting}
