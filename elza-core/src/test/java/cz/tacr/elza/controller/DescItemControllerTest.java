@@ -310,6 +310,10 @@ public class DescItemControllerTest extends AbstractControllerTest {
 
     /**
      * Creates a packet with a number, confirmed when asked; a confirmed packet is assignable.
+     *
+     * The confirmation queues the generation of the packet value, and the generator saves the whole
+     * packet. The method returns after the generator is done, so it cannot overwrite a later change
+     * of the packet (e.g. of its assignability) with the state it loaded earlier.
      */
     private Integer createPacket(final Fund fund, final int number, final boolean confirm) {
         StructuredObject packet = structureApi.sdoCreateObject(fund.getId(), SRD_PACKET, null);
@@ -317,6 +321,7 @@ public class DescItemControllerTest extends AbstractControllerTest {
                 buildStructuredObjectItem(SRD_PACKET_NUMBER, null, number, null, null, null));
         if (confirm) {
             structureApi.sdoConfirm(fund.getId(), packet.getId());
+            waitForValidationQueue();
         }
         return packet.getId();
     }
