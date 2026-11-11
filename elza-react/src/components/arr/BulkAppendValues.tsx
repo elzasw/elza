@@ -7,7 +7,6 @@ import { defineMessages, FormattedMessage, useIntl } from 'react-intl';
 import { RulDataTypeCodeEnum } from 'api/RulDataTypeCodeEnum';
 import { RulDataTypeVO } from 'api/RulDataTypeVO';
 import { RulDescItemTypeExtVO } from 'api/RulDescItemTypeExtVO';
-import { globalMessages } from 'components/shared/lang/messages';
 import FormInputField from '../shared/form/FormInputField';
 import { arrMessages } from './messages';
 import DescItemLink from './nodeForm/DescItemLink';
@@ -28,7 +27,8 @@ export interface BulkAppendLink {
     description?: string;
 }
 
-export interface BulkAppendStructuredObject {
+/** A structured object or a fund file offered by an autocomplete */
+export interface BulkAppendOption {
     id: number;
     name: string;
 }
@@ -37,7 +37,7 @@ export interface BulkAppendValue {
     /** Stable row key, so the legacy value inputs keep their state when an earlier row is removed */
     rowId?: number;
     specId?: number | string;
-    value?: string | BulkAppendRecord | BulkAppendStructuredObject | BulkAppendLink;
+    value?: string | BulkAppendRecord | BulkAppendOption | BulkAppendLink;
 }
 
 const useStyles = makeStyles({
@@ -64,7 +64,9 @@ interface Props {
     dataType: RulDataTypeVO;
     refType: RulDescItemTypeExtVO;
     /** Structured objects the value of a STRUCTURED item can be chosen from */
-    getStructuredObjects: (search: string) => Promise<BulkAppendStructuredObject[]>;
+    getStructuredObjects: (search: string) => Promise<BulkAppendOption[]>;
+    /** Files of the fund the value of a FILE_REF item can be chosen from */
+    getFundFiles: (search: string) => Promise<BulkAppendOption[]>;
     disabled?: boolean;
 }
 
@@ -72,7 +74,7 @@ interface Props {
  * Rows of values for the bulk append, each with a specification (when the item type has them)
  * and a value input by the data type.
  */
-export function BulkAppendValues({ name, dataType, refType, getStructuredObjects, disabled }: Props) {
+export function BulkAppendValues({ name, dataType, refType, getStructuredObjects, getFundFiles, disabled }: Props) {
     const intl = useIntl();
     const styles = useStyles();
     const nextRowId = useRef(1);
@@ -104,6 +106,7 @@ export function BulkAppendValues({ name, dataType, refType, getStructuredObjects
                                             dataType={dataType}
                                             refType={refType}
                                             getStructuredObjects={getStructuredObjects}
+                                            getFundFiles={getFundFiles}
                                             disabled={disabled}
                                         />
                                     </div>
@@ -174,12 +177,31 @@ interface ValueFieldProps {
     specId?: number | string;
     dataType: RulDataTypeVO;
     refType: RulDescItemTypeExtVO;
-    getStructuredObjects: (search: string) => Promise<BulkAppendStructuredObject[]>;
+    getStructuredObjects: (search: string) => Promise<BulkAppendOption[]>;
+    getFundFiles: (search: string) => Promise<BulkAppendOption[]>;
     disabled?: boolean;
 }
 
-function ValueField({ name, specId, dataType, refType, getStructuredObjects, disabled }: ValueFieldProps) {
-    const intl = useIntl();
+const getTextInputType = (dataTypeCode: string) => {
+    switch (dataTypeCode) {
+        case RulDataTypeCodeEnum.COORDINATES:
+            return 'textarea';
+        case RulDataTypeCodeEnum.DATE:
+            return 'date';
+        default:
+            return 'text';
+    }
+};
+
+function ValueField({
+    name,
+    specId,
+    dataType,
+    refType,
+    getStructuredObjects,
+    getFundFiles,
+    disabled,
+}: ValueFieldProps) {
     // shared props of the legacy desc item inputs
     const descItemProps = {
         hasSpecification: refType.useSpecification,
@@ -241,6 +263,7 @@ function ValueField({ name, specId, dataType, refType, getStructuredObjects, dis
                 </Field>
             );
         case RulDataTypeCodeEnum.STRUCTURED:
+        case RulDataTypeCodeEnum.FILE_REF:
             return (
                 <Field
                     name={name}
@@ -248,28 +271,14 @@ function ValueField({ name, specId, dataType, refType, getStructuredObjects, dis
                     component={FormInputField}
                     label={<FormattedMessage {...arrMessages.fundBulkModificationsReplaceReplaceText} />}
                     disabled={disabled}
-                    getItems={getStructuredObjects}
+                    getItems={dataType.code === RulDataTypeCodeEnum.FILE_REF ? getFundFiles : getStructuredObjects}
                 />
-            );
-        case RulDataTypeCodeEnum.BIT:
-            return (
-                <Field
-                    name={name}
-                    type="select"
-                    component={FormInputField}
-                    label={<FormattedMessage {...arrMessages.fundBulkModificationsReplaceReplaceText} />}
-                    disabled={disabled}
-                >
-                    <option />
-                    <option value="true">{intl.formatMessage(globalMessages.yes)}</option>
-                    <option value="false">{intl.formatMessage(globalMessages.no)}</option>
-                </Field>
             );
         default:
             return (
                 <Field
                     name={name}
-                    type={dataType.code === RulDataTypeCodeEnum.TEXT ? 'textarea' : 'text'}
+                    type={getTextInputType(dataType.code)}
                     component={FormInputField}
                     label={<FormattedMessage {...arrMessages.fundBulkModificationsReplaceReplaceText} />}
                     disabled={disabled}

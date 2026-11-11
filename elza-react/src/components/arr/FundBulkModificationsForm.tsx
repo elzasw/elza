@@ -22,7 +22,7 @@ import './FundBulkModificationsForm.scss';
 import DescItemRecordRef from './nodeForm/DescItemRecordRef';
 import DescItemUnitdate from './nodeForm/DescItemUnitdate';
 import SimpleCheckListBox from './SimpleCheckListBox';
-import { useThunkDispatch } from 'utils/hooks';
+import { useActiveFund, useThunkDispatch } from 'utils/hooks';
 import { RulDataTypeVO } from 'api/RulDataTypeVO';
 import { RulDataTypeCodeEnum } from 'api/RulDataTypeCodeEnum';
 import { AppState } from 'typings/store';
@@ -33,22 +33,28 @@ import { useSelector } from 'react-redux';
 import DescItemLink from './nodeForm/DescItemLink';
 import {
     BulkItemValue,
-    DataBit,
+    DataCoordinates,
+    DataDate,
     DataDecimal,
     DataEnum,
-    DataFormattedText,
+    DataFileRef,
     DataInteger,
     DataRecordRef,
     DataString,
     DataStructureRef,
-    DataText,
     DataType,
     DataUnitdate,
     DataUnitid,
     DataUriRef,
     ItemData,
 } from 'elza-api';
-import { BulkAppendLink, BulkAppendRecord, BulkAppendValue, BulkAppendValues } from './BulkAppendValues';
+import {
+    BulkAppendLink,
+    BulkAppendOption,
+    BulkAppendRecord,
+    BulkAppendValue,
+    BulkAppendValues,
+} from './BulkAppendValues';
 
 export enum OperationType {
     DELETE = "delete",
@@ -184,6 +190,7 @@ const hasAppendValue = (value: BulkAppendValue['value'], dataTypeCode: string) =
     switch (dataTypeCode) {
         case RulDataTypeCodeEnum.RECORD_REF:
         case RulDataTypeCodeEnum.STRUCTURED:
+        case RulDataTypeCodeEnum.FILE_REF:
             return isAppendRecord(value) && !!value.id;
         case RulDataTypeCodeEnum.URI_REF:
             return isAppendLink(value) && !!value.value;
@@ -238,14 +245,6 @@ const validateAppendValue = (row: BulkAppendValue, props: { refType: RulDescItem
 const createAppendItemData = (value: BulkAppendValue['value'], dataTypeCode: string): ItemData => {
     const text = getAppendText(value);
     switch (dataTypeCode) {
-        case RulDataTypeCodeEnum.TEXT: {
-            const data: DataText = { dataType: DataType.Text, textValue: text };
-            return data;
-        }
-        case RulDataTypeCodeEnum.FORMATTED_TEXT: {
-            const data: DataFormattedText = { dataType: DataType.FormattedText, value: text };
-            return data;
-        }
         case RulDataTypeCodeEnum.STRING: {
             const data: DataString = { dataType: DataType.String, stringValue: text };
             return data;
@@ -266,8 +265,16 @@ const createAppendItemData = (value: BulkAppendValue['value'], dataTypeCode: str
             const data: DataUnitdate = { dataType: DataType.Unitdate, value: text };
             return data;
         }
-        case RulDataTypeCodeEnum.BIT: {
-            const data: DataBit = { dataType: DataType.Bit, bitValue: text.toLowerCase() === 'true' };
+        case RulDataTypeCodeEnum.DATE: {
+            const data: DataDate = { dataType: DataType.Date, value: text };
+            return data;
+        }
+        case RulDataTypeCodeEnum.COORDINATES: {
+            const data: DataCoordinates = { dataType: DataType.Coordinates, value: text.trim() };
+            return data;
+        }
+        case RulDataTypeCodeEnum.FILE_REF: {
+            const data: DataFileRef = { dataType: DataType.FileRef, fileId: isAppendRecord(value) ? value.id : 0 };
             return data;
         }
         case RulDataTypeCodeEnum.RECORD_REF: {
@@ -354,6 +361,7 @@ const FundBulkModificationsForm = ({
 }: Props) => {
     const intl = useIntl();
     const structureTypes = useSelector((state: AppState) => state.refTables.structureTypes);
+    const activeFund = useActiveFund();
 
     const dispatch = useThunkDispatch();
 
@@ -365,7 +373,6 @@ const FundBulkModificationsForm = ({
         switch (dataType.code) {
             case RulDataTypeCodeEnum.TEXT:
             case RulDataTypeCodeEnum.STRING:
-            case RulDataTypeCodeEnum.FORMATTED_TEXT:
             case RulDataTypeCodeEnum.UNITID:
                 return true;
             default:
@@ -377,7 +384,6 @@ const FundBulkModificationsForm = ({
         switch (dataType.code) {
             case RulDataTypeCodeEnum.TEXT:
             case RulDataTypeCodeEnum.STRING:
-            case RulDataTypeCodeEnum.FORMATTED_TEXT:
             case RulDataTypeCodeEnum.UNITID:
             case RulDataTypeCodeEnum.INT:
             case RulDataTypeCodeEnum.DECIMAL:
@@ -394,25 +400,21 @@ const FundBulkModificationsForm = ({
         switch (dataType.code) {
             case RulDataTypeCodeEnum.STRUCTURED:
                 return getIsSharedStructureType();
-            // the server does not append these data types
-            case RulDataTypeCodeEnum.DATE:
-            case RulDataTypeCodeEnum.COORDINATES:
-            case RulDataTypeCodeEnum.FILE_REF:
-            case RulDataTypeCodeEnum.JSON_TABLE:
-                return false;
+            // TEXT and BIT are left out: a repeated text or yes/no value makes no sense
             case RulDataTypeCodeEnum.ENUM:
-                return true;
-            case RulDataTypeCodeEnum.TEXT:
             case RulDataTypeCodeEnum.STRING:
-            case RulDataTypeCodeEnum.FORMATTED_TEXT:
-            case RulDataTypeCodeEnum.UNITID:
             case RulDataTypeCodeEnum.INT:
             case RulDataTypeCodeEnum.DECIMAL:
+            case RulDataTypeCodeEnum.UNITID:
             case RulDataTypeCodeEnum.UNITDATE:
+            case RulDataTypeCodeEnum.DATE:
+            case RulDataTypeCodeEnum.COORDINATES:
             case RulDataTypeCodeEnum.RECORD_REF:
-                return refType.useSpecification;
-            default:
+            case RulDataTypeCodeEnum.FILE_REF:
+            case RulDataTypeCodeEnum.URI_REF:
                 return true;
+            default:
+                return false;
         }
     };
 
@@ -498,6 +500,14 @@ const FundBulkModificationsForm = ({
         }));
     }
 
+    const findFundFiles = async (search: string): Promise<BulkAppendOption[]> => {
+        if (!activeFund) {
+            return [];
+        }
+        const { rows } = await WebApi.findFundFiles(activeFund.id, search);
+        return rows.map(({ id, name }: BulkAppendOption) => ({ id, name }));
+    };
+
     /**
      * Popisek potvrzovacího tlačítka podle typu úpravy.
      *
@@ -580,6 +590,7 @@ const FundBulkModificationsForm = ({
                         dataType={dataType}
                         refType={refType}
                         getStructuredObjects={findStructureData}
+                        getFundFiles={findFundFiles}
                         disabled={submitting}
                     />,
                 );

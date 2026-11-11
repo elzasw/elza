@@ -68,6 +68,7 @@ import cz.tacr.elza.domain.ArrDataBit;
 import cz.tacr.elza.domain.ArrDataCoordinates;
 import cz.tacr.elza.domain.ArrDataDate;
 import cz.tacr.elza.domain.ArrDataDecimal;
+import cz.tacr.elza.domain.ArrDataFileRef;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataNull;
 import cz.tacr.elza.domain.ArrDataRecordRef;
@@ -78,6 +79,7 @@ import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrDataUriRef;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrInhibitedItem;
 import cz.tacr.elza.domain.ArrItem;
@@ -106,6 +108,7 @@ import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.ExceptionThrow;
+import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.InhibitedItemRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
@@ -191,6 +194,9 @@ public class DescriptionItemService {
 
     @Autowired
     private StructuredObjectRepository structuredObjectRepository;
+
+    @Autowired
+    private FundFileRepository fundFileRepository;
 
     @Autowired
     private DataService dataService;
@@ -2188,7 +2194,8 @@ public class DescriptionItemService {
      */
     private static final Set<DataType> BULK_APPEND_DATA_TYPES = Set.of(DataType.TEXT, DataType.FORMATTED_TEXT,
             DataType.STRING, DataType.INT, DataType.UNITID, DataType.UNITDATE, DataType.RECORD_REF, DataType.BIT,
-            DataType.URI_REF, DataType.DECIMAL, DataType.ENUM, DataType.STRUCTURED);
+            DataType.URI_REF, DataType.DECIMAL, DataType.ENUM, DataType.STRUCTURED, DataType.COORDINATES,
+            DataType.FILE_REF, DataType.DATE);
 
     /**
      * Result of a bulk append.
@@ -2362,6 +2369,9 @@ public class DescriptionItemService {
         if (data instanceof ArrDataStructureRef structureRef) {
             structureRef.setStructuredObject(findBulkAppendStructuredObject(structureRef.getStructuredObjectId(), itemType, fund));
         }
+        if (data instanceof ArrDataFileRef fileRef) {
+            fileRef.setFile(findBulkAppendFile(fileRef.getFileId(), fund));
+        }
         if (data instanceof ArrDataText dataText) {
             Validate.isTrue(StringUtils.isNotBlank(dataText.getTextValue()), "Textové pole nesmí být prázdné");
         }
@@ -2396,6 +2406,26 @@ public class DescriptionItemService {
                     .set("itemTypeId", itemType.getItemTypeId());
         }
         return structuredObject;
+    }
+
+    /**
+     * Loads a file for bulk append. It must be a file of the fund that is not deleted.
+     */
+    private ArrFile findBulkAppendFile(final Integer fileId, final ArrFund fund) {
+        if (fileId == null) {
+            throw new BusinessException("Musí být vybrán soubor", BaseCode.PROPERTY_NOT_EXIST)
+                    .set(BaseCode.PARAM_PROPERTY, "value");
+        }
+        ArrFile file = fundFileRepository.findById(fileId).orElseThrow(ExceptionThrow.file(fileId));
+
+        boolean sameFund = Objects.equals(file.getFundId(), fund.getFundId());
+        boolean deleted = file.getDeleteChange() != null;
+        if (!sameFund || deleted) {
+            throw new BusinessException("Soubor nelze přiřadit", BaseCode.INVALID_STATE)
+                    .set("fileId", fileId)
+                    .set("fundId", fund.getFundId());
+        }
+        return file;
     }
 
     /**

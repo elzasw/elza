@@ -13,6 +13,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.FlushModeType;
 import jakarta.transaction.Transactional;
 
 import org.apache.commons.io.FileUtils;
@@ -80,6 +81,7 @@ import cz.tacr.elza.repository.ExternalSystemRepository;
 import cz.tacr.elza.repository.FundRegisterScopeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.PackageDependencyRepository;
+import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.FundStructureExtensionRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -199,6 +201,8 @@ public class HelperTestService {
     private NodeOutputRepository nodeOutputRepository;
     @Autowired
     private OutputFileRepository outputFileRepository;
+    @Autowired
+    private FundFileRepository fundFileRepository;
     @Autowired
     private OutputResultRepository outputResultRepository;
     @Autowired
@@ -448,6 +452,13 @@ public class HelperTestService {
         levelRepository.deleteAll();
         nodeOutputRepository.deleteAll();
         outputFileRepository.deleteAll();
+        // Loading the files would auto-flush the queued deletes of the output files (shared dms_file table)
+        // together with all deletes before them, e.g. ap_part while ap_access_point still references it.
+        // The deletes succeed only together in the final flush.
+        FlushModeType flushMode = em.getFlushMode();
+        em.setFlushMode(FlushModeType.COMMIT);
+        fundFileRepository.deleteAll();
+        em.setFlushMode(flushMode);
         outputResultRepository.deleteAll();
         outputTemplateRepository.deleteAll();
         outputRepository.deleteAll();

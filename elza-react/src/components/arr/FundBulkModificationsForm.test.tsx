@@ -45,6 +45,15 @@ const packetItemType = {
     structureTypeId: STRUCTURE_TYPE_ID,
 } as RulDescItemTypeExtVO;
 
+const itemTypeWithoutSpec = (name: string) =>
+    ({
+        id: 8,
+        name,
+        shortcut: name,
+        useSpecification: false,
+        descItemSpecs: [],
+    }) as RulDescItemTypeExtVO;
+
 const dataType = (code: RulDataTypeCodeEnum) => ({ id: 1, code, name: code }) as RulDataTypeVO;
 
 interface RenderOptions {
@@ -201,6 +210,74 @@ describe('FundBulkModificationsForm - přidání více hodnot', () => {
             store: storeWithPacketType(true),
         });
         expect(screen.queryByRole('option', appendOption)).not.toBeInTheDocument();
+    });
+
+    it('odešle datum a souřadnice jako ItemData bez specifikace', async () => {
+        const onSubmitForm = vi.fn().mockResolvedValue(undefined);
+        const options = { refType: itemTypeWithoutSpec('Datum') };
+        const { container, unmount } = renderForm(
+            RulDataTypeCodeEnum.DATE,
+            OperationType.APPEND,
+            onSubmitForm,
+            options
+        );
+        const dateInput = field(container, 'input', 'appendValues[0].value');
+        expect(dateInput).toHaveAttribute('type', 'date');
+        fireEvent.change(dateInput, { target: { value: '2026-11-11' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Uložit' }));
+        await vi.waitFor(() => expect(onSubmitForm).toHaveBeenCalledTimes(1));
+        expect(onSubmitForm.mock.calls[0][0]).toMatchObject({
+            appendItemValues: [{ data: { dataType: 'DATE', value: '2026-11-11' } }],
+        });
+        unmount();
+
+        const coordinates = renderForm(RulDataTypeCodeEnum.COORDINATES, OperationType.APPEND, onSubmitForm, {
+            refType: itemTypeWithoutSpec('Souřadnice'),
+        });
+        const coordinatesInput = coordinates.container.querySelector('textarea[name="appendValues[0].value"]');
+        if (!coordinatesInput) {
+            throw new Error('Coordinates field not found');
+        }
+        fireEvent.change(coordinatesInput, { target: { value: ' POINT (14 50) ' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Uložit' }));
+        await vi.waitFor(() => expect(onSubmitForm).toHaveBeenCalledTimes(2));
+        expect(onSubmitForm.mock.calls[1][0]).toMatchObject({
+            appendItemValues: [{ data: { dataType: 'COORDINATES', value: 'POINT (14 50)' } }],
+        });
+    });
+
+    it('odešle soubor jako DataFileRef', async () => {
+        const onSubmitForm = vi.fn().mockResolvedValue(undefined);
+        renderForm(RulDataTypeCodeEnum.FILE_REF, OperationType.APPEND, onSubmitForm, {
+            refType: itemTypeWithoutSpec('Příloha'),
+            appendValues: [{ rowId: 0, value: { id: 90, name: 'priloha.pdf' } }],
+        });
+
+        fireEvent.click(screen.getByRole('button', { name: 'Uložit' }));
+        await vi.waitFor(() => expect(onSubmitForm).toHaveBeenCalledTimes(1));
+        expect(onSubmitForm.mock.calls[0][0]).toMatchObject({
+            appendItemValues: [{ data: { dataType: 'FILE_REF', fileId: 90 } }],
+        });
+    });
+
+    it('přidání nabízí podle datového typu', () => {
+        const appendOption = { name: 'Přidat obsah prvku popisu' };
+        const isAppendOffered = (code: RulDataTypeCodeEnum, refType = itemTypeWithoutSpec('Prvek')) => {
+            const { unmount } = renderForm(code, OperationType.DELETE, vi.fn(), { refType });
+            const isOffered = screen.queryByRole('option', appendOption) !== null;
+            unmount();
+            return isOffered;
+        };
+
+        expect(isAppendOffered(RulDataTypeCodeEnum.DATE)).toBe(true);
+        expect(isAppendOffered(RulDataTypeCodeEnum.UNITDATE)).toBe(true);
+        expect(isAppendOffered(RulDataTypeCodeEnum.UNITID)).toBe(true);
+        expect(isAppendOffered(RulDataTypeCodeEnum.COORDINATES)).toBe(true);
+        expect(isAppendOffered(RulDataTypeCodeEnum.FILE_REF)).toBe(true);
+        expect(isAppendOffered(RulDataTypeCodeEnum.RECORD_REF)).toBe(true);
+        expect(isAppendOffered(RulDataTypeCodeEnum.BIT)).toBe(false);
+        expect(isAppendOffered(RulDataTypeCodeEnum.TEXT, itemType('Poznámka'))).toBe(false);
+        expect(isAppendOffered(RulDataTypeCodeEnum.JSON_TABLE)).toBe(false);
     });
 
     it('seznam specifikací k filtrování nabízí smazání, přidání ne', () => {
