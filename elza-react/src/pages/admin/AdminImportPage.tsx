@@ -13,7 +13,7 @@ import { AppState } from 'typings/store';
 import { EventType } from 'typings/websocket/EventType';
 import { urlAdminImport } from '../../constants';
 import { CreateBatchDialog } from '../../components/admin/import/CreateBatchDialog';
-import { BATCH_STATE_MESSAGE } from '../../components/admin/import/messages';
+import { BATCH_IMPORT_TYPE_LABEL, BATCH_STATE_MESSAGE } from '../../components/admin/import/messages';
 import { AdminLayout } from '../shared/layout/AdminLayout';
 
 const PAGE_SIZES = [10, 25, 50];
@@ -217,7 +217,7 @@ export function AdminImportPage() {
                         {batches.map(batch => (
                             <TableRow key={batch.batchId} onClick={() => history.push(urlAdminImport(batch.batchId))} style={{ cursor: 'pointer' }}>
                                 <TableCell>{batch.name}</TableCell>
-                                <TableCell>{batch.importType}</TableCell>
+                                <TableCell>{BATCH_IMPORT_TYPE_LABEL[batch.importType]}</TableCell>
                                 <TableCell>
                                     <Tag size="small" appearance={STATE_APPEARANCE[batch.state]}>
                                         <FormattedMessage {...BATCH_STATE_MESSAGE[batch.state]} />

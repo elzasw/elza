@@ -1,4 +1,4 @@
-import { BatchState, FundImportStrategy, FundPairKey, ItemState } from 'elza-api';
+import { BatchImportType, BatchState, FundImportStrategy, FundPairKey, ItemState } from 'elza-api';
 import { MessageDescriptor, defineMessages } from 'react-intl';
 
 // Batch settings labels shared by the create dialog and the batch detail.
@@ -114,6 +114,12 @@ export const FUND_IMPORT_STRATEGY_HINT: Record<FundImportStrategy, MessageDescri
 
 export const FUND_PAIR_KEY_MESSAGE: Record<FundPairKey, MessageDescriptor> = {
     [FundPairKey.InstitutionAndFundNumber]: valueMessages.pairKeyInstitutionAndFundNumber,
+};
+
+// Format names, the same in every language.
+export const BATCH_IMPORT_TYPE_LABEL: Record<BatchImportType, string> = {
+    [BatchImportType.Edx2]: 'EDX2',
+    [BatchImportType.AddDescItemsCsv]: 'CSV',
 };
 
 const stateMessages = defineMessages({

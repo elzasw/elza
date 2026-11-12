@@ -58,6 +58,7 @@ import { humanFileSize } from 'components/Utils.jsx';
 import { addToastrDanger } from 'components/shared/toastr/ToastrActions';
 import { ServerFolderDialog } from '../../components/admin/import/ServerFolderDialog';
 import {
+    BATCH_IMPORT_TYPE_LABEL,
     BATCH_STATE_MESSAGE,
     FUND_IMPORT_STRATEGY_MESSAGE,
     FUND_PAIR_KEY_MESSAGE,
@@ -398,7 +399,7 @@ export function AdminImportBatchDetailPage() {
                         <FormattedMessage {...messages.back} />
                     </Button>
                     <h2 style={{ margin: 0 }}>{batch.name}</h2>
-                    <Tag size="small">{batch.importType}</Tag>
+                    <Tag size="small">{BATCH_IMPORT_TYPE_LABEL[batch.importType]}</Tag>
                     <Tag size="small" appearance="brand"><FormattedMessage {...BATCH_STATE_MESSAGE[state]} /></Tag>
                     <div className={styles.spacer} />
                     <div className={styles.actions}>
