@@ -85,7 +85,7 @@ public class ImpBatchService {
         Map<BatchState, Set<BatchState>> t = new EnumMap<>(BatchState.class);
         t.put(BatchState.PREPARATION,      EnumSet.of(BatchState.IN_PROGRESS, BatchState.TEST_IN_PROGRESS, BatchState.CANCELLED));
         t.put(BatchState.IN_PROGRESS,      EnumSet.of(BatchState.PAUSED, BatchState.FAILED, BatchState.FINISHED, BatchState.CANCELLED));
-        t.put(BatchState.TEST_IN_PROGRESS, EnumSet.of(BatchState.TEST_FINISHED, BatchState.FAILED, BatchState.PREPARATION, BatchState.CANCELLED));
+        t.put(BatchState.TEST_IN_PROGRESS, EnumSet.of(BatchState.TEST_FINISHED, BatchState.PREPARATION, BatchState.CANCELLED));
         t.put(BatchState.TEST_FINISHED,    EnumSet.of(BatchState.PREPARATION, BatchState.IN_PROGRESS, BatchState.TEST_IN_PROGRESS, BatchState.CANCELLED));
         t.put(BatchState.PAUSED,           EnumSet.of(BatchState.IN_PROGRESS, BatchState.CANCELLED));
         t.put(BatchState.FAILED,           EnumSet.of(BatchState.IN_PROGRESS, BatchState.CANCELLED));
@@ -325,9 +325,9 @@ public class ImpBatchService {
             return;
         }
 
-        Set<ItemState> pick = dryRun
-                ? EnumSet.of(ItemState.READY, ItemState.ERROR)
-                : EnumSet.of(ItemState.READY, ItemState.ERROR, ItemState.TEST_RUN_FINISHED);
+        // A dry run re-checks every item not imported yet: pairing depends on the current
+        // database state, which may have changed since the previous test.
+        Set<ItemState> pick = EnumSet.of(ItemState.READY, ItemState.ERROR, ItemState.TEST_RUN_FINISHED);
         List<ImpItem> items = itemRepository.findByBatchAndStateInOrderByExecOrderAsc(batch, pick);
         boolean hadError = false;
 
@@ -361,7 +361,9 @@ public class ImpBatchService {
         logger.info("Batch {} runner finished cycle: hadError={}, currentState={}, entry={}",
                 batchId, hadError, reread.getState(), entry);
         if (reread.getState() == entry) {
-            changeState(reread, hadError ? BatchState.FAILED : success);
+            // A failed dry run wrote nothing, so the batch stays testable and editable;
+            // the errors are reported on its items.
+            changeState(reread, hadError && !dryRun ? BatchState.FAILED : success);
         } else {
             logger.info("Batch {} state was changed externally to {}; runner leaves it as is",
                     batchId, reread.getState());
@@ -370,8 +372,7 @@ public class ImpBatchService {
 
     /**
      * Runs one item. Returns true on success. The kind of batch decides how the file is
-     * processed; on a dry run the successful terminal state is TEST_RUN_FINISHED so the item is
-     * skipped in subsequent dry runs.
+     * processed; on a dry run the successful terminal state is TEST_RUN_FINISHED.
      */
     private boolean processOneItem(int itemId, boolean dryRun) {
         ImpItem item = itemRepository.findById(itemId)

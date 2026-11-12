@@ -168,7 +168,12 @@ export const ImportForm = ({ record, fund, onClose }: IImportFormProps) => {
                                         >
                                             <FormattedMessage {...messages.importAction} />
                                         </Button>
-                                        <Button variant="link" onClick={onClose}>
+                                        <Button
+                                            variant="link"
+                                            // keeps the focus in the field, so its blur shows no validation error that would shift the button away from the click
+                                            onMouseDown={(e: React.MouseEvent) => e.preventDefault()}
+                                            onClick={onClose}
+                                        >
                                             <FormattedMessage {...globalMessages.cancel} />
                                         </Button>
                                     </Modal.Footer>

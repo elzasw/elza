@@ -57,7 +57,11 @@ import { exceedsUploadLimit, useUploadLimits } from 'utils/hooks/useUploadLimits
 import { humanFileSize } from 'components/Utils.jsx';
 import { addToastrDanger } from 'components/shared/toastr/ToastrActions';
 import { ServerFolderDialog } from '../../components/admin/import/ServerFolderDialog';
-import { batchSettingsMessages } from '../../components/admin/import/messages';
+import {
+    FUND_IMPORT_STRATEGY_MESSAGE,
+    FUND_PAIR_KEY_MESSAGE,
+    batchSettingsMessages,
+} from '../../components/admin/import/messages';
 import { globalMessages } from 'components/shared/lang';
 import { WebApi } from 'actions/WebApi';
 
@@ -426,8 +430,12 @@ export function AdminImportBatchDetailPage() {
                         <h3 style={{ margin: 0 }}><FormattedMessage {...messages.settings} /></h3>
                         <div className={styles.settings}>
                             {edx && (<>
-                                <Setting label={batchSettingsMessages.fundImportStrategy}>{edx.fundImportStrategy}</Setting>
-                                <Setting label={batchSettingsMessages.fundPairKey}>{edx.fundPairKey ?? '—'}</Setting>
+                                <Setting label={batchSettingsMessages.fundImportStrategy}>
+                                    {intl.formatMessage(FUND_IMPORT_STRATEGY_MESSAGE[edx.fundImportStrategy])}
+                                </Setting>
+                                <Setting label={batchSettingsMessages.fundPairKey}>
+                                    {edx.fundPairKey ? intl.formatMessage(FUND_PAIR_KEY_MESSAGE[edx.fundPairKey]) : '—'}
+                                </Setting>
                                 <Setting label={batchSettingsMessages.scope}>{edx.scopeId != null ? (scopeMap[edx.scopeId] ?? edx.scopeId) : '—'}</Setting>
                             </>)}
                             {csv && (<>

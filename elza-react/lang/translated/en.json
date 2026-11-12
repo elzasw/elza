@@ -991,6 +991,10 @@
     "defaultMessage": "Encoding",
     "srcHash": "YPpu9TILPAqk"
   },
+  "admin.import.dialog.encodingHint": {
+    "defaultMessage": "Must match the CSV file; Excel with Czech settings saves CSV in windows-1250.",
+    "srcHash": "11MjxMD0A09O"
+  },
   "admin.import.dialog.fundImportStrategy": {
     "defaultMessage": "Fund import strategy",
     "srcHash": "FqPBGpx9NC9U"
@@ -999,13 +1003,25 @@
     "defaultMessage": "Pairing key",
     "srcHash": "p4eFAbpnpPjl"
   },
+  "admin.import.dialog.fundPairKeyHint": {
+    "defaultMessage": "How an existing archival file is looked up; required for the pairing strategies.",
+    "srcHash": "GTjZyTinkcJV"
+  },
   "admin.import.dialog.ignoreRootNodes": {
     "defaultMessage": "Ignore root levels",
     "srcHash": "8GVz16BzzvOw"
   },
+  "admin.import.dialog.ignoreRootNodesHint": {
+    "defaultMessage": "When importing into an existing archival file, the root levels of the file are skipped and their children are placed under the root of the archival file.",
+    "srcHash": "jX3Trs5diDHq"
+  },
   "admin.import.dialog.keepFiles": {
     "defaultMessage": "Keep the input files",
     "srcHash": "Bau1Lh6RPUm6"
+  },
+  "admin.import.dialog.keepFilesHint": {
+    "defaultMessage": "Uploaded files are not removed after the batch completes, not even when the retention period expires.",
+    "srcHash": "QE8V_vsJQBqz"
   },
   "admin.import.dialog.name": {
     "defaultMessage": "Name",
@@ -1022,6 +1038,10 @@
   "admin.import.dialog.scope": {
     "defaultMessage": "Entity scope",
     "srcHash": "SlY5BtKXdR6t"
+  },
+  "admin.import.dialog.scopeHint": {
+    "defaultMessage": "Scope in which archival entities from the file are created and paired.",
+    "srcHash": "7FjUatIVG8-0"
   },
   "admin.import.dialog.separator": {
     "defaultMessage": "Separator",
@@ -1043,9 +1063,17 @@
     "defaultMessage": "\\t (tab)",
     "srcHash": "I1mk9dLkxE9t"
   },
+  "admin.import.dialog.separatorHint": {
+    "defaultMessage": "Must match the CSV file; Excel with Czech settings saves CSV with a semicolon.",
+    "srcHash": "rh18Jm8I6QEv"
+  },
   "admin.import.dialog.skipError": {
     "defaultMessage": "Continue after an item error",
     "srcHash": "HEHprHDF8OT8"
+  },
+  "admin.import.dialog.skipErrorHint": {
+    "defaultMessage": "An item error does not stop the batch; the remaining items are processed too.",
+    "srcHash": "02l55pivSb7f"
   },
   "admin.import.dialog.titleCsv": {
     "defaultMessage": "New CSV batch",
@@ -1074,6 +1102,10 @@
   "admin.import.page.size": {
     "defaultMessage": "Records per page",
     "srcHash": "YvP8TiZhXxmu"
+  },
+  "admin.import.pairKey.institutionAndFundNumber": {
+    "defaultMessage": "Institution and fund number",
+    "srcHash": "uG7jdPbtr9yB"
   },
   "admin.import.serverFolder.close": {
     "defaultMessage": "Close",
@@ -1114,6 +1146,30 @@
   "admin.import.serverFolder.up": {
     "defaultMessage": "One level up",
     "srcHash": "hEeAM07LEF6T"
+  },
+  "admin.import.strategy.alwaysNew": {
+    "defaultMessage": "Always create new",
+    "srcHash": "KC8cKN52uU4w"
+  },
+  "admin.import.strategy.alwaysNewHint": {
+    "defaultMessage": "Each item creates a new archival file.",
+    "srcHash": "d4hFNGCB01D2"
+  },
+  "admin.import.strategy.alwaysPair": {
+    "defaultMessage": "Existing only",
+    "srcHash": "k4whTvlo3OLE"
+  },
+  "admin.import.strategy.alwaysPairHint": {
+    "defaultMessage": "The item is imported into an existing archival file found by the pairing key; if none is found, it fails.",
+    "srcHash": "C8fphozQ_T6b"
+  },
+  "admin.import.strategy.pairAndCreate": {
+    "defaultMessage": "Pair, otherwise create",
+    "srcHash": "ZrTTnNoTrd46"
+  },
+  "admin.import.strategy.pairAndCreateHint": {
+    "defaultMessage": "The item is imported into an existing archival file found by the pairing key; if none is found, a new one is created.",
+    "srcHash": "OLCFVY5YeDbr"
   },
   "admin.import.title": {
     "defaultMessage": "Import batches",
