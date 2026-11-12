@@ -1,5 +1,7 @@
 package cz.tacr.elza.service;
 
+import static cz.tacr.elza.domain.ImpItem.ItemState;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.OffsetDateTime;
@@ -43,7 +45,6 @@ import cz.tacr.elza.domain.ImpBatchEdx;
 import cz.tacr.elza.domain.ImpItem;
 import cz.tacr.elza.domain.ImpItemResult;
 import cz.tacr.elza.domain.ImpResultType;
-import cz.tacr.elza.domain.ItemState;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
@@ -85,8 +86,9 @@ public class ImpBatchService {
         Map<BatchState, Set<BatchState>> t = new EnumMap<>(BatchState.class);
         t.put(BatchState.PREPARATION,      EnumSet.of(BatchState.IN_PROGRESS, BatchState.TEST_IN_PROGRESS, BatchState.CANCELLED));
         t.put(BatchState.IN_PROGRESS,      EnumSet.of(BatchState.PAUSED, BatchState.FAILED, BatchState.FINISHED, BatchState.CANCELLED));
-        t.put(BatchState.TEST_IN_PROGRESS, EnumSet.of(BatchState.TEST_FINISHED, BatchState.PREPARATION, BatchState.CANCELLED));
+        t.put(BatchState.TEST_IN_PROGRESS, EnumSet.of(BatchState.TEST_FINISHED, BatchState.TEST_FAILED, BatchState.PREPARATION, BatchState.CANCELLED));
         t.put(BatchState.TEST_FINISHED,    EnumSet.of(BatchState.PREPARATION, BatchState.IN_PROGRESS, BatchState.TEST_IN_PROGRESS, BatchState.CANCELLED));
+        t.put(BatchState.TEST_FAILED,      EnumSet.of(BatchState.PREPARATION, BatchState.TEST_IN_PROGRESS, BatchState.CANCELLED));
         t.put(BatchState.PAUSED,           EnumSet.of(BatchState.IN_PROGRESS, BatchState.CANCELLED));
         t.put(BatchState.FAILED,           EnumSet.of(BatchState.IN_PROGRESS, BatchState.CANCELLED));
         ALLOWED_TRANSITIONS = t;
@@ -314,12 +316,15 @@ public class ImpBatchService {
         BatchState entry = batch.getState();
         boolean dryRun;
         BatchState success;
+        BatchState failure;
         if (entry == BatchState.IN_PROGRESS) {
             dryRun = false;
             success = BatchState.FINISHED;
+            failure = BatchState.FAILED;
         } else if (entry == BatchState.TEST_IN_PROGRESS) {
             dryRun = true;
             success = BatchState.TEST_FINISHED;
+            failure = BatchState.TEST_FAILED;
         } else {
             logger.debug("Batch {} entered runner in state {}, skipping", batchId, entry);
             return;
@@ -361,9 +366,7 @@ public class ImpBatchService {
         logger.info("Batch {} runner finished cycle: hadError={}, currentState={}, entry={}",
                 batchId, hadError, reread.getState(), entry);
         if (reread.getState() == entry) {
-            // A failed dry run wrote nothing, so the batch stays testable and editable;
-            // the errors are reported on its items.
-            changeState(reread, hadError && !dryRun ? BatchState.FAILED : success);
+            changeState(reread, hadError ? failure : success);
         } else {
             logger.info("Batch {} state was changed externally to {}; runner leaves it as is",
                     batchId, reread.getState());
@@ -702,9 +705,8 @@ public class ImpBatchService {
     }
 
     /**
-     * Updates the settings of an EDX2 batch. Allowed in PREPARATION; a batch in TEST_FINISHED is
-     * walked back to PREPARATION first - the test run's verdict does not extend to settings that
-     * changed after it.
+     * Updates the settings of an EDX2 batch. Allowed in PREPARATION; a tested batch is walked back
+     * to PREPARATION first (see {@link #discardTestResult}).
      */
     @Transactional
     public ImpBatchEdx updateEdxSettings(ImpBatchEdx batch,
@@ -730,7 +732,7 @@ public class ImpBatchService {
     }
 
     /**
-     * Updates the settings of a CSV batch. Same PREPARATION / TEST_FINISHED handling as EDX2.
+     * Updates the settings of a CSV batch. Same handling of a tested batch as EDX2.
      */
     @Transactional
     public ImpBatchDescCsv updateCsvSettings(ImpBatchDescCsv batch,
@@ -787,10 +789,20 @@ public class ImpBatchService {
         batchRepository.delete(managed);
     }
 
-    private void assertSettingsEditable(ImpBatch batch) {
-        if (batch.getState() == BatchState.TEST_FINISHED) {
+    /**
+     * Walks a tested batch (TEST_FINISHED or TEST_FAILED) back to PREPARATION: the test run's
+     * verdict does not extend to settings or items changed after it. Other states are left as is.
+     */
+    @Transactional
+    public void discardTestResult(ImpBatch batch) {
+        BatchState state = batch.getState();
+        if (state == BatchState.TEST_FINISHED || state == BatchState.TEST_FAILED) {
             changeState(batch, BatchState.PREPARATION);
         }
+    }
+
+    private void assertSettingsEditable(ImpBatch batch) {
+        discardTestResult(batch);
         if (batch.getState() != BatchState.PREPARATION) {
             throw new BusinessException(
                     "Batch settings can only be edited in PREPARATION; current state: " + batch.getState(),

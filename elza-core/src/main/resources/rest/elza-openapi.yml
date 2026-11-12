@@ -1380,7 +1380,8 @@ paths:
       operationId: ImportBatch_updateCsv
       description: |-
         Updates the settings of a CSV batch. Allowed only in PREPARATION;
-        in TEST_FINISHED the batch is walked back to PREPARATION automatically.
+        in TEST_FINISHED or TEST_FAILED the batch is walked back to PREPARATION
+        automatically.
       parameters:
         - name: id
           in: path
@@ -1419,7 +1420,7 @@ paths:
       operationId: ImportBatch_dryRun
       description: |-
         Starts a dry run. The batch moves to TEST_IN_PROGRESS, a successful
-        verification lands in TEST_FINISHED.
+        verification lands in TEST_FINISHED, a failed one in TEST_FAILED.
       parameters:
         - name: id
           in: path
@@ -1448,7 +1449,8 @@ paths:
       operationId: ImportBatch_updateEdx
       description: |-
         Updates the settings of an EDX2 batch. Allowed only in PREPARATION;
-        in TEST_FINISHED the batch is walked back to PREPARATION automatically.
+        in TEST_FINISHED or TEST_FAILED the batch is walked back to PREPARATION
+        automatically.
       parameters:
         - name: id
           in: path
@@ -9115,6 +9117,7 @@ components:
         - IN_PROGRESS
         - TEST_IN_PROGRESS
         - TEST_FINISHED
+        - TEST_FAILED
         - PAUSED
         - FAILED
         - FINISHED

@@ -58,7 +58,7 @@ describe('notifyBatchOutcome', () => {
 
     it('neukončenou dávku nehlásí a nechá ji dál sledovat', () => {
         for (const state of [BatchState.Preparation, BatchState.InProgress, BatchState.TestInProgress,
-                             BatchState.TestFinished, BatchState.Paused]) {
+                             BatchState.TestFinished, BatchState.TestFailed, BatchState.Paused]) {
             const dispatch = vi.fn();
             expect(notifyBatchOutcome(dispatch, intl, batch(state))).toBe(false);
             expect(dispatch).not.toHaveBeenCalled();

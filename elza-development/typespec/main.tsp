@@ -2706,6 +2706,7 @@ enum BatchState {
     IN_PROGRESS,
     TEST_IN_PROGRESS,
     TEST_FINISHED,
+    TEST_FAILED,
     PAUSED,
     FAILED,
     FINISHED,
@@ -3388,7 +3389,8 @@ namespace ElzaAPI.ImportBatch {
 
     /**
      * Updates the settings of an EDX2 batch. Allowed only in PREPARATION;
-     * in TEST_FINISHED the batch is walked back to PREPARATION automatically.
+     * in TEST_FINISHED or TEST_FAILED the batch is walked back to PREPARATION
+     * automatically.
      */
     @route("/{id}/edx")
     @put op updateEdx(
@@ -3405,7 +3407,8 @@ namespace ElzaAPI.ImportBatch {
 
     /**
      * Updates the settings of a CSV batch. Allowed only in PREPARATION;
-     * in TEST_FINISHED the batch is walked back to PREPARATION automatically.
+     * in TEST_FINISHED or TEST_FAILED the batch is walked back to PREPARATION
+     * automatically.
      */
     @route("/{id}/csv")
     @put op updateCsv(
@@ -3438,7 +3441,7 @@ namespace ElzaAPI.ImportBatch {
 
     /**
      * Starts a dry run. The batch moves to TEST_IN_PROGRESS, a successful
-     * verification lands in TEST_FINISHED.
+     * verification lands in TEST_FINISHED, a failed one in TEST_FAILED.
      */
     @route("/{id}/dry-run")
     @post op dryRun(

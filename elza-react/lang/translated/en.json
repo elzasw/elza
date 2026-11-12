@@ -803,6 +803,42 @@
     "defaultMessage": "New EDX2 batch",
     "srcHash": "vP8POkVUEZ7E"
   },
+  "admin.import.batchState.cancelled": {
+    "defaultMessage": "Cancelled",
+    "srcHash": "J_63AMJkkVtT"
+  },
+  "admin.import.batchState.failed": {
+    "defaultMessage": "Failed",
+    "srcHash": "P6inravKuQUc"
+  },
+  "admin.import.batchState.finished": {
+    "defaultMessage": "Finished",
+    "srcHash": "xWQzBVFQyQ1H"
+  },
+  "admin.import.batchState.inProgress": {
+    "defaultMessage": "Import in progress",
+    "srcHash": "gGuZcUxj5Rwh"
+  },
+  "admin.import.batchState.paused": {
+    "defaultMessage": "Paused",
+    "srcHash": "3d4ro0wkf9RO"
+  },
+  "admin.import.batchState.preparation": {
+    "defaultMessage": "Preparation",
+    "srcHash": "s0ER97cHc4CJ"
+  },
+  "admin.import.batchState.testFailed": {
+    "defaultMessage": "Test failed",
+    "srcHash": "Es-D6_-temR3"
+  },
+  "admin.import.batchState.testFinished": {
+    "defaultMessage": "Test passed",
+    "srcHash": "pNNo3xUGIoWN"
+  },
+  "admin.import.batchState.testInProgress": {
+    "defaultMessage": "Test in progress",
+    "srcHash": "H5Mnu_AWqLLC"
+  },
   "admin.import.col.createdAt": {
     "defaultMessage": "Created",
     "srcHash": "uFJVnHvkwRjU"
@@ -971,6 +1007,10 @@
     "defaultMessage": "Imports the items not processed yet, one by one in order; a paused or failed batch resumes from the first unprocessed item",
     "srcHash": "erzHv2TaXehu"
   },
+  "admin.import.detail.testFailedHint": {
+    "defaultMessage": "The test run failed, so the batch cannot be started. Remove the failed items or run the test again.",
+    "srcHash": "3pbZuIM4gx3L"
+  },
   "admin.import.detail.upload": {
     "defaultMessage": "Upload a file",
     "srcHash": "Bk4rARXxQsxf"
@@ -1086,6 +1126,26 @@
   "admin.import.empty": {
     "defaultMessage": "No import batches",
     "srcHash": "HFO58GF8TdOH"
+  },
+  "admin.import.itemState.error": {
+    "defaultMessage": "Error",
+    "srcHash": "tiLo1toEkOGZ"
+  },
+  "admin.import.itemState.finished": {
+    "defaultMessage": "Imported",
+    "srcHash": "ad8gAwo7llDA"
+  },
+  "admin.import.itemState.ready": {
+    "defaultMessage": "Ready",
+    "srcHash": "YyB-uHjnEPaG"
+  },
+  "admin.import.itemState.running": {
+    "defaultMessage": "Processing",
+    "srcHash": "2ilVqWeS_ryv"
+  },
+  "admin.import.itemState.testRunFinished": {
+    "defaultMessage": "Test passed",
+    "srcHash": "XO3hUqWbycob"
   },
   "admin.import.page.info": {
     "defaultMessage": "Page {page} of {total}",

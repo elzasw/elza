@@ -9,9 +9,11 @@ package cz.tacr.elza.domain;
  * <li><b>running</b> ({@link #IN_PROGRESS}, {@link #TEST_IN_PROGRESS}) - the runner is walking the
  *     items and an entry in {@code arr_async_request} carries the request. Nothing may remove the
  *     batch underneath it.</li>
- * <li><b>at rest, resumable</b> ({@link #PREPARATION}, {@link #TEST_FINISHED}, {@link #PAUSED},
- *     {@link #FAILED}) - no runner, no queue entry, but a further run is still a legal transition,
- *     so the input files are what the next run would read.</li>
+ * <li><b>at rest, resumable</b> ({@link #PREPARATION}, {@link #TEST_FINISHED}, {@link #TEST_FAILED},
+ *     {@link #PAUSED}, {@link #FAILED}) - no runner, no queue entry, but a further run is still a
+ *     legal transition, so the input files are what the next run would read. A batch in
+ *     {@link #TEST_FAILED} cannot be imported; it may be tested again or have its settings and
+ *     items changed.</li>
  * <li><b>final</b> ({@link #FINISHED}, {@link #CANCELLED}) - no successor state at all.</li>
  * </ul>
  */
@@ -20,6 +22,7 @@ public enum BatchState {
     IN_PROGRESS,
     TEST_IN_PROGRESS,
     TEST_FINISHED,
+    TEST_FAILED,
     PAUSED,
     FAILED,
     FINISHED,

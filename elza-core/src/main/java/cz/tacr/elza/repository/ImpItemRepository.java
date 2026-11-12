@@ -5,7 +5,6 @@ import java.util.List;
 
 import cz.tacr.elza.domain.ImpBatch;
 import cz.tacr.elza.domain.ImpItem;
-import cz.tacr.elza.domain.ItemState;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -20,8 +19,8 @@ public interface ImpItemRepository extends JpaRepository<ImpItem, Integer> {
      */
     @Modifying
     @Query("UPDATE cz.tacr.elza.domain.ImpItem i "
-         + "   SET i.state = cz.tacr.elza.domain.ItemState.READY "
-         + " WHERE i.state = cz.tacr.elza.domain.ItemState.RUNNING")
+         + "   SET i.state = cz.tacr.elza.domain.ImpItem.ItemState.READY "
+         + " WHERE i.state = cz.tacr.elza.domain.ImpItem.ItemState.RUNNING")
     int resetRunningToReady();
 
     /**
@@ -40,7 +39,7 @@ public interface ImpItemRepository extends JpaRepository<ImpItem, Integer> {
     @Query("UPDATE cz.tacr.elza.domain.ImpItem i SET i.dmsFile = null WHERE i.batch = :batch")
     int clearDmsRefsForBatch(cz.tacr.elza.domain.ImpBatch batch);
 
-    List<ImpItem> findByBatchAndStateInOrderByExecOrderAsc(ImpBatch batch, Collection<ItemState> states);
+    List<ImpItem> findByBatchAndStateInOrderByExecOrderAsc(ImpBatch batch, Collection<ImpItem.ItemState> states);
 
     List<ImpItem> findByBatchOrderByExecOrderAsc(ImpBatch batch);
 

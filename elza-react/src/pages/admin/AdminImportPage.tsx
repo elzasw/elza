@@ -13,6 +13,7 @@ import { AppState } from 'typings/store';
 import { EventType } from 'typings/websocket/EventType';
 import { urlAdminImport } from '../../constants';
 import { CreateBatchDialog } from '../../components/admin/import/CreateBatchDialog';
+import { BATCH_STATE_MESSAGE } from '../../components/admin/import/messages';
 import { AdminLayout } from '../shared/layout/AdminLayout';
 
 const PAGE_SIZES = [10, 25, 50];
@@ -107,6 +108,7 @@ const STATE_APPEARANCE: Record<BatchState, 'brand' | 'outline' | 'filled'> = {
     [BatchState.InProgress]: 'brand',
     [BatchState.TestInProgress]: 'brand',
     [BatchState.TestFinished]: 'outline',
+    [BatchState.TestFailed]: 'outline',
     [BatchState.Paused]: 'outline',
     [BatchState.Failed]: 'filled',
     [BatchState.Finished]: 'filled',
@@ -218,7 +220,7 @@ export function AdminImportPage() {
                                 <TableCell>{batch.importType}</TableCell>
                                 <TableCell>
                                     <Tag size="small" appearance={STATE_APPEARANCE[batch.state]}>
-                                        {batch.state}
+                                        <FormattedMessage {...BATCH_STATE_MESSAGE[batch.state]} />
                                     </Tag>
                                 </TableCell>
                                 <TableCell>

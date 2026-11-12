@@ -1,4 +1,4 @@
-import { FundImportStrategy, FundPairKey } from 'elza-api';
+import { BatchState, FundImportStrategy, FundPairKey, ItemState } from 'elza-api';
 import { MessageDescriptor, defineMessages } from 'react-intl';
 
 // Batch settings labels shared by the create dialog and the batch detail.
@@ -114,4 +114,41 @@ export const FUND_IMPORT_STRATEGY_HINT: Record<FundImportStrategy, MessageDescri
 
 export const FUND_PAIR_KEY_MESSAGE: Record<FundPairKey, MessageDescriptor> = {
     [FundPairKey.InstitutionAndFundNumber]: valueMessages.pairKeyInstitutionAndFundNumber,
+};
+
+const stateMessages = defineMessages({
+    batchPreparation: { id: 'admin.import.batchState.preparation', defaultMessage: 'V přípravě' },
+    batchInProgress: { id: 'admin.import.batchState.inProgress', defaultMessage: 'Probíhá import' },
+    batchTestInProgress: { id: 'admin.import.batchState.testInProgress', defaultMessage: 'Probíhá test' },
+    batchTestFinished: { id: 'admin.import.batchState.testFinished', defaultMessage: 'Test úspěšný' },
+    batchTestFailed: { id: 'admin.import.batchState.testFailed', defaultMessage: 'Test s chybou' },
+    batchPaused: { id: 'admin.import.batchState.paused', defaultMessage: 'Pozastaveno' },
+    batchFailed: { id: 'admin.import.batchState.failed', defaultMessage: 'Skončilo chybou' },
+    batchFinished: { id: 'admin.import.batchState.finished', defaultMessage: 'Dokončeno' },
+    batchCancelled: { id: 'admin.import.batchState.cancelled', defaultMessage: 'Přerušeno' },
+    itemReady: { id: 'admin.import.itemState.ready', defaultMessage: 'Připraveno' },
+    itemRunning: { id: 'admin.import.itemState.running', defaultMessage: 'Zpracovává se' },
+    itemTestRunFinished: { id: 'admin.import.itemState.testRunFinished', defaultMessage: 'Test v pořádku' },
+    itemFinished: { id: 'admin.import.itemState.finished', defaultMessage: 'Naimportováno' },
+    itemError: { id: 'admin.import.itemState.error', defaultMessage: 'Chyba' },
+});
+
+export const BATCH_STATE_MESSAGE: Record<BatchState, MessageDescriptor> = {
+    [BatchState.Preparation]: stateMessages.batchPreparation,
+    [BatchState.InProgress]: stateMessages.batchInProgress,
+    [BatchState.TestInProgress]: stateMessages.batchTestInProgress,
+    [BatchState.TestFinished]: stateMessages.batchTestFinished,
+    [BatchState.TestFailed]: stateMessages.batchTestFailed,
+    [BatchState.Paused]: stateMessages.batchPaused,
+    [BatchState.Failed]: stateMessages.batchFailed,
+    [BatchState.Finished]: stateMessages.batchFinished,
+    [BatchState.Cancelled]: stateMessages.batchCancelled,
+};
+
+export const ITEM_STATE_MESSAGE: Record<ItemState, MessageDescriptor> = {
+    [ItemState.Ready]: stateMessages.itemReady,
+    [ItemState.Running]: stateMessages.itemRunning,
+    [ItemState.TestRunFinished]: stateMessages.itemTestRunFinished,
+    [ItemState.Finished]: stateMessages.itemFinished,
+    [ItemState.Error]: stateMessages.itemError,
 };

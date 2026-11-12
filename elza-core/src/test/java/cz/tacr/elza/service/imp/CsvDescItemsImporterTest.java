@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import static cz.tacr.elza.domain.ImpItem.ItemState;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,7 +48,6 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.BatchState;
 import cz.tacr.elza.domain.ImpBatchDescCsv;
 import cz.tacr.elza.domain.ImpItem;
-import cz.tacr.elza.domain.ItemState;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.service.FundLevelService;

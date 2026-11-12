@@ -113,8 +113,9 @@ export function CreateBatchDialog({ kind, open, onClose, onCreated }: Props) {
     const [keepFiles, setKeepFiles] = useState(false);
     const [saving, setSaving] = useState(false);
     const [scopes, setScopes] = useState<FundScope[]>([]);
-    // Root levels are skipped only when the payload goes into an existing fund, ALWAYS_NEW never pairs.
-    const rootNodesApplicable = strategy !== FundImportStrategy.AlwaysNew;
+    // Pairing settings apply only when the payload may go into an existing fund; ALWAYS_NEW never pairs.
+    const pairing = strategy !== FundImportStrategy.AlwaysNew;
+    const effectivePairKey = pairing ? pairKey : '';
 
     useEffect(() => {
         if (!open) return;
@@ -130,8 +131,8 @@ export function CreateBatchDialog({ kind, open, onClose, onCreated }: Props) {
                 const body: CreateBatchEdx = {
                     name,
                     fundImportStrategy: strategy,
-                    fundPairKey: pairKey || undefined,
-                    ignoreRootNodes: rootNodesApplicable && ignoreRootNodes,
+                    fundPairKey: effectivePairKey || undefined,
+                    ignoreRootNodes: pairing && ignoreRootNodes,
                     scopeId: scopeId ? Number(scopeId) : undefined,
                     skipError,
                     keepFiles,
@@ -156,7 +157,7 @@ export function CreateBatchDialog({ kind, open, onClose, onCreated }: Props) {
 
     const title = kind === 'EDX' ? messages.titleEdx : messages.titleCsv;
     const canSubmit = name.trim().length > 0
-        && (kind !== 'EDX' || !rootNodesApplicable || pairKey !== '')
+        && (kind !== 'EDX' || !pairing || pairKey !== '')
         && !saving;
 
     return (
@@ -192,11 +193,12 @@ export function CreateBatchDialog({ kind, open, onClose, onCreated }: Props) {
                                     <Field
                                         label={intl.formatMessage(batchSettingsMessages.fundPairKey)}
                                         hint={intl.formatMessage(batchSettingsHints.fundPairKey)}
-                                        required={rootNodesApplicable}
+                                        required={pairing}
                                     >
                                         <Dropdown
-                                            value={pairKey ? intl.formatMessage(FUND_PAIR_KEY_MESSAGE[pairKey]) : intl.formatMessage(messages.none)}
-                                            selectedOptions={pairKey ? [pairKey] : []}
+                                            disabled={!pairing}
+                                            value={effectivePairKey ? intl.formatMessage(FUND_PAIR_KEY_MESSAGE[effectivePairKey]) : intl.formatMessage(messages.none)}
+                                            selectedOptions={effectivePairKey ? [effectivePairKey] : []}
                                             onOptionSelect={(_, d) => setPairKey((d.optionValue as FundPairKey) ?? '')}
                                         >
                                             <Option value="" text={intl.formatMessage(messages.none)}><FormattedMessage {...messages.none} /></Option>
@@ -208,7 +210,7 @@ export function CreateBatchDialog({ kind, open, onClose, onCreated }: Props) {
                                         </Dropdown>
                                     </Field>
                                     <Field hint={intl.formatMessage(batchSettingsHints.ignoreRootNodes)}>
-                                        <Checkbox checked={rootNodesApplicable && ignoreRootNodes} disabled={!rootNodesApplicable}
+                                        <Checkbox checked={pairing && ignoreRootNodes} disabled={!pairing}
                                             onChange={(_, d) => setIgnoreRootNodes(!!d.checked)}
                                             label={intl.formatMessage(batchSettingsMessages.ignoreRootNodes)} />
                                     </Field>

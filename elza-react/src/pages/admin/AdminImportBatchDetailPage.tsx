@@ -58,8 +58,10 @@ import { humanFileSize } from 'components/Utils.jsx';
 import { addToastrDanger } from 'components/shared/toastr/ToastrActions';
 import { ServerFolderDialog } from '../../components/admin/import/ServerFolderDialog';
 import {
+    BATCH_STATE_MESSAGE,
     FUND_IMPORT_STRATEGY_MESSAGE,
     FUND_PAIR_KEY_MESSAGE,
+    ITEM_STATE_MESSAGE,
     batchSettingsMessages,
 } from '../../components/admin/import/messages';
 import { globalMessages } from 'components/shared/lang';
@@ -115,6 +117,10 @@ const messages = defineMessages({
     startHint: {
         id: 'admin.import.detail.startHint',
         defaultMessage: 'Importuje dosud nezpracované položky postupně v pořadí; pozastavenou nebo neúspěšnou dávku spustí znovu od první nezpracované položky',
+    },
+    testFailedHint: {
+        id: 'admin.import.detail.testFailedHint',
+        defaultMessage: 'Testovací běh skončil chybou, dávku nelze spustit. Odeberte chybné položky nebo spusťte test znovu.',
     },
     dryRunHint: {
         id: 'admin.import.detail.dryRunHint',
@@ -179,14 +185,14 @@ const useStyles = makeStyles({
 });
 
 const CAN_START: BatchState[] = [BatchState.Preparation, BatchState.TestFinished, BatchState.Paused, BatchState.Failed];
-const CAN_DRY_RUN: BatchState[] = [BatchState.Preparation, BatchState.TestFinished];
+const CAN_DRY_RUN: BatchState[] = [BatchState.Preparation, BatchState.TestFinished, BatchState.TestFailed];
 const CAN_PAUSE: BatchState[] = [BatchState.InProgress];
-const CAN_CANCEL: BatchState[] = [BatchState.Preparation, BatchState.InProgress, BatchState.TestInProgress, BatchState.TestFinished, BatchState.Paused, BatchState.Failed];
+const CAN_CANCEL: BatchState[] = [BatchState.Preparation, BatchState.InProgress, BatchState.TestInProgress, BatchState.TestFinished, BatchState.TestFailed, BatchState.Paused, BatchState.Failed];
 // The runner is walking the items only in these two states; they are the ones in which an entry
 // in the asynchronous queue still refers to the batch. Mirrors BatchState.isRunning() on the server.
 const RUNNING: BatchState[] = [BatchState.InProgress, BatchState.TestInProgress];
 const canDelete = (state: BatchState) => !RUNNING.includes(state);
-const CAN_EDIT_ITEMS: BatchState[] = [BatchState.Preparation, BatchState.TestFinished];
+const CAN_EDIT_ITEMS: BatchState[] = [BatchState.Preparation, BatchState.TestFinished, BatchState.TestFailed];
 // Item states in their lifecycle order, as shown in the summary above the table.
 const ITEM_STATE_ORDER: ItemState[] = [ItemState.Ready, ItemState.Running, ItemState.TestRunFinished, ItemState.Finished, ItemState.Error];
 const ITEM_STATE_COLOR: Partial<Record<ItemState, 'danger' | 'success' | 'informative'>> = {
@@ -362,6 +368,9 @@ export function AdminImportBatchDetailPage() {
     const canEditItems = CAN_EDIT_ITEMS.includes(state);
     // The retention sweep dropped the input files, so there is nothing left for a run to read.
     const filesPurged = batch.filesDeletedAt != null;
+    // A failed test blocks the import; the button stays visible so its tooltip can say why.
+    const testFailed = state === BatchState.TestFailed;
+    const startHint = filesPurged ? messages.filesPurged : testFailed ? messages.testFailedHint : messages.startHint;
     const noItems = items.length === 0;
     const running = RUNNING.includes(state);
     const doneState = state === BatchState.TestInProgress ? ItemState.TestRunFinished : ItemState.Finished;
@@ -390,12 +399,12 @@ export function AdminImportBatchDetailPage() {
                     </Button>
                     <h2 style={{ margin: 0 }}>{batch.name}</h2>
                     <Tag size="small">{batch.importType}</Tag>
-                    <Tag size="small" appearance="brand">{state}</Tag>
+                    <Tag size="small" appearance="brand"><FormattedMessage {...BATCH_STATE_MESSAGE[state]} /></Tag>
                     <div className={styles.spacer} />
                     <div className={styles.actions}>
-                        {CAN_START.includes(state) && (
-                            <Tooltip content={intl.formatMessage(filesPurged ? messages.filesPurged : messages.startHint)} relationship="description" withArrow>
-                                <Button icon={<PlayRegular />} appearance="primary" onClick={onStart} disabled={filesPurged || noItems}>
+                        {(CAN_START.includes(state) || testFailed) && (
+                            <Tooltip content={intl.formatMessage(startHint)} relationship="description" withArrow>
+                                <Button icon={<PlayRegular />} appearance="primary" onClick={onStart} disabledFocusable={filesPurged || noItems || testFailed}>
                                     <FormattedMessage {...messages.start} />
                                 </Button>
                             </Tooltip>
@@ -467,7 +476,7 @@ export function AdminImportBatchDetailPage() {
                                             checked={activeFilter === c.state}
                                             onClick={() => setStateFilter(activeFilter === c.state ? null : c.state)}
                                         >
-                                            {c.state}
+                                            <FormattedMessage {...ITEM_STATE_MESSAGE[c.state]} />
                                             {' '}
                                             <Badge size="small" appearance="tint" color={ITEM_STATE_COLOR[c.state] ?? 'subtle'}>{c.count}</Badge>
                                         </ToggleButton>
@@ -531,7 +540,7 @@ export function AdminImportBatchDetailPage() {
                                             <TableCell>{it.execOrder}</TableCell>
                                             <TableCell>{it.itemName}</TableCell>
                                             <TableCell>
-                                                <Tag size="small">{it.state}</Tag>
+                                                <Tag size="small"><FormattedMessage {...ITEM_STATE_MESSAGE[it.state]} /></Tag>
                                                 {it.state === ItemState.Error && (
                                                     <Button
                                                         appearance="subtle"
