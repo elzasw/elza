@@ -44,7 +44,7 @@ export const ReplacedEntities = ({ids = []}:{ids?: number[]}) => {
 
                 </div>
                 : <div>
-                    <div>{`${<FormattedMessage {...apDetailMessages.detailReplacingEntities} />}: `}</div>
+                    <div><FormattedMessage {...apDetailMessages.detailReplacingEntities} />{': '}</div>
                     {entities?.map((entity) => {
                         return <div>
                             <Link style={{color: "#33afff"}} to={urlEntity(entity.id)}> {`${entity.id}: ${entity.name || intl.formatMessage(apDetailMessages.detailReplacedEntityNoName)}`} </Link>

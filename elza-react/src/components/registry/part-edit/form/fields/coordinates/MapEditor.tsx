@@ -16,7 +16,7 @@ export interface Props {
     onChange?: (geometry: string) => void;
     onClose?: () => void;
     allowedGeometryTypes?: string[];
-    title?: string;
+    title?: React.ReactNode;
 }
 
 export const MapEditor = ({

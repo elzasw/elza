@@ -225,7 +225,10 @@ export const editInMapEditor = (geometry: string, extSystem: ExternalSystem, all
                     extSystem={extSystem}
                     onChange={handleEditorChange}
                     allowedGeometryTypes={allowedGeometryTypes}
-                    title={`${<FormattedMessage {...partEditMessages.coordinateMapEditorTitle} />}${additionalTitle ? ` - ${additionalTitle}` : ""}`}
+                    title={<>
+                        <FormattedMessage {...partEditMessages.coordinateMapEditorTitle} />
+                        {additionalTitle ? ` - ${additionalTitle}` : ""}
+                    </>}
                 />
             }
         ))

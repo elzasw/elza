@@ -206,7 +206,7 @@ export const EntityBindings: FC<{
                         <div style={{ textAlign: "left", padding: "4px" }}>
                             <div>id: {binding.value}</div>
                             {binding.extRevision && <div>rev_id: {binding.extRevision}</div>}
-                            {binding.extUser && <div>{`${<FormattedMessage {...apDetailMessages.bindingUser} />}: ${binding.extUser}`}</div>}
+                            {binding.extUser && <div><FormattedMessage {...apDetailMessages.bindingUser} />{`: ${binding.extUser}`}</div>}
                         </div>
 
                     return (

@@ -95,10 +95,12 @@ export function DescItemCoordinates({
       return _value.substring(0, COORDINATE_CROP_LENGTH - 1);
     }
     const { geometryType, objectCount, coordinateCount } = summary;
+    const pointsLabel = formatMessage(nodeMessages.globalGeometryLabelPoints);
     if (objectCount <= 1) {
-      return `${geometryType} ( ${<FormattedMessage {...nodeMessages.globalGeometryLabelPoints} />}: ${coordinateCount} )`;
+      return `${geometryType} ( ${pointsLabel}: ${coordinateCount} )`;
     }
-    return `${geometryType} ( ${<FormattedMessage {...nodeMessages.globalGeometryLabelObjects} />}: ${objectCount} ${<FormattedMessage {...nodeMessages.globalGeometryLabelPoints} />}: ${coordinateCount} )`;
+    const objectsLabel = formatMessage(nodeMessages.globalGeometryLabelObjects);
+    return `${geometryType} ( ${objectsLabel}: ${objectCount} ${pointsLabel}: ${coordinateCount} )`;
   }
 
   const displayValue = item.undefined
