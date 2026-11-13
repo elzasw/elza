@@ -106,6 +106,7 @@ import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
 import cz.tacr.elza.test.controller.vo.DataBit;
+import cz.tacr.elza.test.controller.vo.DataRecordRef;
 import cz.tacr.elza.test.controller.vo.DataString;
 import cz.tacr.elza.test.controller.vo.DataText;
 import cz.tacr.elza.test.controller.vo.DataType;
@@ -699,7 +700,25 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         OutputItemRes outputItemResult = outputApi.outputDeleteOutputItemsByType(parent.getId(), parent.getVersion(), typeVo.getId());
         assertNotNull(outputItemResult.getParent());
-        assertNull(outputItemResult.getItem());        
+        assertNull(outputItemResult.getItem());
+
+        ApAccessPointVO accessPoint = findRecord(null, null, null, null, null).get(0);
+        RulDescItemTypeExtVO entityRoleType = findDescItemTypeByCode(SRD_ENTITY_ROLE);
+        item = new OutputItem();
+        item.setItemTypeId(entityRoleType.getId());
+        item.setItemSpecId(findDescItemSpecByCode(SRD_ENTITY_ROLE_1, entityRoleType).getId());
+        DataRecordRef recordRefData = new DataRecordRef();
+        recordRefData.setValue(accessPoint.getId());
+        item.setData(recordRefData);
+        outputItem = outputApi.outputCreateOutputItem(output3.getId(), outputItemResult.getParent().getVersion(), item);
+        assertEquals(accessPoint.getName(), ((DataRecordRef) outputItem.getItem().getData()).getName());
+
+        outputFormData = outputApi.outputGetOutputFormData(output3.getId());
+        OutputItem formRecordRefItem = outputFormData.getItems().stream()
+                .filter(formItem -> entityRoleType.getId().equals(formItem.getItemTypeId()))
+                .findFirst()
+                .orElseThrow();
+        assertEquals(accessPoint.getName(), ((DataRecordRef) formRecordRefItem.getData()).getName());
 
         // Hodnota atributu musí být prázdná
         OutputSettings outputSettings = new OutputSettings();
