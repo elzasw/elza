@@ -1960,6 +1960,9 @@ public class DescriptionItemService {
 
             MultipleItemChangeContext changeContext = createChangeContext(version.getFundVersionId());
 
+            // a node can hold several values of a repeatable item, but the client node version
+            // is valid only for the first lock within this change
+            Set<Integer> lockedNodeIds = new HashSet<>();
             for (ArrDescItem descItem: descItemsToReplaceText) {
                 // kontrola zákazu změn
                 if (!forceUpdate) {
@@ -1968,7 +1971,9 @@ public class DescriptionItemService {
                     }
                 }
                 ArrNode clientNode = nodesMap.get(descItem.getNodeId());
-                arrangementService.lockNode(descItem.getNode(), clientNode == null ? descItem.getNode() : clientNode, change);
+                if (lockedNodeIds.add(descItem.getNodeId())) {
+                    arrangementService.lockNode(descItem.getNode(), clientNode == null ? descItem.getNode() : clientNode, change);
+                }
 
                 replaceDescItemValue(descItem, findText, replaceText, change, changeContext);
             }
@@ -2652,6 +2657,9 @@ public class DescriptionItemService {
             // update an existing item(s)
             if (!descItemsToReplaceText.isEmpty()) {
 
+                // a node can hold several values of a repeatable item, but the client node version
+                // is valid only for the first lock within this change
+                Set<Integer> lockedNodeIds = new HashSet<>();
                 for (ArrDescItem descItem: descItemsToReplaceText) {
                     // kontrola zákazu změn
                     if (descItem.getReadOnly()) {
@@ -2659,7 +2667,9 @@ public class DescriptionItemService {
                     }
                     ArrNode clientNode = nodesMap.get(descItem.getNodeId());
                     dbNodes.remove(clientNode);
-                    arrangementService.lockNode(descItem.getNode(), clientNode == null ? descItem.getNode() : clientNode, change);
+                    if (lockedNodeIds.add(descItem.getNodeId())) {
+                        arrangementService.lockNode(descItem.getNode(), clientNode == null ? descItem.getNode() : clientNode, change);
+                    }
 
                     ArrData data = HibernateUtils.unproxy(descItem.getData());
                     Validate.notNull(data, "item without data");
