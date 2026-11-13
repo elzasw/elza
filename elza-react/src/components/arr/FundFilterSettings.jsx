@@ -692,6 +692,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                         {values: 0, code: 'NOT_EMPTY', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionNotEmpty)},
                         {values: 0, code: 'UNDEFINED', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionUndefined)},
                         {values: 1, code: 'SUBSET', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionCoordinatesSubset)},
+                        {values: 1, code: 'CONTAIN', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionStringContain)},
                         {values: 2, code: 'NEAR', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionCoordinatesNear)},
                     ];
                     break;

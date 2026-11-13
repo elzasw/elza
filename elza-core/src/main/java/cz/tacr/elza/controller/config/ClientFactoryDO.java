@@ -94,6 +94,7 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.filter.DescItemTypeFilter;
 import cz.tacr.elza.filter.condition.BeginDescItemCondition;
+import cz.tacr.elza.filter.condition.ContainCoordinatesDescItemCondition;
 import cz.tacr.elza.filter.condition.ContainDescItemCondition;
 import cz.tacr.elza.filter.condition.DescItemCondition;
 import cz.tacr.elza.filter.condition.EndDescItemCondition;
@@ -609,7 +610,11 @@ public class ClientFactoryDO {
                 }
                 case CONTAIN: {
                     String conditionValue = getConditionValueString(filter.getCondition());
-                    condition = new ContainDescItemCondition<>(conditionValue, ArrDescItem.FULLTEXT_ATT);
+                    if (dataType == DataType.COORDINATES) {
+                        condition = new ContainCoordinatesDescItemCondition(conditionValue);
+                    } else {
+                        condition = new ContainDescItemCondition<>(conditionValue, ArrDescItem.FULLTEXT_ATT);
+                    }
                     break;
                 }
                 case CONTAIN_ENTITY: {

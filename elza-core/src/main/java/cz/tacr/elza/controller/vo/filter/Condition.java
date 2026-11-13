@@ -49,7 +49,7 @@ public enum Condition {
     NOT_INTERVAL(DataType.INT, DataType.DECIMAL, DataType.DATE),
 
     CONTAIN(DataType.TEXT, DataType.STRING, DataType.FORMATTED_TEXT, DataType.UNITID,
-    		DataType.RECORD_REF),
+    		DataType.RECORD_REF, DataType.COORDINATES),
 
     CONTAIN_ENTITY(DataType.RECORD_REF),
 
