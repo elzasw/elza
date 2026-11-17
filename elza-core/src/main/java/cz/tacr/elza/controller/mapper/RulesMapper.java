@@ -61,7 +61,7 @@ public class RulesMapper {
     }
 
     ItemType toItemType(RulItemTypeExt src, SysLanguage language) {
-        DataType dataType = toDataType(src.getDataType().getCode());
+        DataType dataType = toDataType(cz.tacr.elza.core.data.DataType.fromItemType(src));
         ItemType out = new ItemType(
                 src.getItemTypeId(),
                 src.getCode(),
@@ -155,17 +155,17 @@ public class RulesMapper {
     }
 
     /**
-     * Maps the domain data-type code to the public {@link DataType} enum.
+     * Maps the domain data type to the public {@link DataType} enum.
      * The two enums share the same set of values; the mapping is therefore a
-     * one-to-one name match. An unknown code indicates a domain/spec mismatch
+     * one-to-one name match. A missing value indicates a domain/spec mismatch
      * and is treated as a programming error.
      */
-    static DataType toDataType(String domainCode) {
+    static DataType toDataType(cz.tacr.elza.core.data.DataType domain) {
         try {
-            return DataType.valueOf(domainCode);
+            return DataType.valueOf(domain.name());
         } catch (IllegalArgumentException e) {
             throw new IllegalStateException(
-                    "Unknown domain data type code: " + domainCode
+                    "Unknown domain data type: " + domain
                             + ". Public DataType enum is out of sync with cz.tacr.elza.core.data.DataType.",
                     e);
         }

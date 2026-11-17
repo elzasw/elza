@@ -1,11 +1,15 @@
 package cz.tacr.elza.controller.mapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -14,8 +18,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.controller.vo.DataType;
@@ -49,9 +55,12 @@ class RulesMapperTest {
     private StaticDataService staticDataService;
     private StaticDataProvider staticDataProvider;
     private RulesMapper mapper;
+    /** Static-data item types by id, registered by the item-type helpers. */
+    private MockedStatic<cz.tacr.elza.core.data.DataType> dataTypes;
 
     @BeforeEach
     void setUp() {
+        dataTypes = mockDataTypeIds();
         staticDataService = mock(StaticDataService.class);
         staticDataProvider = mock(StaticDataProvider.class);
         lenient().when(staticDataService.getData()).thenReturn(staticDataProvider);
@@ -284,16 +293,49 @@ class RulesMapperTest {
     }
 
     @Test
-    void dataType_unknownCodeThrowsIllegalState() {
-        try {
-            RulesMapper.toDataType("NOT_A_REAL_TYPE");
-            org.junit.jupiter.api.Assertions.fail("Expected IllegalStateException");
-        } catch (IllegalStateException expected) {
-            assertThat(expected).hasMessageContaining("NOT_A_REAL_TYPE");
-        }
+    void dataType_unknownIdNamesTheItemType() {
+        RulItemTypeExt src = bareItemType(14, "BROKEN", "STRING");
+        RulDataType unknown = new RulDataType();
+        unknown.setDataTypeId(999);
+        src.setDataType(unknown);
+
+        assertThatThrownBy(() -> mapper.toItemType(src, null))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Item type BROKEN has unknown data type id: 999");
     }
 
     // ---------- helpers --------------------------------------------------------
+
+    /**
+     * The id cache of {@link cz.tacr.elza.core.data.DataType} is filled at application
+     * startup; here {@code fromId} resolves the enum ordinal used by {@link #dataTypeRef}
+     * and, like the real lookup, returns null for an unknown id.
+     */
+    static MockedStatic<cz.tacr.elza.core.data.DataType> mockDataTypeIds() {
+        MockedStatic<cz.tacr.elza.core.data.DataType> mocked =
+                mockStatic(cz.tacr.elza.core.data.DataType.class, CALLS_REAL_METHODS);
+        mocked.when(() -> cz.tacr.elza.core.data.DataType.fromId(anyInt())).thenAnswer(inv -> {
+            int id = inv.getArgument(0);
+            cz.tacr.elza.core.data.DataType[] values = cz.tacr.elza.core.data.DataType.values();
+            return id >= 0 && id < values.length ? values[id] : null;
+        });
+        return mocked;
+    }
+
+    /**
+     * Data type reference carrying only the id: reading the code through the
+     * association instead of resolving the id fails.
+     */
+    static RulDataType dataTypeRef(String dataTypeCode) {
+        RulDataType dt = new RulDataType();
+        dt.setDataTypeId(cz.tacr.elza.core.data.DataType.valueOf(dataTypeCode).ordinal());
+        return dt;
+    }
+
+    @AfterEach
+    void closeDataTypes() {
+        dataTypes.close();
+    }
 
     private static RulItemTypeExt bareItemType(int id, String code, String dataTypeCode) {
         RulItemType base = new RulItemType();
@@ -302,7 +344,7 @@ class RulesMapperTest {
         base.setName(code);
         base.setShortcut(code);
         base.setDescription("");
-        base.setDataType(rulDataType(dataTypeCode));
+        base.setDataType(dataTypeRef(dataTypeCode));
         base.setCanBeOrdered(Boolean.FALSE);
         // empty spec list
         return new RulItemTypeExt(base, new ArrayList<>());
@@ -329,12 +371,6 @@ class RulesMapperTest {
         RulItemTypeExt out = bareItemType(101, code, "JSON_TABLE");
         out.setViewDefinition(columns);
         return out;
-    }
-
-    private static RulDataType rulDataType(String code) {
-        RulDataType dt = new RulDataType();
-        dt.setCode(code);
-        return dt;
     }
 
     private static cz.tacr.elza.domain.RulStructuredType rulStructuredType(int id) {
