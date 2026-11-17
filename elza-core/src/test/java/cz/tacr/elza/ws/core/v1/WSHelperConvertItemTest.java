@@ -46,17 +46,17 @@ class WSHelperConvertItemTest {
 
     @Test
     void unknownItemTypeNamesTheCodeInTheFault() {
-        ItemString item = stringItem("ZP2015_TITLE", null);
+        ItemString item = stringItem("ZP2015_REMOVED_TYPE", null);
 
         BusinessException e = assertThrows(BusinessException.class,
                 () -> wsHelper.convertItem(new ArrDescItem(), item));
 
         assertSame(ArrangementCode.ITEM_TYPE_NOT_FOUND, e.getErrorCode());
-        assertEquals("ZP2015_TITLE", e.getProperties().get("id"));
+        assertEquals("ZP2015_REMOVED_TYPE", e.getProperties().get("id"));
 
         String detail = WSHelper.prepareException("DAO import failed", e).getFaultInfo().getDetail();
         assertTrue(detail.startsWith("ITEM_TYPE_NOT_FOUND: "), detail);
-        assertTrue(detail.contains("ZP2015_TITLE"), detail);
+        assertTrue(detail.contains("ZP2015_REMOVED_TYPE"), detail);
     }
 
     @Test

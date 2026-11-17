@@ -372,7 +372,10 @@ public class NodeSearchService {
 
 	    StaticDataProvider sdp = staticDataService.getData();
 	    ItemType itemType = sdp.getItemTypeByCode(itemTypeCode.toUpperCase());
-	    Objects.requireNonNull(itemType);
+	    if (itemType == null) {
+	        throw new BusinessException("Unknown item type code: " + itemTypeCode, ArrangementCode.ITEM_TYPE_NOT_FOUND)
+	                .set("id", itemTypeCode);
+	    }
 
 	    DataType dataType = itemType.getDataType();
 

@@ -1563,7 +1563,9 @@ components:
             `elza.nodeUpdateProposals` anchor the exact item to update or delete by it.
         type:
           type: string
-          description: Stable item-type code, e.g. `ZP2015_TITLE` (`RulItemType.code`).
+          description: |-
+            Stable item-type code (`RulItemType.code`). The codes are defined by the
+            rules packages installed in the archive and differ between archives.
         dataType:
           allOf:
             - $ref: '#/components/schemas/DataType'
@@ -1577,8 +1579,8 @@ components:
         spec:
           type: string
           description: |-
-            Stable specification code for enumerated item types, e.g.
-            `ZP2015_UNIT_TYPE_UKN` (`RulItemSpec.code`); absent for non-enumerated types.
+            Stable specification code for enumerated item types (`RulItemSpec.code`);
+            absent for non-enumerated types.
         value:
           type: string
           description: |-
@@ -1945,7 +1947,9 @@ components:
       properties:
         ruleSetCode:
           type: string
-          description: Rule set whose item types to return (`RulRuleSet.code`), e.g. `ZP2015`.
+          description: |-
+            Rule set whose item types to return (`RulRuleSet.code`) — the `ruleSetCode`
+            reported for the fund or entity in the context or in earlier results.
       description: Arguments of the `getItemTypes` tool.
     InstitutionInfo:
       type: object
@@ -1965,7 +1969,10 @@ components:
       properties:
         type:
           type: string
-          description: Item-type code (`RulItemType.code`), e.g. `ZP2015_TITLE`.
+          description: |-
+            Item-type code (`RulItemType.code`) exactly as it appears in the context or
+            in earlier results. The codes differ between archives; a code the client
+            does not know fails the call.
         spec:
           type: string
           description: |-
@@ -1981,8 +1988,8 @@ components:
             The comparison value; absent for `NOT_NULL`. Dating items (`UNITDATE`)
             use Elza's interval syntax, e.g. `1930-1939`.
       description: |-
-        One condition on a description item, e.g. item `ZP2015_UNIT_DATE`
-        `INTERSECT` `1930-1939`.
+        One condition on a description item, e.g. a dating item `INTERSECT`
+        `1930-1939`.
     ItemConditionOperation:
       type: string
       enum:
@@ -2115,7 +2122,7 @@ components:
       properties:
         code:
           type: string
-          description: Stable item-type code, e.g. `ZP2015_TITLE` (`RulItemType.code`).
+          description: Stable item-type code (`RulItemType.code`), as carried by `DescriptionItem.type`.
         name:
           type: string
           description: Human-readable name, e.g. `Obsah`.
@@ -2139,7 +2146,7 @@ components:
       properties:
         code:
           type: string
-          description: Stable spec code, e.g. `ZP2015_UNIT_TYPE_UKN` (`RulItemSpec.code`).
+          description: Stable spec code (`RulItemSpec.code`).
         name:
           type: string
           description: Human-readable name in the rule set's language, e.g. `úřední kniha`.

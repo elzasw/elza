@@ -127,9 +127,12 @@ model SearchNodesParams {
   limit?: int32;
 }
 
-/** One condition on a description item, e.g. `ZP2015_UNIT_DATE` intersects `1930-1939`. */
+/** One condition on a description item, e.g. a dating item intersects `1930-1939`. */
 model ItemCondition {
-  /** Item-type code (`RulItemType.code`), e.g. `ZP2015_TITLE`. */
+  /**
+   * Item-type code (`RulItemType.code`) exactly as it appears in the context or
+   * in earlier results; codes differ between archives. An unknown code fails the call.
+   */
   type: string;
 
   /** Specification code for enumerated types, if the condition targets one spec. */
