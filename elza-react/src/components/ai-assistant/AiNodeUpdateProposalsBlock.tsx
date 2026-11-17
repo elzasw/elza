@@ -8,7 +8,7 @@ import {
     EditRegular,
     WarningRegular,
 } from "@fluentui/react-icons";
-import { FormattedMessage, useIntl } from "react-intl";
+import { FormattedMessage, type IntlShape, useIntl } from "react-intl";
 import { Api } from "api";
 import {
     AiNodeUpdateProposalsBlock as AiNodeUpdateProposalsBlockVO,
@@ -18,6 +18,7 @@ import {
 } from "elza-api";
 import { useAppThunkDispatch } from "utils/hooks";
 import { routerNavigate } from "actions/router";
+import { ExceptionTitle, exceptionText } from "components/exception/ExceptionTitle";
 import { linkPath } from "./AiRequestActivities";
 import { aiAssistantMessages } from "./messages";
 
@@ -236,8 +237,9 @@ function ChangeCard({
     formatDate,
     onNavigate,
 }: ChangeCardProps) {
+    const intl = useIntl();
     const muted = change.state === STATE_REJECTED || change.state === STATE_SUPERSEDED;
-    const clarifyText = change.blockedReason ?? change.reason;
+    const blocked = change.state === STATE_BLOCKED && (change.blockedError || change.blockedReason);
 
     return (
         <div className={mergeClasses(styles.card, muted && styles.cardMuted)}>
@@ -250,10 +252,12 @@ function ChangeCard({
                     <OperationRow key={index} operation={operation} styles={styles} onNavigate={onNavigate} />
                 ))}
             </div>
-            {change.state === STATE_BLOCKED && change.blockedReason && (
+            {blocked && (
                 <div className={styles.blocked}>
                     <WarningRegular className={styles.opIcon} />
-                    <span>{change.blockedReason}</span>
+                    <span>
+                        {change.blockedError ? <ExceptionTitle data={change.blockedError} /> : change.blockedReason}
+                    </span>
                 </div>
             )}
             {error && <div className={styles.error}>
@@ -290,7 +294,7 @@ function ChangeCard({
                     </span>
                 )}
                 {(change.state === STATE_PROPOSED || change.state === STATE_BLOCKED) && onClarify && (
-                    <Button size="small" appearance="subtle" onClick={() => onClarify(clarifyText)} disabled={busy}>
+                    <Button size="small" appearance="subtle" onClick={() => onClarify(clarifyText(intl, change))} disabled={busy}>
                         <FormattedMessage {...aiAssistantMessages.proposalClarify} />
                     </Button>
                 )}
@@ -335,4 +339,12 @@ function OperationRow({ operation, styles, onNavigate }: OperationRowProps) {
                 ))}
         </div>
     );
+}
+
+/** The text sent back to the AI when the user asks it to clarify a change. */
+function clarifyText(intl: IntlShape, change: AiProposalChange): string {
+    if (change.blockedError) {
+        return exceptionText(intl, change.blockedError);
+    }
+    return change.blockedReason ?? change.reason;
 }

@@ -8,7 +8,7 @@
  * Číslo je platné jméno argumentu, takže `{0}` i `{name}` fungují stejně.
  */
 export function icuValues(
-    properties?: Record<string, unknown> | null,
+    properties?: object | null,
 ): Record<string, string | number> {
     const result: Record<string, string | number> = {};
     for (const [key, value] of Object.entries(properties ?? {})) {

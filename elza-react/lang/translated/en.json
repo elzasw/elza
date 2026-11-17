@@ -7418,12 +7418,12 @@
     "srcHash": "rCuTZ9pMK70L"
   },
   "exception.reg.FOREIGN_ENTITY_INVALID_SUBTYPE": {
-    "defaultMessage": "The access point must belong to a class allowed for the entity role used in the Archival funds module",
-    "srcHash": "J6N70oozBgqh"
+    "defaultMessage": "Entity “{apName}” cannot be used in the description element “{itemName}”: its class “{apTypeName}” is not allowed for this description element",
+    "srcHash": "Xy5tuazBJLkE"
   },
   "exception.reg.INVALID_ENTITY_SCOPE": {
-    "defaultMessage": "The archival entity has an unsuitable scope",
-    "srcHash": "p_qoziEdWt3G"
+    "defaultMessage": "Entity “{apName}” cannot be used in this archival fund: it belongs to the entity scope “{scopeName}”, which is not connected to the archival fund",
+    "srcHash": "wDYwtI3nY4F6"
   },
   "exception.reg.INVALID_ENTITY_VERSION": {
     "defaultMessage": "Incorrect archival entity version",

@@ -4034,7 +4034,8 @@ model AiProposalNode {
  * One proposed change — the unit the user accepts or rejects; its operations
  * are applied together, in one versioned change. `state` is an open set:
  * `PROPOSED` (awaiting decision), `APPLIED`, `REJECTED`, `BLOCKED` (fails
- * validation against the level's current state — see `blockedReason`),
+ * validation against the level's current state — see `blockedReason` and
+ * `blockedError`),
  * `SUPERSEDED` (a newer exchange re-proposed for the same level); a client
  * renders an unknown state as a read-only card.
  */
@@ -4049,8 +4050,18 @@ model AiProposalChange {
     confidence?: int32;
     /** PROPOSED | APPLIED | REJECTED | BLOCKED | SUPERSEDED (open set). */
     state: string;
-    /** User-facing reason when state = BLOCKED. */
+    /**
+     * User-facing reason when state = BLOCKED and the change itself is not
+     * applicable (anchor gone, value changed meanwhile, incomplete operation…).
+     */
     blockedReason?: string;
+    /**
+     * Error the description write would fail with, when state = BLOCKED by a
+     * description rule (e.g. an entity of a disallowed class or scope); the
+     * client renders it as any other server error. Exactly one of
+     * `blockedReason` and `blockedError` is set for a BLOCKED change.
+     */
+    blockedError?: BaseException;
     /** When the APPLIED/REJECTED decision was made. */
     decideDate?: utcDateTime;
     /** The change's operations, applied together. */

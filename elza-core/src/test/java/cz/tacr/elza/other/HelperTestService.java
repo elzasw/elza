@@ -37,6 +37,10 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.packageimport.PackageService;
+import cz.tacr.elza.repository.AiConversationRepository;
+import cz.tacr.elza.repository.AiProposalDecisionRepository;
+import cz.tacr.elza.repository.AiRequestEventRepository;
+import cz.tacr.elza.repository.AiRequestRepository;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingIssueRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
@@ -197,6 +201,14 @@ public class HelperTestService {
     protected GroupRepository groupRepository;
     @Autowired
     protected ExternalSystemRepository externalSystemRepository;
+    @Autowired
+    private AiProposalDecisionRepository aiProposalDecisionRepository;
+    @Autowired
+    private AiRequestEventRepository aiRequestEventRepository;
+    @Autowired
+    private AiRequestRepository aiRequestRepository;
+    @Autowired
+    private AiConversationRepository aiConversationRepository;
     @Autowired
     private NodeOutputRepository nodeOutputRepository;
     @Autowired
@@ -389,6 +401,12 @@ public class HelperTestService {
     private void deleteTablesInternal() {
 
         logger.debug("Cleaning table contents...");
+
+        // a proposal decision references the arr_change of its apply
+        aiProposalDecisionRepository.deleteAll();
+        aiRequestEventRepository.deleteAll();
+        aiRequestRepository.deleteAll();
+        aiConversationRepository.deleteAll();
 
         wfTaskApRevStateRepository.deleteAll();
         wfTaskApStateRepository.deleteAll();
