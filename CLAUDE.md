@@ -145,6 +145,16 @@ When you do write a comment, it should describe the code's current behavior and,
 
 Existing comments in this codebase are predominantly Czech. New comments should be written in English. When editing a pre-existing Czech comment, keep it in Czech to stay consistent with the surrounding text.
 
+## Code readability
+
+Aim: a reviewer understands what the code does and why from names and comments alone, without simulating it in their head.
+
+- **Separate fetching from computing.** Put the result of a DB call, I/O or another side effect into a variable named by its meaning (`deletedLevels`), then compute on it.
+- **Name meaningful steps, not every expression.** Introduce a variable, method or constant when the name states a domain meaning (`lastDeletionByUuid`, `isBrokenLinkError`); not one that just repeats the type.
+- **A non-obvious rule gets a name and a "why" comment** — deduplication, ordering, tie-breaks, what a null means.
+- **No logic in inline lambdas.** Use method references or named functions. Stream or loop is a free choice; prefer a loop when the stream would need state or branching.
+- **Decide correctness explicitly, do not inherit library defaults.** No `<`, `>=`, `==` on boxed numbers (unboxing NPE, identity compare) — use `Comparator.comparing`, `Integer.compare`, `Objects.equals`. Handle duplicates and nulls on purpose (`Collectors.toMap` throws on a duplicate key and on a null value). Choose fail-fast or tolerate per context: a validator survives inconsistent data, a broken internal invariant fails with a clear message.
+
 ## Collaboration
 
 - **Ask before acting when uncertain.** If you have doubts about the proposed approach, are missing information needed to implement it correctly, or believe the user's request is suboptimal (wrong abstraction, breaks an invariant, simpler alternative exists), stop and ask rather than guessing or silently "fixing" it. A short clarifying question is always cheaper than a wrong implementation.
