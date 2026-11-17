@@ -1505,4 +1505,51 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="20261117120000" author="ppy">
+        <!-- Validation reports a link to a deleted unit of description (URI-REF elza-node://)
+             with the fund, date and user of the deletion, and a link to a unit that was not
+             found by its own message. Drops the validation state of the referring nodes in open
+             fund versions, so the startup validates them again with the new messages (it queues
+             nodes without arr_node_conformity). -->
+        <sql>
+            DELETE FROM arr_node_conformity_error WHERE node_conformity_id IN (
+                SELECT nc.node_conformity_id FROM arr_node_conformity nc
+                JOIN arr_fund_version fv ON fv.fund_version_id = nc.fund_version_id AND fv.lock_change_id IS NULL
+                WHERE nc.node_id IN (
+                    SELECT di.node_id FROM arr_desc_item di
+                    JOIN arr_item i ON i.item_id = di.item_id AND i.delete_change_id IS NULL
+                    JOIN arr_data_uri_ref ur ON ur.data_id = i.data_id
+                    WHERE ur.uri_ref_value LIKE 'elza-node://%'
+                      AND (ur.node_id IS NULL
+                           OR NOT EXISTS (SELECT 1 FROM arr_level l
+                                          WHERE l.node_id = ur.node_id AND l.delete_change_id IS NULL))))
+        </sql>
+        <sql>
+            DELETE FROM arr_node_conformity_missing WHERE node_conformity_id IN (
+                SELECT nc.node_conformity_id FROM arr_node_conformity nc
+                JOIN arr_fund_version fv ON fv.fund_version_id = nc.fund_version_id AND fv.lock_change_id IS NULL
+                WHERE nc.node_id IN (
+                    SELECT di.node_id FROM arr_desc_item di
+                    JOIN arr_item i ON i.item_id = di.item_id AND i.delete_change_id IS NULL
+                    JOIN arr_data_uri_ref ur ON ur.data_id = i.data_id
+                    WHERE ur.uri_ref_value LIKE 'elza-node://%'
+                      AND (ur.node_id IS NULL
+                           OR NOT EXISTS (SELECT 1 FROM arr_level l
+                                          WHERE l.node_id = ur.node_id AND l.delete_change_id IS NULL))))
+        </sql>
+        <sql>
+            DELETE FROM arr_node_conformity WHERE node_conformity_id IN (
+                SELECT nc.node_conformity_id FROM arr_node_conformity nc
+                JOIN arr_fund_version fv ON fv.fund_version_id = nc.fund_version_id AND fv.lock_change_id IS NULL
+                WHERE nc.node_id IN (
+                    SELECT di.node_id FROM arr_desc_item di
+                    JOIN arr_item i ON i.item_id = di.item_id AND i.delete_change_id IS NULL
+                    JOIN arr_data_uri_ref ur ON ur.data_id = i.data_id
+                    WHERE ur.uri_ref_value LIKE 'elza-node://%'
+                      AND (ur.node_id IS NULL
+                           OR NOT EXISTS (SELECT 1 FROM arr_level l
+                                          WHERE l.node_id = ur.node_id AND l.delete_change_id IS NULL))))
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>

@@ -34,10 +34,12 @@
     <t type="MESSAGE" code="CORE/ARR_UNDEFINED_NOT_ALLOWED" field="text">U prvku popisu {0} není možné nastavit hodnotu „{1}“.</t>
     <!-- {0} item type, {1} id of the entity -->
     <t type="MESSAGE" code="CORE/ARR_DELETED_ENTITY_REF" field="text">Prvek {0} odkazuje na zneplatněnou entitu (id: {1}).</t>
-    <t type="MESSAGE" code="CORE/ARR_BROKEN_NODE_REF" field="text">Prvek {0} odkazuje na smazanou nebo neznámou jednotku popisu ({1}).</t>
+    <t type="MESSAGE" code="CORE/ARR_DELETED_NODE_REF" field="text">Prvek {0} odkazuje na jednotku popisu „{1}“, která byla smazána z archivního souboru „{2}“ dne {3,date,medium} v {3,time,short} (uživatel: {4}). Smazání lze dohledat v historii změn archivního souboru.</t>
+    <t type="MESSAGE" code="CORE/ARR_UNKNOWN_NODE_REF" field="text">Prvek {0} odkazuje na jednotku popisu, která nebyla nalezena ({1}).</t>
 
     <!-- terms used as arguments -->
     <t type="MESSAGE" code="CORE/UNDEFINED_VALUE" field="text">výjimka</t>
+    <t type="MESSAGE" code="CORE/SYSTEM_USER" field="text">systém</t>
 
     <!-- headers of the CSV exports of a fund, of its issues and of structured objects -->
     <t type="MESSAGE" code="CORE/EXPORT_COL_RECORD_NUMBER" field="text">Číslo záznamu</t>

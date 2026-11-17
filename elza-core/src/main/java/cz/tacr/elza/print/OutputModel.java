@@ -1015,7 +1015,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         }
 
         // A deleted node has no cache row. The link is reported by the validation of the
-        // referring node (ARR_BROKEN_NODE_REF) and is printed without its target.
+        // referring node (ARR_DELETED_NODE_REF) and is printed without its target.
         RestoredNode cachedNode = nodeCacheService.getNodes(Collections.singletonList(id)).get(id);
         if (cachedNode == null) {
             logger.warn("Linked node not found in cache, probably deleted, nodeId: {}", id);

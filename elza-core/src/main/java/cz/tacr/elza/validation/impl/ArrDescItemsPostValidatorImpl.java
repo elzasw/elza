@@ -25,6 +25,7 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.factory.DescItemFactory;
+import cz.tacr.elza.domain.projection.DeletedNodeInfo;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.drools.ValidationRules;
 import cz.tacr.elza.exception.ObjectNotFoundException;
@@ -91,7 +92,7 @@ public class ArrDescItemsPostValidatorImpl implements ArrDescItemsPostValidator 
         // Read entities
         Map<Integer, ApState> apStatesMap = Collections.emptyMap();
         Set<Integer> apIds = new HashSet<>();
-        Set<Integer> linkedNodeIds = new HashSet<>();
+        Set<String> linkedNodeUuids = new HashSet<>();
         for (ArrDescItem descItem : descItems) {
 			if(descItem.getData() == null) {
 				continue;
@@ -100,17 +101,13 @@ public class ArrDescItemsPostValidatorImpl implements ArrDescItemsPostValidator 
 			if(data instanceof ArrDataRecordRef) {
 				apIds.add (  ((ArrDataRecordRef) data).getRecordId() );
 			} else if (data instanceof ArrDataUriRef) {
-                Integer linkedNodeId = ((ArrDataUriRef) data).getNodeId();
-                if (linkedNodeId != null) {
-                    linkedNodeIds.add(linkedNodeId);
+                String linkedNodeUuid = DescItemFactory.getLinkedNodeUuid((ArrDataUriRef) data);
+                if (linkedNodeUuid != null) {
+                    linkedNodeUuids.add(linkedNodeUuid);
                 }
 			}
 		}
-        // link targets without an active level are deleted units of description
-        Set<Integer> deletedLinkedNodeIds = new HashSet<>(linkedNodeIds);
-        if (!linkedNodeIds.isEmpty()) {
-            deletedLinkedNodeIds.removeAll(levelRepository.findNodeIdsWithActiveLevel(linkedNodeIds));
-        }
+        Map<String, DeletedNodeInfo> deletedLinkedNodes = findDeletedNodes(linkedNodeUuids);
         if(apIds.size()>0) {
         	// read states
 			List<ApState> apStates = stateRepository.findLastByAccessPointIds(apIds);
@@ -122,12 +119,32 @@ public class ArrDescItemsPostValidatorImpl implements ArrDescItemsPostValidator 
 
         // create validator and validate
         Validator validator = new Validator(nodeTypes, descItems, descItemFactory, apStatesMap,
-                deletedLinkedNodeIds);
+                deletedLinkedNodes);
         validator.validate();
 
         List<DataValidationResult> validationResultList = validator.getValidationResultList();
 		validationRules.finalizeValidationResults(validationResultList, version.getRuleSetId());
         return validationResultList;
+    }
+
+    /**
+     * Deleted units of description among the link targets, with their last deletion.
+     *
+     * @param uuids UUIDs of the link targets
+     * @return UUID of a deleted unit -> its last deletion
+     */
+    private Map<String, DeletedNodeInfo> findDeletedNodes(final Set<String> uuids) {
+        if (uuids.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        List<DeletedNodeInfo> lastDeletions = levelRepository.findLastDeletions(uuids);
+
+        Map<String, DeletedNodeInfo> lastDeletionByUuid = new HashMap<>();
+        for (DeletedNodeInfo lastDeletion : lastDeletions) {
+            // two rows of one unit are levels deleted by the same change: either describes it
+            lastDeletionByUuid.putIfAbsent(lastDeletion.uuid(), lastDeletion);
+        }
+        return lastDeletionByUuid;
     }
 
 }

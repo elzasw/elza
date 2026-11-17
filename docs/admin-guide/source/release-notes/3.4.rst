@@ -126,6 +126,16 @@ Fixes
   more funds than the tree cache holds (``elza.levelTreeCache.size``, 30
   by default), the trees were repeatedly evicted and loaded again, and the
   tree and arrangement of other users waited meanwhile.
+* Fix: 10242 - A link to another unit of description (``elza-node://``)
+  whose target had been deleted was connected to the deleted unit again by
+  every later import (the import connects the unresolved links of the whole
+  database) and by saving the item. Such a link now stays without target.
+  Validation reports it with the fund, date and user of the deletion, so
+  the deletion can be found in the history of changes of the fund; a link
+  to a unit that is not in the database is reported by its own message.
+  The upgrade drops the validation state of the units with such links in
+  open fund versions, so the start of the application validates them
+  again.
 
 3.4.11
 ======

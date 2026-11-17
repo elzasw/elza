@@ -200,10 +200,7 @@ public class DescItemFactory implements InitializingBean {
             dataTemp.setSchema(tempUri.getScheme());
 
             if(!dataTemp.isDeletingProcess() && dataTemp.getSchema().equals(ELZA_NODE)) {
-                ArrNode node = nodeRepository.findOneByUuid(tempUri.getAuthority()); //hledání podle UUID
-                if(node != null) {
-                    dataTemp.setArrNode(node);
-                }
+                resolveLinkedNode(dataTemp, tempUri);
             }
         }
 
@@ -219,6 +216,36 @@ public class DescItemFactory implements InitializingBean {
 			throw new NotImplementedException("Nebyla namapována repozitory pro datový typ: " + data.getClass());
 		}
 		return (ArrData) dataRepos.save(data);
+	}
+
+	/**
+	 * UUID of the unit of description a link (elza-node://UUID) points to.
+	 *
+	 * @param data link data
+	 * @return the UUID, null for a link of another schema or with a malformed value
+	 */
+	public static String getLinkedNodeUuid(final ArrDataUriRef data) {
+		if (!ELZA_NODE.equals(data.getSchema()) || StringUtils.isEmpty(data.getUriRefValue())) {
+			return null;
+		}
+		try {
+			return URI.create(data.getUriRefValue()).normalize().getAuthority();
+		} catch (IllegalArgumentException e) {
+			return null;
+		}
+	}
+
+	/**
+	 * Resolves the target of a link to a unit of description (elza-node://UUID) by the UUID.
+	 * Only a unit with an active level is a valid target. When none is found, the link has no
+	 * target, also when the data were copied from a link to a since deleted unit.
+	 *
+	 * @param data link data
+	 * @param uri  normalized URI of the link
+	 */
+	private void resolveLinkedNode(final ArrDataUriRef data, final URI uri) {
+		ArrNode node = nodeRepository.findActiveByUuid(uri.getAuthority());
+		data.setArrNode(node);
 	}
 
 	/**
@@ -279,10 +306,7 @@ public class DescItemFactory implements InitializingBean {
                 dataTemp.setSchema(tempUri.getScheme());
 
                 if(dataTemp.getSchema().equals(ELZA_NODE)) {
-                    ArrNode node = nodeRepository.findOneByUuid(tempUri.getAuthority()); //hledání podle UUID
-                    if(node != null) {
-                        dataTemp.setArrNode(node);
-                    }
+                    resolveLinkedNode(dataTemp, tempUri);
                 }
             }
 

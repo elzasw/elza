@@ -245,13 +245,6 @@ public class DEImportService {
     }
 
     /**
-     * Vyhledá všechny nepropojené odkazy na JP (typu {@value cz.tacr.elza.domain.factory.DescItemFactory#ELZA_NODE},
-     * které nemají vazbu na node a pokusí je podle UUID dohledat a propojit je.
-     *
-     * Je třeba dohledávat všechny napříč celou DB, protože může nastat případ, kdy se importují po sobě dvě AS,
-     * které mají navzájem provazbené JP.
-     */
-    /**
      * Enqueue collected imported nodes for async conformity validation.
      */
     private void enqueueNodesForValidation(Map<Integer, List<Integer>> importedNodesByFundVersion) {
@@ -262,6 +255,15 @@ public class DEImportService {
         });
     }
 
+    /**
+     * Vyhledá všechny nepropojené odkazy na JP (typu {@value cz.tacr.elza.domain.factory.DescItemFactory#ELZA_NODE},
+     * které nemají vazbu na node a pokusí je podle UUID dohledat a propojit je.
+     *
+     * Je třeba dohledávat všechny napříč celou DB, protože může nastat případ, kdy se importují po sobě dvě AS,
+     * které mají navzájem provazbené JP.
+     *
+     * Odkaz se napojí jen na JP s platnou (nesmazanou) úrovní, odkaz na smazanou JP zůstane bez cíle.
+     */
     private void restoreNodeUriRefs() {
         int page = 0;
         Page<ArrDataUriRef> dataPage;
@@ -292,7 +294,7 @@ public class DEImportService {
      */
     private List<ArrNode> connectNodes(final Map<String, List<ArrDataUriRef>> uuidDataUriRefMap) {
         Set<String> uuids = uuidDataUriRefMap.keySet();
-        List<ArrNode> nodes = nodeRepository.findAllByUuidIn(uuids);
+        List<ArrNode> nodes = nodeRepository.findActiveByUuidIn(uuids);
         for (ArrNode node : nodes) {
             List<ArrDataUriRef> refs = uuidDataUriRefMap.get(node.getUuid());
             refs.forEach(r -> r.setArrNode(node));

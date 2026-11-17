@@ -29,6 +29,7 @@ import cz.tacr.elza.domain.RulItemSpecExt;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.factory.DescItemFactory;
+import cz.tacr.elza.domain.projection.DeletedNodeInfo;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.DataValidationResults;
 import cz.tacr.elza.exception.BusinessException;
@@ -57,15 +58,16 @@ public class Validator {
     final Map<Integer, ApState> apStatesMap;
 
     /**
-     * Nodes linked by URI-REF items of the validated node that have no active level
+     * Units of description linked by URI-REF items of the validated node that have no active
+     * level, by UUID, with their last deletion
      */
-    final Set<Integer> deletedLinkedNodeIds;
+    final Map<String, DeletedNodeInfo> deletedLinkedNodes;
 
     public Validator(final List<RulItemTypeExt> requiredItemTypes,
                      final List<ArrDescItem> descItems,
                      final DescItemFactory descItemFactory,
                      final Map<Integer, ApState> apStatesMap,
-                     final Set<Integer> deletedLinkedNodeIds) {
+                     final Map<String, DeletedNodeInfo> deletedLinkedNodes) {
         this.requiredItemTypes = requiredItemTypes;
         if (descItems == null) {
             this.descItems = Collections.emptyList();
@@ -74,7 +76,7 @@ public class Validator {
         }
 		this.descItemFactory = descItemFactory;
         this.apStatesMap = apStatesMap;
-        this.deletedLinkedNodeIds = deletedLinkedNodeIds;
+        this.deletedLinkedNodes = deletedLinkedNodes;
 	}
 
 	public DataValidationResults getValidationResults() {
@@ -217,6 +219,37 @@ public class Validator {
 	/**
 	 * Run the validation
 	 */
+    /**
+     * A link to a unit of description (elza-node://) is broken when its target is deleted, or
+     * when it is not resolved at all. A deleted target is reported with its fund and its last
+     * deletion, so the user can find the deletion in the history of changes of the fund. Deleting
+     * a level clears the target of the links to it, so a deleted target is found by the UUID.
+     */
+    private void validateNodeLink(final ArrDescItem descItem, final ArrDataUriRef dataUriRef,
+                                  final RulItemType itemType, final String policyTypeCode) {
+        String linkedNodeUuid = DescItemFactory.getLinkedNodeUuid(dataUriRef);
+        if (linkedNodeUuid == null) {
+            return;
+        }
+        String linkLabel = StringUtils.isNotBlank(dataUriRef.getDescription())
+                ? dataUriRef.getDescription()
+                : dataUriRef.getUriRefValue();
+        DeletedNodeInfo deleted = deletedLinkedNodes.get(linkedNodeUuid);
+        ValidationMessage message;
+        if (deleted != null) {
+            Object user = deleted.username() != null ? deleted.username() : CoreMessage.SYSTEM_USER.with();
+            // the date as milliseconds: formatted in the language of the reader
+            message = CoreMessage.ARR_DELETED_NODE_REF.with(ValidationMessage.itemType(itemType.getCode()),
+                    linkLabel, deleted.fundName(), deleted.deleteDate().toInstant().toEpochMilli(), user);
+        } else if (dataUriRef.getNodeId() == null) {
+            message = CoreMessage.ARR_UNKNOWN_NODE_REF.with(ValidationMessage.itemType(itemType.getCode()),
+                    linkLabel);
+        } else {
+            return;
+        }
+        validationResults.createError(descItem, message.encode(), policyTypeCode);
+    }
+
 	public void validate() {
         Map<Integer, RulItemTypeExt> extNodeTypes = ElzaTools.createEntityMap(requiredItemTypes,
                 RulItemType::getItemTypeId);
@@ -255,20 +288,8 @@ public class Validator {
                     }
                 }
 
-                // A link to a unit of description is broken when its target is deleted, or when
-                // it is not resolved at all: deleting a level clears the target of the links to it.
-                if (data instanceof ArrDataUriRef
-                        && DescItemFactory.ELZA_NODE.equals(((ArrDataUriRef) data).getSchema())) {
-                    ArrDataUriRef dataUriRef = (ArrDataUriRef) data;
-                    Integer linkedNodeId = dataUriRef.getNodeId();
-                    if (linkedNodeId == null || deletedLinkedNodeIds.contains(linkedNodeId)) {
-                        String linkLabel = StringUtils.isNotBlank(dataUriRef.getDescription())
-                                ? dataUriRef.getDescription()
-                                : dataUriRef.getUriRefValue();
-                        validationResults.createError(descItem, CoreMessage.ARR_BROKEN_NODE_REF.with(
-                                ValidationMessage.itemType(itemType.getCode()), linkLabel).encode(),
-                                                      policyTypeCode);
-                    }
+                if (data instanceof ArrDataUriRef) {
+                    validateNodeLink(descItem, (ArrDataUriRef) data, itemType, policyTypeCode);
                 }
 
                 List<ArrDescItem> itemsInType = descItemsInTypeMap.computeIfAbsent(itemTypeId, k -> new LinkedList<>());

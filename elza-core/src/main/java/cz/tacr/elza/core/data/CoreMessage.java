@@ -51,12 +51,19 @@ public enum CoreMessage {
     ARR_UNDEFINED_NOT_ALLOWED(2, "The item {0} cannot have the value “{1}”."),
     // {0} item type, {1} id of the entity
     ARR_DELETED_ENTITY_REF(2, "The item {0} refers to an invalidated entity (id: {1})."),
+    // {0} item type, {1} description of the link, or its value when it has none, {2} fund of the
+    // deleted unit, {3} date of the deletion (epoch milliseconds), {4} user who deleted it
+    ARR_DELETED_NODE_REF(5, "The item {0} refers to the unit of description “{1}”, which was deleted"
+            + " from the fund “{2}” on {3,date,medium} at {3,time,short} (user: {4})."
+            + " The deletion can be found in the history of changes of the fund."),
     // {0} item type, {1} description of the link, or its value when it has none
-    ARR_BROKEN_NODE_REF(2, "The item {0} refers to a deleted or unknown unit of description ({1})."),
+    ARR_UNKNOWN_NODE_REF(2, "The item {0} refers to a unit of description that was not found ({1})."),
 
     // terms used as arguments of other messages
     /** The word for a value marked as undefined ({@code ArrangementService.UNDEFINED}). */
     UNDEFINED_VALUE(0, "undefined"),
+    /** The user of a change made by the system, not by a user. */
+    SYSTEM_USER(0, "system"),
 
     // headers of the CSV exports of a fund (ArrIOService) and of its issues (IssueService)
     EXPORT_COL_RECORD_NUMBER(0, "Record number"),
