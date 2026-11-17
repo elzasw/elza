@@ -92,7 +92,7 @@ public class ApInfo implements BaseApInfo, ExternalIdApInfo, PartsApInfo, ItemAp
 
     public Collection<ApItem> getItemsForPart(Integer partId) {
         Collection<ApItem> items = partItemsMap.get(partId);
-        Validate.notNull(items, "Items for part not found, partId: %i", partId);
+        Validate.notNull(items, "Items for part not found, partId: %d", partId);
         return items;
     }
 

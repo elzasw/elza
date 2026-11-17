@@ -170,7 +170,7 @@ public class EntityDBDispatcher extends AbstractEntityDBDispatcher {
         if (existingAps.size() > 0) {
             List<ApState> apStates = stateRepository.findLastByAccessPoints(existingAps);
             Validate.isTrue(apStates.size() == existingAps.size(),
-                            "Unexpected number of ApStates, count: %i, expected: %i",
+                            "Unexpected number of ApStates, count: %d, expected: %d",
                             apStates.size(), existingAps.size());
             apStates.forEach(aps -> idEsMap.get(aps.getAccessPoint().getUuid()).setState(aps));
         }

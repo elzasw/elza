@@ -2623,7 +2623,7 @@ private void processEvent(AbstractEventSimple event) {
                 parentReferenceMark = createClientReferenceMarkFromRoot(subtreeRoot, viewTitles, nodeValueMap);
             } else {
                 Node parentNode = requestCtx.getNodes().get(parent.getId());
-                Validate.notNull(parentNode, "Parent node not found, nodeId: %i", parent.getId());
+                Validate.notNull(parentNode, "Parent node not found, nodeId: %d", parent.getId());
                 parentReferenceMark = parentNode.getReferenceMark();
             }
             String[] referenceMark = createClientNodeReferenceMark(treeNode, viewTitles.getLevelTypeId(),
