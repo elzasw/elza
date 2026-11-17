@@ -2,6 +2,7 @@ package cz.tacr.elza.service.cam.v2;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -66,6 +67,7 @@ import cz.tacr.elza.domain.ApBindingIssue;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ExtSyncsQueueItem;
 import cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState;
@@ -74,6 +76,7 @@ import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingIssueRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
+import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
@@ -141,6 +144,9 @@ public class CamServiceImportTest extends AbstractControllerTest {
 
     @Autowired
     private ApFactory apFactory;
+
+    @Autowired
+    private ApPartRepository partRepository;
 
     @Autowired
     private AccessPointCacheService accessPointCacheService;
@@ -421,9 +427,112 @@ public class CamServiceImportTest extends AbstractControllerTest {
         assertNull(state.getDeleteChangeId(), "the access point must stay untouched");
     }
 
+    /**
+     * A local access point bound to a CAM entity is synchronized for the first time. The body is
+     * not repeatable, so the body received from CAM replaces the local one: the entity keeps one
+     * body and the entity list shows the CAM description.
+     */
+    @Test
+    void update_receivedBodyReplacesLocalBody() {
+        // --- given ---------------------------------------------------------
+        camMock = new CamV2MockHelper(wireMockServer);
+        systemCode = "CAM_V2_BODY_" + UUID.randomUUID();
+        int externalSystemId = createExternalSystemForWireMock(systemCode);
+
+        long camId = 900_005L;
+        Integer apId = createLocalAccessPoint(createScope().getId(), "Person with body");
+        Integer localBodyId = createBody(apId, "Local description");
+        ExtSyncsQueueItem queueItem = bindAndEnqueueUpdate(externalSystemId, apId, camId);
+
+        EntityXml entity = buildPlainEntity(camId, UUID.randomUUID().toString(), "Person with body",
+                                            EntityRecordStateXml.ERS_APPROVED);
+        entity.getParts().getPart().add(buildBodyPart("CAM description"));
+        camMock.stubGetEntityById(camId, entity);
+
+        // --- when ---------------------------------------------------------
+        ItemSyncProcessor processor = accessPointConnectorService.nextItemSyncProcessor(10);
+        assertNotNull(processor, "Queue item in UPDATE should yield a download processor");
+        assertTrue(processor.process());
+
+        // --- then ---------------------------------------------------------
+        assertEquals(ExtAsyncQueueState.IMPORT_OK, reload(queueItem).getState());
+        new TransactionTemplate(transactionManager).executeWithoutResult(tx -> {
+            List<ApPart> bodies = findActiveBodies(apId);
+            assertEquals(1, bodies.size(), "the entity must keep one body");
+            assertNotEquals(localBodyId, bodies.get(0).getPartId(), "the body received from CAM wins");
+            ApPart localBody = partRepository.findById(localBodyId).orElseThrow();
+            assertNotNull(localBody.getDeleteChangeId(), "the local body stays in the history as deleted");
+
+            ApAccessPoint accessPoint = accessPointRepository.findById(apId).orElseThrow();
+            ApAccessPointVO vo = apFactory.createVO(List.of(accessPoint)).get(0);
+            assertEquals("CAM description", vo.getDescription());
+        });
+    }
+
+    /**
+     * A local part of a non-repeatable type stays when CAM sends no part of that type.
+     */
+    @Test
+    void update_localBodyStaysWithoutReceivedBody() {
+        // --- given ---------------------------------------------------------
+        camMock = new CamV2MockHelper(wireMockServer);
+        systemCode = "CAM_V2_NOBODY_" + UUID.randomUUID();
+        int externalSystemId = createExternalSystemForWireMock(systemCode);
+
+        long camId = 900_006L;
+        Integer apId = createLocalAccessPoint(createScope().getId(), "Person without CAM body");
+        Integer localBodyId = createBody(apId, "Local description");
+        ExtSyncsQueueItem queueItem = bindAndEnqueueUpdate(externalSystemId, apId, camId);
+
+        camMock.stubGetEntityById(camId, buildPlainEntity(camId, UUID.randomUUID().toString(),
+                                                          "Person without CAM body",
+                                                          EntityRecordStateXml.ERS_APPROVED));
+
+        // --- when ---------------------------------------------------------
+        ItemSyncProcessor processor = accessPointConnectorService.nextItemSyncProcessor(10);
+        assertNotNull(processor);
+        assertTrue(processor.process());
+
+        // --- then ---------------------------------------------------------
+        assertEquals(ExtAsyncQueueState.IMPORT_OK, reload(queueItem).getState());
+        new TransactionTemplate(transactionManager).executeWithoutResult(tx -> {
+            List<ApPart> bodies = findActiveBodies(apId);
+            assertEquals(1, bodies.size());
+            assertEquals(localBodyId, bodies.get(0).getPartId());
+        });
+    }
+
     // ------------------------------------------------------------------
     // helpers
     // ------------------------------------------------------------------
+
+    /** Adds a body with a brief description to the access point, as a user does. */
+    private Integer createBody(Integer accessPointId, String description) {
+        List<ApItemVO> items = new ArrayList<>();
+        items.add(buildApItem(ApControllerTest.BRIEF_DESC, null, description, null, null));
+        ApPartFormVO partForm = ApControllerTest.createPartFormVO(null, ApControllerTest.PT_BODY, null, items);
+        return createPart(accessPointId, partForm).getPartId();
+    }
+
+    private List<ApPart> findActiveBodies(Integer accessPointId) {
+        ApAccessPoint accessPoint = accessPointRepository.findById(accessPointId).orElseThrow();
+        List<ApPart> bodies = new ArrayList<>();
+        for (ApPart part : partRepository.findValidPartByAccessPoint(accessPoint)) {
+            if (ApControllerTest.PT_BODY.equals(part.getPartType().getCode())) {
+                bodies.add(part);
+            }
+        }
+        return bodies;
+    }
+
+    private static PartXml buildBodyPart(String description) {
+        PartXml bodyPart = new PartXml(new ItemsXml(), null, null, new UuidXml(UUID.randomUUID().toString()),
+                                       PartTypeXml.PT_BODY);
+        bodyPart.getItems().getItems().add(
+                new ItemStringXml(new StringXml(description), null, new CodeXml("BRIEF_DESC"),
+                                  new UuidXml(UUID.randomUUID().toString())));
+        return bodyPart;
+    }
 
     /** Imports a new entity from CAM through the queue; the access point is created in the scope of the external system. */
     private void importNewEntity(int externalSystemId, long camEntityId, String camEntityUuid, String name) {

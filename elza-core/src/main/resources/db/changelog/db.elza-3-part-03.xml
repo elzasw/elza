@@ -1552,4 +1552,24 @@
         </sql>
     </changeSet>
 
+    <changeSet id="20261117130000" author="ppy">
+        <!-- A part has one index of each type: PartService writes the indexes of a part from a map
+             by type and the readers map them by part (or by access point) without expecting a
+             duplicate. Indexes are derived data, regenerated with the part, so a duplicate row is
+             dropped (the oldest one is kept). The unique index replaces ap_index_part_idx, whose
+             column is its prefix. -->
+        <sql>
+            DELETE FROM ap_index WHERE EXISTS (
+                SELECT 1 FROM ap_index older
+                WHERE older.part_id = ap_index.part_id
+                  AND older.index_type = ap_index.index_type
+                  AND older.index_id &lt; ap_index.index_id)
+        </sql>
+        <createIndex tableName="ap_index" indexName="ap_index_part_type_uidx" unique="true">
+            <column name="part_id"/>
+            <column name="index_type"/>
+        </createIndex>
+        <dropIndex tableName="ap_index" indexName="ap_index_part_idx"/>
+    </changeSet>
+
 </databaseChangeLog>

@@ -229,6 +229,58 @@ public class PartService {
         }
     }
 
+    /**
+     * Deletes the local parts that an entity received from an external system replaces: a
+     * top-level part without binding whose part type is not repeatable, when the received entity
+     * has a part of that type.
+     *
+     * The external system is the source of the entity, so its part wins. Keeping the local one as
+     * well would leave the entity with a repeated non-repeatable part (e.g. two bodies), which the
+     * rules report as an error and which list views and exports cannot resolve. The deleted parts,
+     * with their subparts and items, stay in the history of the entity.
+     *
+     * @param receivedPartTypeCodes codes of the part types of the received top-level parts
+     * @param localParts            parts of the access point without binding to the external system
+     */
+    public void deleteLocalPartsReplacedByReceived(final Set<String> receivedPartTypeCodes,
+                                                   final List<ApPart> localParts,
+                                                   final ApAccessPoint accessPoint,
+                                                   final ApChange apChange) {
+        Set<Integer> replacedPartIds = new HashSet<>();
+        for (ApPart localPart : localParts) {
+            if (isReplacedByReceived(localPart, receivedPartTypeCodes)) {
+                replacedPartIds.add(localPart.getPartId());
+            }
+        }
+        if (replacedPartIds.isEmpty()) {
+            return;
+        }
+
+        List<ApPart> activeParts = partRepository.findValidPartByAccessPoint(accessPoint);
+        List<ApPart> deletedParts = new ArrayList<>();
+        for (ApPart part : activeParts) {
+            if (replacedPartIds.contains(part.getPartId()) || replacedPartIds.contains(part.getParentPartId())) {
+                deletedParts.add(part);
+            }
+        }
+        logger.info("Deleting local parts replaced by the external system, accessPointId: {}, partIds: {}",
+                    accessPoint.getAccessPointId(), replacedPartIds);
+
+        List<ApItem> deletedItems = apItemService.findItemsByParts(deletedParts);
+        apItemService.deleteItems(deletedItems, apChange);
+        deleteParts(deletedParts, apChange);
+    }
+
+    private static boolean isReplacedByReceived(final ApPart localPart, final Set<String> receivedPartTypeCodes) {
+        if (localPart.getParentPartId() != null) {
+            return false;
+        }
+        RulPartType partType = localPart.getPartType();
+        // a part type without the flag is repeatable (see PackageService)
+        boolean repeatable = !Boolean.FALSE.equals(partType.getRepeatable());
+        return !repeatable && receivedPartTypeCodes.contains(partType.getCode());
+    }
+
     public void deleteParts(final ApAccessPoint accessPoint, final ApChange apChange) {
         List<ApPart> partList = partRepository.findValidPartByAccessPoint(accessPoint);
         if (CollectionUtils.isNotEmpty(partList)) {

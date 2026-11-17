@@ -136,6 +136,20 @@ Fixes
   The upgrade drops the validation state of the units with such links in
   open fund versions, so the start of the application validates them
   again.
+* Fix: 10247 - CAM - the synchronization of a local entity bound to a CAM
+  entity, and connecting a local entity to a CAM entity without replacing
+  its content, kept the local parts of a non-repeatable type (body,
+  creation, extinction) next to the parts received from CAM, so the entity
+  had e.g. two bodies and validation reported an error. A part received
+  from CAM now replaces the local part of the same non-repeatable type;
+  the local part stays in the history of the entity. An entity that
+  already has such a duplicate is corrected by its next synchronization.
+  Entity lists and the CSV export of entities show the first created part
+  when a type is still repeated, and the external identifier of the
+  external system with the lowest id when an entity is bound to more
+  systems, instead of a random one. The upgrade adds a unique index on the
+  indexes of entity parts (``ap_index``); on a large database it takes a
+  few minutes.
 
 3.4.11
 ======

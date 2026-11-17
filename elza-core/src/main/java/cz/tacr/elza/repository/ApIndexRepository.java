@@ -41,18 +41,35 @@ public interface ApIndexRepository extends JpaRepository<ApIndex, Integer> {
     @Query("SELECT i FROM ap_index i JOIN FETCH i.part p JOIN p.accessPoint ap WHERE p.accessPointId IN :accessPointIds AND p = ap.preferredPart AND i.indexType = :indexType")
     List<ApIndex> findPreferredPartIndexByAccessPointIdsAndIndexType(@Param("accessPointIds") Collection<Integer> accessPointIds, @Param("indexType") String indexType);
 
+    /**
+     * Index of each given part type of the access points. A part type that occurs more than once
+     * in an access point (a non-repeatable one is reported by validation) contributes its first
+     * created part, so the result does not depend on the row order.
+     */
     @Query("SELECT i FROM ap_index i " +
             "JOIN FETCH i.part p " +
             "JOIN FETCH p.partType pt " +
             "WHERE p.accessPointId IN :accessPointIds " +
             "AND pt.code IN :partTypeCodes " +
             "AND p.deleteChange IS NULL " +
-            "AND i.indexType = :indexType")
+            "AND i.indexType = :indexType " +
+            "AND p.partId = (SELECT MIN(p2.partId) FROM ApPart p2 WHERE p2.accessPointId = p.accessPointId " +
+            "AND p2.partTypeId = p.partTypeId AND p2.deleteChange IS NULL)")
     List<ApIndex> findIndexByAccessPointIdsAndPartTypeCodesAndIndexType(@Param("accessPointIds") Collection<Integer> accessPointIds,
                                                                        @Param("partTypeCodes") Collection<String> partTypeCodes,
                                                                        @Param("indexType") String indexType);
 
-    @Query("SELECT i FROM ap_index i JOIN FETCH i.part p JOIN p.accessPoint ap WHERE ap IN :accessPoints AND p.partType = :partType AND p.deleteChange IS NULL AND i.indexType = :indexType")
+    /**
+     * Index of the part of the given type of each access point. When the type occurs more than
+     * once in an access point (a non-repeatable one is reported by validation), the first created
+     * part is used, so the result does not depend on the row order.
+     *
+     * @return at most one index per access point
+     */
+    @Query("SELECT i FROM ap_index i JOIN FETCH i.part p JOIN p.accessPoint ap " +
+            "WHERE ap IN :accessPoints AND p.partType = :partType AND p.deleteChange IS NULL AND i.indexType = :indexType " +
+            "AND p.partId = (SELECT MIN(p2.partId) FROM ApPart p2 WHERE p2.accessPoint = ap " +
+            "AND p2.partType = :partType AND p2.deleteChange IS NULL)")
     List<ApIndex> findPartIndexByAccessPointsAndPartTypeAndIndexType(@Param("accessPoints") Collection<ApAccessPoint> accessPoints, @Param("partType") RulPartType partType, @Param("indexType") String indexType);
 
     /**

@@ -126,6 +126,10 @@ public class EntityDBDispatcher extends AbstractEntityDBDispatcher {
 
         if (replace) {
             partService.deleteParts(accessPoint, apChange);
+        } else {
+            // the access point is not bound to the entity yet: all its parts are local
+            List<ApPart> localParts = partService.findPartsByAccessPoint(accessPoint);
+            partService.deleteLocalPartsReplacedByReceived(getTopPartTypeCodes(entity), localParts, accessPoint, apChange);
         }
 
         String bindingValue = Long.toString(entity.getEntityId().getValue());
@@ -295,6 +299,16 @@ public class EntityDBDispatcher extends AbstractEntityDBDispatcher {
             return false;
         }
         return externalSystemService.getBindingState(binding).isPresent();
+    }
+
+    private static Set<String> getTopPartTypeCodes(final EntityXml entity) {
+        Set<String> codes = new HashSet<>();
+        for (PartXml partXml : entity.getParts().getPart()) {
+            if (partXml.getParent() == null) {
+                codes.add(partXml.getType().value());
+            }
+        }
+        return codes;
     }
 
     /**
@@ -792,6 +806,8 @@ public class EntityDBDispatcher extends AbstractEntityDBDispatcher {
 
         ApPart preferredName = null;
 
+        Set<String> receivedTopPartTypeCodes = getTopPartTypeCodes(entity);
+
         for (PartXml partXml : partsXml.getPart()) {
             log.debug("Synchronizing part, accessPointId: {}, part uuid: {}, parent uuid: {}, type: {}",
                       accessPointId, partXml.getPartUuid().getValue(),
@@ -823,6 +839,8 @@ public class EntityDBDispatcher extends AbstractEntityDBDispatcher {
                     itemList = createItems(partXml, part, apChange, binding, dataRefList);
                 } else {
                     part = receivedPart.getPart();
+                    // the part gets a binding: it is no longer a local part
+                    partsWithoutBinding.remove(part);
                     Map<Integer, ReceivedItem> itemMap = receivedPart.getItems().stream()
                             .collect(Collectors.toMap(i -> i.getItemId(), i -> i));
                     itemList = itemsMap.get(part.getPartId());
@@ -847,6 +865,8 @@ public class EntityDBDispatcher extends AbstractEntityDBDispatcher {
         // smazání partů dle externího systému
         // mažou se zbývající party
         deletePartsInLookup(apChange, accessPoint, syncQueue);
+
+        partService.deleteLocalPartsReplacedByReceived(receivedTopPartTypeCodes, partsWithoutBinding, accessPoint, apChange);
 
         // smazání zbývajících nezpracovaných item
         Collection<ApBindingItem> remainingBindingItems = bindingItemsByPart.values().stream()
