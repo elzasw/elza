@@ -1572,4 +1572,15 @@
         <dropIndex tableName="ap_index" indexName="ap_index_part_idx"/>
     </changeSet>
 
+    <changeSet id="20261118100000" author="ppy">
+        <!-- Names taken from the package as they come are not limited either: the label of a level
+             view is the label of its level (da_dao.label), a folder is a segment of a file path
+             and the file name is the original name or the whole path of the file. -->
+        <modifyDataType tableName="da_level_view" columnName="label" newDataType="${type.text}"/>
+        <modifyDataType tableName="da_dao_file_folder" columnName="label" newDataType="${type.text}"/>
+        <!-- MS SQL drops NOT NULL when the type of a column changes -->
+        <addNotNullConstraint tableName="da_dao_file_folder" columnName="label" columnDataType="${type.text}"/>
+        <modifyDataType tableName="da_dao_file" columnName="file_name" newDataType="${type.text}"/>
+    </changeSet>
+
 </databaseChangeLog>

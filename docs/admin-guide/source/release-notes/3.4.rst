@@ -12,6 +12,23 @@ change, a step during the upgrade) name the configuration key and link to
 the relevant chapter. Before an upgrade, read the entries of all builds
 between the installed and the new version; see :doc:`/03-upgrade`.
 
+3.4.14
+======
+
+Fixes
+-----
+
+* Fix: 10249 - DA - loading the metadata of a package still failed with
+  "value too long for type character varying(250)" after the fix 10212,
+  now on the table ``da_level_view``: the name of a level above the parts
+  of the package was longer than 250 characters. The upgrade changes
+  ``da_level_view.label``, ``da_dao_file_folder.label`` and
+  ``da_dao_file.file_name`` to ``text``, so the names of levels, folders
+  and files are stored whole. Load the affected AIPs again: filter the AIP
+  list by the problem *Chyba při zpracování metadat* and run
+  *Aktualizace a oprava AIP* with the type *Aktualizace pouze DB*; the
+  packages are already downloaded.
+
 3.4.12
 ======
 

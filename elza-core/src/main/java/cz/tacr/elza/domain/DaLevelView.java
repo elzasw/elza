@@ -1,7 +1,8 @@
 package cz.tacr.elza.domain;
 
-import cz.tacr.elza.domain.enumeration.StringLength;
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.util.List;
 
@@ -25,7 +26,8 @@ public class DaLevelView {
     @JoinColumn(name = "parent_level_view_id")
     private DaLevelView parentLevelView;
 
-    @Column(name = "label", length = StringLength.LENGTH_250)
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
+    @Column(name = "label")
     private String label;
 
     @OneToMany(mappedBy = "parentLevelView", fetch = FetchType.LAZY)
