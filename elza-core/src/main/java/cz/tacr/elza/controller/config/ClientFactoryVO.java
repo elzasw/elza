@@ -1003,7 +1003,12 @@ public class ClientFactoryVO {
         return result;
     }
 
-    private <T extends ArrItem> Map<Integer, String> collectRecordRefNames(Collection<T> items) {
+    /**
+     * Display names of the access points referenced by RECORD_REF items, loaded in one query.
+     *
+     * @return access point id -> display name of its preferred part
+     */
+    public <T extends ArrItem> Map<Integer, String> collectRecordRefNames(Collection<T> items) {
         Set<Integer> apIds = items.stream()
                 .map(i -> HibernateUtils.unproxy(i.getData()))
                 .filter(ArrDataRecordRef.class::isInstance)

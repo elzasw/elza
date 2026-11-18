@@ -43,7 +43,7 @@ public class BatchStateTest {
     @Test
     void everyStateAtRestIsDeletable() {
         for (BatchState state : EnumSet.of(BatchState.PREPARATION, BatchState.TEST_FINISHED,
-                                           BatchState.PAUSED, BatchState.FAILED,
+                                           BatchState.TEST_FAILED, BatchState.PAUSED, BatchState.FAILED,
                                            BatchState.FINISHED, BatchState.CANCELLED)) {
             assertFalse(state.isRunning(), state + " must be deletable");
         }

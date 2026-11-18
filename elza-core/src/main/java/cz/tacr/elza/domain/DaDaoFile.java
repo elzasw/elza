@@ -11,6 +11,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigInteger;
 
@@ -71,7 +73,8 @@ public class DaDaoFile {
     @Column(name = "description", length = StringLength.LENGTH_2000)
     private String description;
 
-    @Column(name = "file_name", length = StringLength.LENGTH_1000)
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
+    @Column(name = "file_name")
     private String fileName;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = DaDaoFileFolder.class)

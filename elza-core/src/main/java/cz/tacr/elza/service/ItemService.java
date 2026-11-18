@@ -2,9 +2,11 @@ package cz.tacr.elza.service;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import cz.tacr.elza.common.db.HibernateUtils;
@@ -21,9 +23,13 @@ import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.PackageTexts;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApIndex;
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataFileRef;
@@ -38,13 +44,16 @@ import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.TranslationEntityType;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
+import cz.tacr.elza.groovy.GroovyResult;
 import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.DescItemRepository;
@@ -81,6 +90,12 @@ public class ItemService {
 
     @Autowired
     private DescItemRepository descItemRepository;
+
+    @Autowired
+    private ApIndexRepository indexRepository;
+
+    @Autowired
+    private PackageTexts packageTexts;
 
     @Autowired
     private EntityManager em;
@@ -204,7 +219,35 @@ public class ItemService {
                                 ArrDataRecordRef dataRecordRef,
                                 RulItemType rulItemType,
                                 RulItemSpec rulItemSpec) {
-        ApAccessPoint apAccessPoint = dataRecordRef.getRecord();
+        Optional<ItemValueViolation> violation = validateRecordRef(fundContext, dataRecordRef.getRecord(),
+                                                                   rulItemType, rulItemSpec);
+        if (violation.isPresent()) {
+            BusinessException e = violation.get().toException();
+            e.set("dataId", dataRecordRef.getDataId());
+            log.error("Record reference cannot be stored: {}", e.toString());
+            throw e;
+        }
+    }
+
+    /**
+     * Checks that an entity can be referenced by an item of the given type and
+     * specification in the fund: the entity's class must be one the
+     * specification (or the type, when it has none) allows, including
+     * subclasses, and its scope must be connected to the fund.
+     *
+     * <p>Returns the violation instead of throwing it, so that a caller showing
+     * whether a value is usable keeps its transaction. The properties carry
+     * display names (entity, class, item, scope) for the client message.
+     *
+     * @param rulItemSpec
+     *            specification, null for a type without specifications
+     * @return the violation, empty when the reference can be stored
+     */
+    @Transactional(TxType.MANDATORY)
+    public Optional<ItemValueViolation> validateRecordRef(FundContext fundContext,
+                                                          ApAccessPoint apAccessPoint,
+                                                          RulItemType rulItemType,
+                                                          RulItemSpec rulItemSpec) {
         ApState apState = stateRepository.findLastByAccessPoint(apAccessPoint);
 
         // TODO: refactor and use static data
@@ -218,40 +261,53 @@ public class ItemService {
 
         // kontrola typu třídy
         if (!apTypeIdTree.contains(apState.getApTypeId())) {
-            log.error("Class of archival entity is incorrect, dataId: {}, accessPointId: {}, rulItemType: {}, rulItemSpec: {}, apTypeId: {}",
-                      dataRecordRef.getDataId(),
-                      apAccessPoint.getAccessPointId(),
-                      rulItemType.getCode(),
-                      (rulItemSpec != null) ? rulItemSpec.getCode() : null,
-                      "apTypeId", apState.getApTypeId());
-
-            throw new BusinessException("Třída přístupového bodu neodpovídá požadavkům prvku popisu.",
-                    RegistryCode.FOREIGN_ENTITY_INVALID_SUBTYPE)
-                            .set("dataId", dataRecordRef.getDataId())
-                            .set("accessPointId", apAccessPoint.getAccessPointId())
-                            .set("rulItemType", rulItemType.getCode())
-                            .set("rulItemSpec", (rulItemSpec != null) ? rulItemSpec.getCode() : null)
-                            .set("apTypeId", apState.getApTypeId())
-                            .level(Level.WARNING);
+            Map<String, Object> properties = new LinkedHashMap<>();
+            properties.put("accessPointId", apAccessPoint.getAccessPointId());
+            properties.put("apName", displayName(apAccessPoint));
+            properties.put("rulItemType", rulItemType.getCode());
+            properties.put("rulItemSpec", (rulItemSpec != null) ? rulItemSpec.getCode() : null);
+            properties.put("itemName", itemName(rulItemType, rulItemSpec));
+            properties.put("apTypeId", apState.getApTypeId());
+            properties.put("apTypeName", apTypeName(fundContext.getSdp(), apState.getApTypeId()));
+            return Optional.of(new ItemValueViolation("Třída přístupového bodu neodpovídá požadavkům prvku popisu.",
+                    RegistryCode.FOREIGN_ENTITY_INVALID_SUBTYPE, properties));
         }
 
         // kontrola scope entity
-        if (!fundContext.getScopes().contains(apState.getScope().getScopeId())) {
-            log.error("Archival entity has invalid scope, dataId: {}, accessPointId: {}, scopeIds: {}, AF scopeId: {}",
-                      dataRecordRef.getDataId(),
-                      apAccessPoint.getAccessPointId(),
-                      fundContext.getScopes(),
-                      apState.getScope().getScopeId());
-
-            throw new BusinessException("Archivní entita má nevhodné scope.",
-                                        RegistryCode.INVALID_ENTITY_SCOPE)
-                                                .set("dataId", dataRecordRef.getDataId())
-                                                .set("accessPointId", apAccessPoint.getAccessPointId())
-                                                .set("scopeIds", fundContext.getScopes())
-                                                .set("scopeId", apState.getScope().getScopeId())
-                                                .level(Level.WARNING);
+        ApScope scope = apState.getScope();
+        if (!fundContext.getScopes().contains(scope.getScopeId())) {
+            Map<String, Object> properties = new LinkedHashMap<>();
+            properties.put("accessPointId", apAccessPoint.getAccessPointId());
+            properties.put("apName", displayName(apAccessPoint));
+            properties.put("scopeIds", fundContext.getScopes());
+            properties.put("scopeId", scope.getScopeId());
+            properties.put("scopeName", scope.getName());
+            return Optional.of(new ItemValueViolation("Archivní entita má nevhodné scope.",
+                    RegistryCode.INVALID_ENTITY_SCOPE, properties));
         }
+        return Optional.empty();
+    }
 
+    /** Preferred name of the entity; its id when the entity has no name index. */
+    private String displayName(ApAccessPoint apAccessPoint) {
+        ApIndex index = indexRepository.findPreferredPartIndexByAccessPointIdAndIndexType(
+                apAccessPoint.getAccessPointId(), GroovyResult.DISPLAY_NAME);
+        return index != null && index.getIndexValue() != null
+                ? index.getIndexValue()
+                : String.valueOf(apAccessPoint.getAccessPointId());
+    }
+
+    private String itemName(RulItemType rulItemType, RulItemSpec rulItemSpec) {
+        String typeName = packageTexts.name(rulItemType);
+        return rulItemSpec != null ? typeName + ": " + packageTexts.name(rulItemSpec) : typeName;
+    }
+
+    private String apTypeName(StaticDataProvider sdp, Integer apTypeId) {
+        ApType apType = sdp.getApTypeById(apTypeId);
+        if (apType == null) {
+            return String.valueOf(apTypeId);
+        }
+        return packageTexts.name(TranslationEntityType.AP_TYPE, apType.getCode(), apType.getName());
     }
 
     public ApAccessPoint getApProxy(Integer apId) {

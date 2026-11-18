@@ -1485,7 +1485,7 @@ public class StructObjService {
         } else {
             int id = Integer.parseInt(value);
             ArrStructuredObject so = getStructObjById(id);
-            Validate.isTrue(so.getDeleteChangeId() == null, "Structured object is deleted, id: %i", id);
+            Validate.isTrue(so.getDeleteChangeId() == null, "Structured object is deleted, id: %d", id);
             return so;
         }
     }

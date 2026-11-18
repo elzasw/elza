@@ -175,7 +175,7 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
             for (ApItem item : part.getItems()) {
                 ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
                 RulItemSpec itemSpec = item.getItemSpecId() != null ? sdp.getItemSpecById(item.getItemSpecId()) : null;
-                DataType dataType = DataType.fromCode(itemType.getEntity().getDataType().getCode());
+                DataType dataType = itemType.getDataType();
                 String itemTypeCode = itemType.getCode().toLowerCase();
                 String itemSpecCode = itemSpec != null? itemSpec.getCode().toLowerCase() : null;
 

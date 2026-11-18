@@ -9,6 +9,11 @@ import static org.awaitility.Awaitility.await;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -27,10 +32,14 @@ import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
+import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataStructureRef;
+import cz.tacr.elza.domain.ArrFile;
+import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.SobjVrequestRepository;
+import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.test.controller.vo.BulkAppendRequest;
 import cz.tacr.elza.test.controller.vo.BulkChangeResult;
 import cz.tacr.elza.test.controller.vo.BulkItemValue;
@@ -60,8 +69,20 @@ public class DescItemControllerTest extends AbstractControllerTest {
 
     private static final String SRD_ACCESS_RESTRICTION_ID = "SRD_ACCESS_RESTRICTION_ID";
 
+    private static final String SRD_POSITION = "SRD_POSITION";
+
+    private static final String SRD_SIMPLE_DATE = "SRD_SIMPLE_DATE";
+
+    private static final String SRD_FILE = "SRD_FILE";
+
     @Autowired
     private SobjVrequestRepository sobjVrequestRepository;
+
+    @Autowired
+    private FundRepository fundRepository;
+
+    @Autowired
+    private ArrangementInternalService arrangementInternalService;
 
 	@Test
 	public void createUpdateDeleteDescItemTest() {
@@ -279,6 +300,54 @@ public class DescItemControllerTest extends AbstractControllerTest {
         waitForValidationQueue();
     }
 
+    @Test
+    public void appendCoordinatesDateAndFileValuesTest() {
+        Fund fund = createFund("Bulk append coordinates, date and file", "bulkAppendCoordinatesDateFile");
+        ArrFundVersionVO fundVersion = getOpenVersion(fund);
+        Integer nodeId = createLevels(fundVersion).get(1).getId();
+        List<Integer> nodeIds = List.of(nodeId);
+
+        RulDescItemTypeExtVO positionType = findDescItemTypeByCode(SRD_POSITION);
+        List<BulkItemValue> positions = List.of(valueWithoutSpec(DataType.COORDINATES, "POINT (14 50)"),
+                valueWithoutSpec(DataType.COORDINATES, "POINT (15 49)"));
+        assertEquals(2, appendToNode(fundVersion, positionType, nodeId, positions).getCreated());
+        assertEquals(2, appendToNode(fundVersion, positionType, nodeId, positions).getSkippedDuplicate());
+
+        RulDescItemTypeExtVO dateType = findDescItemTypeByCode(SRD_SIMPLE_DATE);
+        List<BulkItemValue> dates = List.of(valueWithoutSpec(DataType.DATE, LocalDate.of(2026, 11, 11)));
+        assertEquals(1, appendToNode(fundVersion, dateType, nodeId, dates).getCreated());
+        assertEquals(1, appendToNode(fundVersion, dateType, nodeId, dates).getSkippedDuplicate());
+
+        RulDescItemTypeExtVO fileType = findDescItemTypeByCode(SRD_FILE);
+        List<BulkItemValue> files = List.of(valueWithoutSpec(DataType.FILE_REF, createFundFile(fund)));
+        assertEquals(1, appendToNode(fundVersion, fileType, nodeId, files).getCreated());
+        assertEquals(1, appendToNode(fundVersion, fileType, nodeId, files).getSkippedDuplicate());
+
+        assertAppendFails(fundVersion, positionType, nodeId, List.of(valueWithoutSpec(DataType.COORDINATES, " ")));
+        assertAppendFails(fundVersion, positionType, nodeId, List.of(valueWithoutSpec(DataType.COORDINATES, "POINT")));
+
+        // only a file of the fund can be appended
+        Fund otherFund = createFund("Bulk append file other fund", "bulkAppendFileOther");
+        assertAppendFails(fundVersion, fileType, nodeId,
+                List.of(valueWithoutSpec(DataType.FILE_REF, createFundFile(otherFund))));
+        assertThrows(HttpClientErrorException.NotFound.class, () -> appendToNode(fundVersion, fileType, nodeId,
+                List.of(valueWithoutSpec(DataType.FILE_REF, Integer.MAX_VALUE))));
+
+        assertEquals(2, findOpenItems(nodeIds, positionType).size());
+        assertEquals(1, findOpenItems(nodeIds, dateType).size());
+        assertEquals(1, findOpenItems(nodeIds, fileType).size());
+    }
+
+    private BulkChangeResult appendToNode(final ArrFundVersionVO fundVersion,
+                                          final RulDescItemTypeExtVO type,
+                                          final Integer nodeId,
+                                          final List<BulkItemValue> values) {
+        BulkChangeResult result = descitemsApi.descItemAppendDescItems(fundVersion.getId(),
+                bulkAppendRequest(type, selectNodes(nodeRefs(List.of(nodeId))), values));
+        helperTestService.waitForWorkers();
+        return result;
+    }
+
     private void assertAppendFails(final ArrFundVersionVO fundVersion,
                                    final RulDescItemTypeExtVO type,
                                    final Integer nodeId,
@@ -306,6 +375,29 @@ public class DescItemControllerTest extends AbstractControllerTest {
     private BulkItemValue structuredValue(final Integer structuredObjectId) {
         return new BulkItemValue()
                 .data(new DataStructureRef().dataType(DataType.STRUCTURED).structuredObjectId(structuredObjectId));
+    }
+
+    private BulkItemValue valueWithoutSpec(final DataType dataType, final Object value) {
+        return new BulkItemValue().data(createItemDataByDataTypeAndValue(dataType, value));
+    }
+
+    private Integer createFundFile(final Fund fund) {
+        byte[] content = "příloha".getBytes(StandardCharsets.UTF_8);
+        return new TransactionTemplate(tm).execute(status -> {
+            ArrFile file = new ArrFile();
+            file.setFund(fundRepository.findById(fund.getId()).orElseThrow());
+            file.setCreateChange(arrangementInternalService.createChange(ArrChange.Type.ADD_ATTACHMENT));
+            file.setName("Příloha");
+            file.setFileName("priloha.txt");
+            file.setMimeType("text/plain");
+            file.setFileSize(content.length);
+            try {
+                dmsService.createFile(file, new ByteArrayInputStream(content));
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+            return file.getFileId();
+        });
     }
 
     /**

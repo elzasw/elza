@@ -16,7 +16,7 @@ export interface ExceptionPayload {
     type?: string;
     code?: string;
     message?: string;
-    properties?: Record<string, unknown> | null;
+    properties?: object | null;
 }
 
 /** Id hlášky pro danou výjimku, nebo null, když typ neznáme. */

@@ -22,7 +22,13 @@ import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
 import { FundScope } from '../../../types';
 import { getIntl } from 'components/shared/lang/intlInstance';
 import { globalMessages } from 'components/shared/lang/messages';
-import { batchSettingsMessages } from './messages';
+import {
+    FUND_IMPORT_STRATEGY_HINT,
+    FUND_IMPORT_STRATEGY_MESSAGE,
+    FUND_PAIR_KEY_MESSAGE,
+    batchSettingsHints,
+    batchSettingsMessages,
+} from './messages';
 
 interface Props {
     kind: 'EDX' | 'CSV';
@@ -107,8 +113,9 @@ export function CreateBatchDialog({ kind, open, onClose, onCreated }: Props) {
     const [keepFiles, setKeepFiles] = useState(false);
     const [saving, setSaving] = useState(false);
     const [scopes, setScopes] = useState<FundScope[]>([]);
-    // Root levels are skipped only when the payload goes into an existing fund, ALWAYS_NEW never pairs.
-    const rootNodesApplicable = strategy !== FundImportStrategy.AlwaysNew;
+    // Pairing settings apply only when the payload may go into an existing fund; ALWAYS_NEW never pairs.
+    const pairing = strategy !== FundImportStrategy.AlwaysNew;
+    const effectivePairKey = pairing ? pairKey : '';
 
     useEffect(() => {
         if (!open) return;
@@ -124,8 +131,8 @@ export function CreateBatchDialog({ kind, open, onClose, onCreated }: Props) {
                 const body: CreateBatchEdx = {
                     name,
                     fundImportStrategy: strategy,
-                    fundPairKey: pairKey || undefined,
-                    ignoreRootNodes: rootNodesApplicable && ignoreRootNodes,
+                    fundPairKey: effectivePairKey || undefined,
+                    ignoreRootNodes: pairing && ignoreRootNodes,
                     scopeId: scopeId ? Number(scopeId) : undefined,
                     skipError,
                     keepFiles,
@@ -150,7 +157,7 @@ export function CreateBatchDialog({ kind, open, onClose, onCreated }: Props) {
 
     const title = kind === 'EDX' ? messages.titleEdx : messages.titleCsv;
     const canSubmit = name.trim().length > 0
-        && (kind !== 'EDX' || strategy != null)
+        && (kind !== 'EDX' || !pairing || pairKey !== '')
         && !saving;
 
     return (
@@ -166,33 +173,51 @@ export function CreateBatchDialog({ kind, open, onClose, onCreated }: Props) {
 
                             {kind === 'EDX' && (
                                 <>
-                                    <Field label={intl.formatMessage(batchSettingsMessages.fundImportStrategy)} required>
+                                    <Field
+                                        label={intl.formatMessage(batchSettingsMessages.fundImportStrategy)}
+                                        hint={intl.formatMessage(FUND_IMPORT_STRATEGY_HINT[strategy])}
+                                        required
+                                    >
                                         <Dropdown
-                                            value={strategy}
+                                            value={intl.formatMessage(FUND_IMPORT_STRATEGY_MESSAGE[strategy])}
                                             selectedOptions={[strategy]}
                                             onOptionSelect={(_, d) => d.optionValue && setStrategy(d.optionValue as FundImportStrategy)}
                                         >
                                             {Object.values(FundImportStrategy).map(v => (
-                                                <Option key={v} value={v} text={v}>{v}</Option>
+                                                <Option key={v} value={v} text={intl.formatMessage(FUND_IMPORT_STRATEGY_MESSAGE[v])}>
+                                                    <FormattedMessage {...FUND_IMPORT_STRATEGY_MESSAGE[v]} />
+                                                </Option>
                                             ))}
                                         </Dropdown>
                                     </Field>
-                                    <Field label={intl.formatMessage(batchSettingsMessages.fundPairKey)}>
+                                    <Field
+                                        label={intl.formatMessage(batchSettingsMessages.fundPairKey)}
+                                        hint={intl.formatMessage(batchSettingsHints.fundPairKey)}
+                                        required={pairing}
+                                    >
                                         <Dropdown
-                                            value={pairKey || intl.formatMessage(messages.none)}
-                                            selectedOptions={pairKey ? [pairKey] : []}
+                                            disabled={!pairing}
+                                            value={effectivePairKey ? intl.formatMessage(FUND_PAIR_KEY_MESSAGE[effectivePairKey]) : intl.formatMessage(messages.none)}
+                                            selectedOptions={effectivePairKey ? [effectivePairKey] : []}
                                             onOptionSelect={(_, d) => setPairKey((d.optionValue as FundPairKey) ?? '')}
                                         >
                                             <Option value="" text={intl.formatMessage(messages.none)}><FormattedMessage {...messages.none} /></Option>
                                             {Object.values(FundPairKey).map(v => (
-                                                <Option key={v} value={v} text={v}>{v}</Option>
+                                                <Option key={v} value={v} text={intl.formatMessage(FUND_PAIR_KEY_MESSAGE[v])}>
+                                                    <FormattedMessage {...FUND_PAIR_KEY_MESSAGE[v]} />
+                                                </Option>
                                             ))}
                                         </Dropdown>
                                     </Field>
-                                    <Checkbox checked={rootNodesApplicable && ignoreRootNodes} disabled={!rootNodesApplicable}
-                                        onChange={(_, d) => setIgnoreRootNodes(!!d.checked)}
-                                        label={intl.formatMessage(batchSettingsMessages.ignoreRootNodes)} />
-                                    <Field label={intl.formatMessage(batchSettingsMessages.scope)}>
+                                    <Field hint={intl.formatMessage(batchSettingsHints.ignoreRootNodes)}>
+                                        <Checkbox checked={pairing && ignoreRootNodes} disabled={!pairing}
+                                            onChange={(_, d) => setIgnoreRootNodes(!!d.checked)}
+                                            label={intl.formatMessage(batchSettingsMessages.ignoreRootNodes)} />
+                                    </Field>
+                                    <Field
+                                        label={intl.formatMessage(batchSettingsMessages.scope)}
+                                        hint={intl.formatMessage(batchSettingsHints.scope)}
+                                    >
                                         <Dropdown
                                             value={scopes.find(s => String(s.id) === scopeId)?.name ?? intl.formatMessage(messages.none)}
                                             selectedOptions={scopeId ? [scopeId] : []}
@@ -209,7 +234,10 @@ export function CreateBatchDialog({ kind, open, onClose, onCreated }: Props) {
 
                             {kind === 'CSV' && (
                                 <>
-                                    <Field label={intl.formatMessage(batchSettingsMessages.separator)}>
+                                    <Field
+                                        label={intl.formatMessage(batchSettingsMessages.separator)}
+                                        hint={intl.formatMessage(batchSettingsHints.separator)}
+                                    >
                                         <Dropdown
                                             value={separator}
                                             selectedOptions={[separator]}
@@ -229,7 +257,10 @@ export function CreateBatchDialog({ kind, open, onClose, onCreated }: Props) {
                                             </Option>
                                         </Dropdown>
                                     </Field>
-                                    <Field label={intl.formatMessage(batchSettingsMessages.encoding)}>
+                                    <Field
+                                        label={intl.formatMessage(batchSettingsMessages.encoding)}
+                                        hint={intl.formatMessage(batchSettingsHints.encoding)}
+                                    >
                                         <Dropdown
                                             value={ENCODING_OPTIONS.find(o => o.value === encoding)?.label ?? encoding}
                                             selectedOptions={[encoding]}
@@ -243,10 +274,14 @@ export function CreateBatchDialog({ kind, open, onClose, onCreated }: Props) {
                                 </>
                             )}
 
-                            <Checkbox checked={skipError} onChange={(_, d) => setSkipError(!!d.checked)}
-                                label={intl.formatMessage(batchSettingsMessages.skipError)} />
-                            <Checkbox checked={keepFiles} onChange={(_, d) => setKeepFiles(!!d.checked)}
-                                label={intl.formatMessage(batchSettingsMessages.keepFiles)} />
+                            <Field hint={intl.formatMessage(batchSettingsHints.skipError)}>
+                                <Checkbox checked={skipError} onChange={(_, d) => setSkipError(!!d.checked)}
+                                    label={intl.formatMessage(batchSettingsMessages.skipError)} />
+                            </Field>
+                            <Field hint={intl.formatMessage(batchSettingsHints.keepFiles)}>
+                                <Checkbox checked={keepFiles} onChange={(_, d) => setKeepFiles(!!d.checked)}
+                                    label={intl.formatMessage(batchSettingsMessages.keepFiles)} />
+                            </Field>
                         </div>
                     </DialogContent>
                     <DialogActions>

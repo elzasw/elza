@@ -34,6 +34,7 @@ import cz.tacr.elza.domain.DaAipState;
 import cz.tacr.elza.domain.DaChange;
 import cz.tacr.elza.domain.DaChangeType;
 import cz.tacr.elza.domain.DaDao;
+import cz.tacr.elza.domain.DaDaoFile;
 import cz.tacr.elza.repository.AipRepository;
 import cz.tacr.elza.repository.AipStateRepository;
 import cz.tacr.elza.repository.ArrDaLinkRepository;
@@ -258,6 +259,61 @@ public class DaAipNewVersionTest extends AbstractServiceTest {
         receiveMets(aipId, xml -> xml.replace("LABEL=\"3.jpg\"", "LABEL=\"" + longName + "\""));
 
         tx().executeWithoutResult(t -> assertEquals("komponenta:" + longName, liveDao(aipId, PART).getLabel()));
+    }
+
+    /**
+     * A level view takes the label of its level, however long it is. Level views are made only
+     * for the levels on the single path from the root of the logical structure down to the first
+     * level with files or several sublevels, so the package level is wrapped in such a root here.
+     */
+    @Test
+    public void longLevelLabelIsStoredWholeInLevelView() throws Exception {
+        FundInfo fund = tx().execute(t -> createFund("F-da-version-long-level"));
+        Integer repositoryId = tx().execute(t -> createRepository());
+        Integer aipId = tx().execute(t -> createAip(repositoryId, fund, null));
+        String longName = "dlouhy-nazev-urovne-".repeat(20);
+        String rootLevel = "<div ID=\"fond_1\" TYPE=\"fond\" LABEL=\"" + longName + "\">";
+
+        receiveMets(aipId, xml -> wrapPackageLevel(xml, rootLevel));
+
+        tx().executeWithoutResult(t -> {
+            DaDao rootLevelDao = liveDao(aipId, "fond_1");
+            assertNotNull(rootLevelDao.getLevelView(), "the root level has a level view");
+            assertEquals("fond:" + longName, rootLevelDao.getLevelView().getLabel());
+        });
+    }
+
+    /** Puts the package level of the logical structure under the given opening tag of a new root. */
+    private static String wrapPackageLevel(String metsXml, String rootLevelStartTag) {
+        // the logical structure is the last structMap of the test package
+        return metsXml.replace("<div ID=\"" + PACKAGE_LEVEL + "\"", rootLevelStartTag + "<div ID=\"" + PACKAGE_LEVEL + "\"")
+                .replaceFirst("(</div>\\s*</structMap>\\s*</mets>)", "</div>$1");
+    }
+
+    /**
+     * A folder of a representation and the name of a file (here the whole path, as the package
+     * has no PREMIS original name) are stored as the package gives them, however long they are.
+     * The path is a URI; it is stored decoded.
+     */
+    @Test
+    public void longFolderAndFileNameAreStoredWhole() throws Exception {
+        FundInfo fund = tx().execute(t -> createFund("F-da-version-long-folder"));
+        Integer repositoryId = tx().execute(t -> createRepository());
+        Integer aipId = tx().execute(t -> createAip(repositoryId, fund, null));
+        // without a dot, which would make the segment a file name
+        String longFolderEncoded = "%C4%8Cesk%C3%A1-slo%C5%BEka-".repeat(80);
+        String longFolder = "Česká-složka-".repeat(80);
+        String fileId = "a_00404832_dok00001_f001_v00001";
+        String dataDir = "representations/submission/data/";
+        String originalHref = dataDir + fileId + ".jpg";
+
+        receiveMets(aipId, xml -> xml.replace(originalHref, dataDir + longFolderEncoded + "/" + fileId + ".jpg"));
+
+        tx().executeWithoutResult(t -> {
+            DaDaoFile file = daoFileRepository.findByDao(liveDao(aipId, fileId));
+            assertEquals(dataDir + longFolder + "/" + fileId + ".jpg", file.getFileName());
+            assertEquals(longFolder, file.getDaoFileFolder().getLabel());
+        });
     }
 
     /**

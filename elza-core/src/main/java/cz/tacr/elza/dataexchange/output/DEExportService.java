@@ -570,6 +570,10 @@ public class DEExportService {
         }
     }
 
+    private static String getExternalId(final ApBindingState bindingState) {
+        return bindingState.getBinding().getValue();
+    }
+
     private void writeAccessPointBatch(CSVPrinter out,
                                        List<Integer> ids,
                                        ApAccessPointRepository apRepository,
@@ -582,20 +586,16 @@ public class DEExportService {
 
         List<ApState> states = stateRepository.findLastByAccessPointIdsFetchScopeAndApType(ids);
         Map<Integer, ApState> stateMap = states.stream()
-                .collect(Collectors.toMap(ApState::getAccessPointId, Function.identity(), (a, b) -> a));
+                .collect(Collectors.toMap(ApState::getAccessPointId, Function.identity()));
 
-        List<ApBindingState> bindings = bindingStateRepository.findActiveByAccessPointIdIn(ids);
+        List<ApBindingState> bindings = bindingStateRepository.findFirstActiveByAccessPointIdIn(ids);
         Map<Integer, String> externalIdMap = bindings.stream()
-                .collect(Collectors.toMap(ApBindingState::getAccessPointId,
-                                          b -> b.getBinding().getValue(),
-                                          (a, b) -> a));
+                .collect(Collectors.toMap(ApBindingState::getAccessPointId, DEExportService::getExternalId));
 
         List<ApIndex> prefIndexes = indexRepository
                 .findPreferredPartIndexByAccessPointIdsAndIndexType(ids, DISPLAY_NAME);
         Map<Integer, String> prefDisplayMap = prefIndexes.stream()
-                .collect(Collectors.toMap(idx -> idx.getPart().getAccessPointId(),
-                                          ApIndex::getIndexValue,
-                                          (a, b) -> a));
+                .collect(Collectors.toMap(idx -> idx.getPart().getAccessPointId(), ApIndex::getIndexValue));
 
         List<ApIndex> sectionIndexes = indexRepository
                 .findIndexByAccessPointIdsAndPartTypeCodesAndIndexType(ids,

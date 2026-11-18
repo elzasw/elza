@@ -33,7 +33,7 @@ export const DescriptionEntityRef: FC<Props> = ({
                 </>
         }
         >
-            {`${<FormattedMessage {...apDetailMessages.detailReplacedBy} />}: `}
+            <FormattedMessage {...apDetailMessages.detailReplacedBy} />{': '}
             <Link to={urlEntity(entityId)}>
                 {replacedByItem ? replacedByItem.name : entityId}
             </Link>

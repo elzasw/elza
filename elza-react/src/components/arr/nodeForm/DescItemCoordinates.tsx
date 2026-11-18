@@ -152,7 +152,7 @@ class DescItemCoordinates extends AbstractReactComponent<Props, State> {
                             ref={this.focusEl}
                             disabled={locked || descItem.undefined}
                             onChange={this.handleChangeData}
-                            value={descItem.undefined ? this.props.intl.formatMessage(nodeMessages.subNodeFormDescItemTypeUndefinedValue) : data}
+                            value={descItem.undefined ? this.props.intl.formatMessage(nodeMessages.subNodeFormDescItemTypeUndefinedValue) : data ?? ''}
                             />
                     </ItemTooltipWrapper>
                     {!descItem.undefined && descItem.descItemObjectId && (

@@ -25,7 +25,6 @@ import cz.tacr.elza.aiprovider.client.vo.OutlineRow;
 import cz.tacr.elza.aiprovider.client.vo.ArchivalEntity;
 import cz.tacr.elza.aiprovider.client.vo.ArchivalEntityInfo;
 import cz.tacr.elza.aiprovider.client.vo.ArchivalEntityObject;
-import cz.tacr.elza.aiprovider.client.vo.DataType;
 import cz.tacr.elza.aiprovider.client.vo.DescriptionItem;
 import cz.tacr.elza.aiprovider.client.vo.EntityPart;
 import cz.tacr.elza.aiprovider.client.vo.FundInfo;
@@ -517,7 +516,7 @@ public class AiContextResolver {
         }
         DescriptionItem out = new DescriptionItem().type(itemType.getCode());
         if (itemType.getDataType() != null) {
-            out.dataType(DataType.fromValue(itemType.getDataType().getCode()));
+            out.dataType(AiDataTypes.toContract(itemType.getDataType()));
         }
         if (itemSpecId != null) {
             RulItemSpec spec = sdp.getItemSpecById(itemSpecId);

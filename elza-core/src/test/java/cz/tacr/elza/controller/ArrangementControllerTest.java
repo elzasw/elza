@@ -91,6 +91,7 @@ import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
+import cz.tacr.elza.domain.ArrDataDate;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -105,6 +106,7 @@ import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
 import cz.tacr.elza.test.controller.vo.DataBit;
+import cz.tacr.elza.test.controller.vo.DataRecordRef;
 import cz.tacr.elza.test.controller.vo.DataString;
 import cz.tacr.elza.test.controller.vo.DataText;
 import cz.tacr.elza.test.controller.vo.DataType;
@@ -698,7 +700,25 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         OutputItemRes outputItemResult = outputApi.outputDeleteOutputItemsByType(parent.getId(), parent.getVersion(), typeVo.getId());
         assertNotNull(outputItemResult.getParent());
-        assertNull(outputItemResult.getItem());        
+        assertNull(outputItemResult.getItem());
+
+        ApAccessPointVO accessPoint = findRecord(null, null, null, null, null).get(0);
+        RulDescItemTypeExtVO entityRoleType = findDescItemTypeByCode(SRD_ENTITY_ROLE);
+        item = new OutputItem();
+        item.setItemTypeId(entityRoleType.getId());
+        item.setItemSpecId(findDescItemSpecByCode(SRD_ENTITY_ROLE_1, entityRoleType).getId());
+        DataRecordRef recordRefData = new DataRecordRef();
+        recordRefData.setValue(accessPoint.getId());
+        item.setData(recordRefData);
+        outputItem = outputApi.outputCreateOutputItem(output3.getId(), outputItemResult.getParent().getVersion(), item);
+        assertEquals(accessPoint.getName(), ((DataRecordRef) outputItem.getItem().getData()).getName());
+
+        outputFormData = outputApi.outputGetOutputFormData(output3.getId());
+        OutputItem formRecordRefItem = outputFormData.getItems().stream()
+                .filter(formItem -> entityRoleType.getId().equals(formItem.getItemTypeId()))
+                .findFirst()
+                .orElseThrow();
+        assertEquals(accessPoint.getName(), ((DataRecordRef) formRecordRefItem.getData()).getName());
 
         // Hodnota atributu musí být prázdná
         OutputSettings outputSettings = new OutputSettings();
@@ -1429,6 +1449,35 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         List<ArrDescItem> nodeDescItems = descItemService.findOpenByNodesAndType(nodeRepository.findAllById(nodeIds), type);
         assertTrue(nodeDescItems.isEmpty());
+    }
+
+    /**
+     * Set the whole content of a DATE item on selected nodes; the date comes as ISO text.
+     *
+     * <p><b>Creates:</b> 1 fund + nodes + desc-items of type {@code SRD_SIMPLE_DATE}.
+     * <br><b>Cleans up:</b> nothing — fund intentionally left for the class-level cleanup (see class javadoc).
+     */
+    @Test
+    public void placeDateValuesTest() {
+        Fund fund = createdFund();
+        ArrFundVersionVO fundVersion = getOpenVersion(fund);
+        helperTestService.waitForWorkers();
+        Set<Integer> nodeIds = createLevels(fundVersion).stream().map(ArrNodeVO::getId).collect(Collectors.toSet());
+
+        RulDescItemTypeExtVO dateType = findDescItemTypeByCode("SRD_SIMPLE_DATE");
+        ArrangementController.ReplaceDataBody body = new ArrangementController.ReplaceDataBody();
+        body.setNodes(new HashSet<>(clientFactoryVO.createArrNodes(nodeRepository.findAllById(nodeIds))));
+        body.setSelectionType(ArrangementController.SelectionType.NODES);
+        placeDataValues(fundVersion.getId(), dateType.getId(), "2026-11-11", body);
+
+        List<ArrDescItem> dateItems = descItemService.findByNodeIdsAndDeleteChangeIsNull(nodeIds).stream()
+                .filter(descItem -> descItem.getItemTypeId().equals(dateType.getId()))
+                .toList();
+        assertEquals(nodeIds.size(), dateItems.size());
+        for (ArrDescItem descItem : dateItems) {
+            ArrDataDate data = HibernateUtils.unproxy(descItem.getData());
+            assertEquals(LocalDate.of(2026, 11, 11), data.getValue());
+        }
     }
 
     /**

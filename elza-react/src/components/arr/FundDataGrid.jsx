@@ -142,6 +142,10 @@ class FundDataGridClass extends AbstractReactComponent {
         }
 
         this.state = { ...colState, cellForm: null };
+
+        // Only a node in the URL at mount is a deep link; updateCellUrl later writes the focused cell
+        // into the URL too, and treating that as a deep link would reset the selection.
+        this.deepLinkDone = props.focusNodeId == null;
     }
 
     componentDidMount() {

@@ -33,6 +33,7 @@ import cz.tacr.elza.domain.AiConversation;
 import cz.tacr.elza.domain.AiExternalSystem;
 import cz.tacr.elza.domain.AiRequest;
 import cz.tacr.elza.domain.AiRequestEvent;
+import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.repository.AiConversationRepository;
 import cz.tacr.elza.repository.AiExternalSystemRepository;
 import cz.tacr.elza.repository.AiRequestEventRepository;
@@ -517,10 +518,17 @@ public class AiRequestPoller {
         }
         try {
             return result.result(tool.execute(call.getArguments(), toolContext));
-        } catch (Exception e) {
-            logger.warn("AI tool {} failed (call {}): {}", call.getTool(), call.getCallId(), e.getMessage());
-            logger.debug("AI tool {} failure detail", call.getTool(), e);
+        } catch (IllegalArgumentException | BusinessException e) {
+            // The tool rejected the model's arguments; the message names the mistake.
+            logger.warn("AI tool {} rejected call {}: {}", call.getTool(), call.getCallId(), e.getMessage());
+            logger.debug("AI tool {} rejection detail", call.getTool(), e);
             return result.error(e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName());
+        } catch (Exception e) {
+            // A defect or an environment failure: without the stack trace the cause
+            // cannot be found from the log (the message may well be null).
+            logger.warn("AI tool {} failed (call {})", call.getTool(), call.getCallId(), e);
+            return result.error("Internal error of the client tool (" + e.getClass().getSimpleName()
+                    + (e.getMessage() != null ? ": " + e.getMessage() : "") + ")");
         }
     }
 

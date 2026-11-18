@@ -573,7 +573,10 @@ model DescriptionItem {
    */
   itemObjectId?: int32;
 
-  /** Stable item-type code, e.g. `ZP2015_TITLE` (`RulItemType.code`). */
+  /**
+   * Stable item-type code (`RulItemType.code`). The codes are defined by the
+   * rules packages installed in the archive and differ between archives.
+   */
   type: string;
 
   /**
@@ -587,8 +590,8 @@ model DescriptionItem {
   dataType?: DataType;
 
   /**
-   * Stable specification code for enumerated item types, e.g.
-   * `ZP2015_UNIT_TYPE_UKN` (`RulItemSpec.code`); absent for non-enumerated types.
+   * Stable specification code for enumerated item types (`RulItemSpec.code`);
+   * absent for non-enumerated types.
    */
   spec?: string;
 
@@ -1459,13 +1462,16 @@ model ToolResult {
 
 /** Arguments of the `getItemTypes` tool. */
 model GetItemTypesParams {
-  /** Rule set whose item types to return (`RulRuleSet.code`), e.g. `ZP2015`. */
+  /**
+   * Rule set whose item types to return (`RulRuleSet.code`) — the `ruleSetCode`
+   * reported for the fund or entity in the context or in earlier results.
+   */
   ruleSetCode: string;
 }
 
 /** One specification (enumerated value) of an item type in the dictionary. */
 model ItemTypeSpecInfo {
-  /** Stable spec code, e.g. `ZP2015_UNIT_TYPE_UKN` (`RulItemSpec.code`). */
+  /** Stable spec code (`RulItemSpec.code`). */
   code: string;
 
   /** Human-readable name in the rule set's language, e.g. `úřední kniha`. */
@@ -1474,7 +1480,7 @@ model ItemTypeSpecInfo {
 
 /** One item type in the dictionary — the meaning behind a `DescriptionItem.type` code. */
 model ItemTypeInfo {
-  /** Stable item-type code, e.g. `ZP2015_TITLE` (`RulItemType.code`). */
+  /** Stable item-type code (`RulItemType.code`), as carried by `DescriptionItem.type`. */
   code: string;
 
   /** Human-readable name, e.g. `Obsah`. */
@@ -1541,11 +1547,15 @@ model SearchNodesParams {
 }
 
 /**
- * One condition on a description item, e.g. item `ZP2015_UNIT_DATE`
- * `INTERSECT` `1930-1939`.
+ * One condition on a description item, e.g. a dating item `INTERSECT`
+ * `1930-1939`.
  */
 model ItemCondition {
-  /** Item-type code (`RulItemType.code`), e.g. `ZP2015_TITLE`. */
+  /**
+   * Item-type code (`RulItemType.code`) exactly as it appears in the context or
+   * in earlier results. The codes differ between archives; a code the client
+   * does not know fails the call.
+   */
   type: string;
 
   /**

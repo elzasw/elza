@@ -172,6 +172,39 @@ public class ApControllerTest extends AbstractControllerTest {
 
 
     /**
+     * An entity with two bodies (the rules report it as an error) shows the description of the
+     * first created body, in the detail and in the search result list, whatever the row order.
+     */
+    @Test
+    public void descriptionOfEntityWithTwoBodies() {
+        ApTypeVO type = getApType(STRUCT_AP_TYPE);
+        Integer scopeId = getAllScopes().iterator().next().getId();
+        List<ApItemVO> nameItems = new ArrayList<>();
+        nameItems.add(buildApItem(NM_MAIN, null, "Dvojtělník", null, null));
+
+        ApAccessPointCreateVO ap = new ApAccessPointCreateVO();
+        ap.setTypeId(type.getId());
+        ap.setScopeId(scopeId);
+        ap.setPartForm(createPartFormVO(null, ptName.getCode(), null, nameItems));
+        ApAccessPointVO accessPoint = createAccessPoint(ap);
+        try {
+            createPart(accessPoint.getId(), createPartFormVO(null, ptBody.getCode(), null,
+                    List.of(buildApItem(BRIEF_DESC, null, "First body", null, null))));
+            createPart(accessPoint.getId(), createPartFormVO(null, ptBody.getCode(), null,
+                    List.of(buildApItem(BRIEF_DESC, null, "Second body", null, null))));
+
+            assertEquals("First body", getAccessPoint(accessPoint.getId()).getDescription());
+            await().atMost(10, SECONDS).pollInterval(100, MILLISECONDS).untilAsserted(() -> {
+                List<ApAccessPointVO> found = findRecord("dvojtělník", 0, 10, null, null, ApSearchType.FULLTEXT);
+                assertEquals(1, found.size());
+                assertEquals("First body", found.get(0).getDescription());
+            });
+        } finally {
+            deleteAccessPoint(accessPoint.getId());
+        }
+    }
+
+    /**
      * Testování vytvoření, upravení a smazání scope
      */
     @Test

@@ -31,10 +31,12 @@
     <t type="MESSAGE" code="CORE/ARR_UNDEFINED_NOT_ALLOWED" field="text">The item {0} cannot have the value “{1}”.</t>
     <!-- {0} item type, {1} id of the entity -->
     <t type="MESSAGE" code="CORE/ARR_DELETED_ENTITY_REF" field="text">The item {0} refers to an invalidated entity (id: {1}).</t>
-    <t type="MESSAGE" code="CORE/ARR_BROKEN_NODE_REF" field="text">The item {0} refers to a deleted or unknown unit of description ({1}).</t>
+    <t type="MESSAGE" code="CORE/ARR_DELETED_NODE_REF" field="text">The item {0} refers to the unit of description “{1}”, which was deleted from the fund “{2}” on {3,date,medium} at {3,time,short} (user: {4}). The deletion can be found in the history of changes of the fund.</t>
+    <t type="MESSAGE" code="CORE/ARR_UNKNOWN_NODE_REF" field="text">The item {0} refers to a unit of description that was not found ({1}).</t>
 
     <!-- terms used as arguments -->
     <t type="MESSAGE" code="CORE/UNDEFINED_VALUE" field="text">undefined</t>
+    <t type="MESSAGE" code="CORE/SYSTEM_USER" field="text">system</t>
 
     <!-- headers of the CSV exports of a fund, of its issues and of structured objects -->
     <t type="MESSAGE" code="CORE/EXPORT_COL_RECORD_NUMBER" field="text">Record number</t>

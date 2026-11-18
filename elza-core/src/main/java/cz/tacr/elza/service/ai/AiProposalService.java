@@ -11,6 +11,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -44,6 +45,7 @@ import cz.tacr.elza.controller.vo.AiProposalChangeVO;
 import cz.tacr.elza.controller.vo.AiProposalNodeVO;
 import cz.tacr.elza.controller.vo.AiProposalOperationVO;
 import cz.tacr.elza.controller.vo.AiRequestVO;
+import cz.tacr.elza.controller.vo.BaseException;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.core.data.CoreMessage;
 import cz.tacr.elza.core.data.DataType;
@@ -75,6 +77,7 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.exception.AccessDeniedException;
+import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.AiConversationRepository;
@@ -87,7 +90,11 @@ import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ArrangementInternalService;
+import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DescriptionItemService;
+import cz.tacr.elza.service.ItemService;
+import cz.tacr.elza.service.ItemService.FundContext;
+import cz.tacr.elza.service.ItemValueViolation;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.UserService;
@@ -172,6 +179,12 @@ public class AiProposalService {
     private ArrangementInternalService arrangementInternalService;
 
     @Autowired
+    private ArrangementService arrangementService;
+
+    @Autowired
+    private ItemService itemService;
+
+    @Autowired
     private UserService userService;
 
     @Autowired
@@ -244,9 +257,22 @@ public class AiProposalService {
             vo.state(STATE_PROPOSED);
         } catch (BlockedException e) {
             vo.state(STATE_BLOCKED);
-            vo.blockedReason(e.getMessage());
+            if (e.violation != null) {
+                vo.blockedError(toBaseException(e.violation));
+            } else {
+                vo.blockedReason(e.getMessage());
+            }
         }
         return vo;
+    }
+
+    private static BaseException toBaseException(final ItemValueViolation violation) {
+        return new BaseException()
+                .type(violation.errorCode().getType())
+                .code(violation.errorCode().getCode())
+                .message(violation.message())
+                .level(Level.WARNING.name())
+                .properties(violation.properties());
     }
 
     /**
@@ -431,10 +457,22 @@ public class AiProposalService {
     // Validation & preparation (shared by rendering and apply)
     // -----------------------------------------------------------------------
 
-    /** An operation cannot be applied; the message is user-facing, in Czech. */
+    /**
+     * An operation cannot be applied. Either the message is the user-facing
+     * reason, or {@link #violation} is the description rule the write would
+     * fail on (rendered by the client as that error).
+     */
     private static class BlockedException extends RuntimeException {
+        final ItemValueViolation violation;
+
         BlockedException(final String message) {
             super(message);
+            this.violation = null;
+        }
+
+        BlockedException(final ItemValueViolation violation) {
+            super(violation.message());
+            this.violation = violation;
         }
     }
 
@@ -505,6 +543,7 @@ public class AiProposalService {
         op.itemType = itemType;
         op.itemSpec = resolveSpec(itemType, newItem);
         op.data = buildData(itemType, op.itemSpec, newItem);
+        checkRecordRef(nodeCtx, itemType, op.itemSpec, op.data);
         return op;
     }
 
@@ -529,6 +568,7 @@ public class AiProposalService {
         op.itemType = itemType;
         op.itemSpec = resolveSpec(itemType, newItem);
         op.data = buildData(itemType, op.itemSpec, newItem);
+        checkRecordRef(nodeCtx, itemType, op.itemSpec, op.data);
         return op;
     }
 
@@ -666,6 +706,25 @@ public class AiProposalService {
         return data;
     }
 
+    /**
+     * Applies the write's rule for an entity reference (the entity's class and
+     * scope), so a reference the write would refuse is blocked before the user
+     * confirms it.
+     */
+    private void checkRecordRef(final NodeContext nodeCtx, final ItemType itemType, final RulItemSpec spec,
+                                final ArrData data) {
+        if (!(data instanceof ArrDataRecordRef recordRef)) {
+            return;
+        }
+        // the catalog spec, not the managed reference resolveSpec returns
+        RulItemSpec catalogSpec = spec == null ? null : itemType.getItemSpecById(spec.getItemSpecId());
+        Optional<ItemValueViolation> violation = itemService.validateRecordRef(nodeCtx.fundContext,
+                recordRef.getRecord(), itemType.getEntity(), catalogSpec);
+        if (violation.isPresent()) {
+            throw new BlockedException(violation.get());
+        }
+    }
+
     private String requireValue(final String value, final ItemType itemType) {
         if (StringUtils.isBlank(value)) {
             throw new BlockedException(packageTexts.text(CoreMessage.AI_PROPOSAL_VALUE_MISSING, itemType));
@@ -685,6 +744,8 @@ public class AiProposalService {
         String title;
         List<ArrDescItem> openItems = List.of();
         Map<Integer, ArrDescItem> openByObjectId = Map.of();
+        /** The fund's connected scopes, for the entity-reference rule. */
+        FundContext fundContext;
         /** Rule-computed types for the node; {@code null} when the evaluation failed. */
         Map<Integer, RulItemTypeExt> extByTypeId;
         /** User-facing reason when the level cannot be worked with at all. */
@@ -708,6 +769,7 @@ public class AiProposalService {
             ctx.unavailableReason = packageTexts.text(CoreMessage.AI_PROPOSAL_NODE_UNAVAILABLE);
             return ctx;
         }
+        ctx.fundContext = FundContext.newInstance(ctx.version, arrangementService, staticDataService.getData());
         ctx.openItems = descriptionItemService.findByNodeIdsAndDeleteChangeIsNull(List.of(nodeId));
         ctx.openByObjectId = ctx.openItems.stream()
                 .filter(item -> item.getDescItemObjectId() != null)

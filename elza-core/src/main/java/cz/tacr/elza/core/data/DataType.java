@@ -140,6 +140,22 @@ public enum DataType {
         return Validate.notNull(entityIdMap, "Cache not initialized").get(id);
     }
 
+    /**
+     * Data type of an item type, resolved by its data type id. The {@code RulDataType}
+     * association is not read: on a copy of a cached entity it may be a proxy of
+     * a closed session.
+     *
+     * @throws IllegalStateException when the id is missing or not a known data type
+     */
+    public static DataType fromItemType(RulItemType itemType) {
+        Integer id = itemType.getDataTypeId();
+        DataType dataType = id != null ? fromId(id) : null;
+        if (dataType == null) {
+            throw new IllegalStateException("Item type " + itemType.getCode() + " has unknown data type id: " + id);
+        }
+        return dataType;
+    }
+
     static synchronized void init(DataTypeRepository dataTypeRepository, ApplicationContext ctx) {
         List<RulDataType> entities = dataTypeRepository.findAll();
         DataType[] values = values();

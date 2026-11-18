@@ -9,6 +9,8 @@ import { coordinatesNearMessages } from './messages';
 import { messageFor } from 'components/shared/lang/dynamicMessage';
 import DescItemCoordinates from './nodeForm/DescItemCoordinates';
 import {Accordion, Card, Modal} from 'react-bootstrap';
+import {Button as FluentButton, Tooltip} from '@fluentui/react-components';
+import {DeleteRegular} from '@fluentui/react-icons';
 import {Button} from '../ui';
 import {WebApi} from 'actions/index';
 import {hasDescItemTypeValue} from 'components/arr/ArrUtils';
@@ -178,51 +180,37 @@ const renderDateFields = fields => {
     });
 };
 
+const renderCoordinatesValue = (field, intl) => {
+    const descItem = {
+        hasFocus: false,
+        value: typeof field.value !== 'undefined' ? field.value : '',
+        error: {value: field.error},
+    };
+    const deleteLabel = intl.formatMessage(globalMessages.delete);
+    return (
+        <div key={0} className="value-container" style={{display: 'flex', alignItems: 'center'}}>
+            <DescItemCoordinates
+                onChange={field.onChange}
+                descItem={descItem}
+                onFocus={() => {}}
+                onBlur={() => {}}
+            />
+            <Tooltip relationship="label" appearance="inverted" content={deleteLabel}>
+                <FluentButton appearance="subtle" icon={<DeleteRegular />} onClick={() => field.onChange('')} />
+            </Tooltip>
+        </div>
+    );
+};
+
 const renderCoordinatesFields = (fields, intl) => {
-    let descItem;
     switch (fields.length) {
         case 0:
             return null;
         case 1:
-            descItem = {
-                hasFocus: false,
-                value: typeof fields[0].value !== 'undefined' ? fields[0].value : '',
-                error: {value: fields[0].error},
-            };
-            return (
-                <div key={0} className="value-container">
-                    <DescItemCoordinates
-                        onChange={fields[0].onChange}
-                        descItem={descItem}
-                        onFocus={() => {}}
-                        onBlur={() => {}}
-                    />
-                    {false && (
-                        <FormInput
-                            type="text"
-                            value={fields[0].value}
-                            onChange={e => fields[0].onChange(e.target.value)}
-                        />
-                    )}
-                </div>
-            );
+            return renderCoordinatesValue(fields[0], intl);
         case 2:
             let vals = [];
-            descItem = {
-                hasFocus: false,
-                value: typeof fields[0].value !== 'undefined' ? fields[0].value : '',
-                error: {},
-            };
-            vals.push(
-                <div key={0} className="value-container">
-                    <DescItemCoordinates
-                        onChange={fields[0].onChange}
-                        descItem={descItem}
-                        onFocus={() => {}}
-                        onBlur={() => {}}
-                    />
-                </div>,
-            );
+            vals.push(renderCoordinatesValue(fields[0], intl));
             vals.push(
                 <div key={1} className="value-container">
                     <FormInput
@@ -683,8 +671,9 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                     break;
                 case 'COORDINATES':
                     renderFields = fields => renderCoordinatesFields(fields, this.props.intl);
+                    // Only the first value is a geometry; the NEAR distance comes from a fixed list.
                     validateField = (code, valuesCount, value, index) => {
-                        return validateCoordinatePoint(value);
+                        return index === 0 ? validateCoordinatePoint(value) : null;
                     };
                     items = [
                         {values: 0, code: 'NONE', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionNone)},
@@ -692,6 +681,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                         {values: 0, code: 'NOT_EMPTY', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionNotEmpty)},
                         {values: 0, code: 'UNDEFINED', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionUndefined)},
                         {values: 1, code: 'SUBSET', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionCoordinatesSubset)},
+                        {values: 1, code: 'CONTAIN', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionStringContain)},
                         {values: 2, code: 'NEAR', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionCoordinatesNear)},
                     ];
                     break;

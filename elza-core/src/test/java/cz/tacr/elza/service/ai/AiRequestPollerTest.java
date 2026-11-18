@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -28,8 +29,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.tacr.elza.aiprovider.client.ElzaAiApi;
 import cz.tacr.elza.aiprovider.client.vo.MarkdownObject;
+import cz.tacr.elza.aiprovider.client.vo.StandardToolName;
 import cz.tacr.elza.aiprovider.client.vo.Task;
 import cz.tacr.elza.aiprovider.client.vo.TaskState;
+import cz.tacr.elza.aiprovider.client.vo.ToolCall;
+import cz.tacr.elza.aiprovider.client.vo.ToolResult;
 import cz.tacr.elza.domain.AiConversation;
 import cz.tacr.elza.domain.AiExternalSystem;
 import cz.tacr.elza.domain.AiRequest;
@@ -343,5 +347,41 @@ class AiRequestPollerTest {
         assertThat(request.getProgressMessage()).isNull();
         verify(requestRepository).findForUpdateByAiRequestId(12);
         verify(answerBuffer).clear(12);
+    }
+
+    /**
+     * A tool that rejects the model's arguments returns its own message to the
+     * model unchanged — the model can correct the call from it.
+     */
+    @Test
+    void aRejectedToolCallReturnsTheToolsMessage() {
+        ToolResult result = executeToolCallThrowing(
+                new IllegalArgumentException("Unknown item type code: ZP2015_NO_SUCH_TYPE"));
+
+        assertThat(result.getCallId()).isEqualTo("call-1");
+        assertThat(result.getError()).isEqualTo("Unknown item type code: ZP2015_NO_SUCH_TYPE");
+    }
+
+    /**
+     * A defect inside a tool often carries no message at all (a bare
+     * {@code NullPointerException}); the model must still be told that the
+     * failure is internal rather than receive an empty or bare class name.
+     */
+    @Test
+    void anUnexpectedToolFailureIsReportedAsInternal() {
+        ToolResult result = executeToolCallThrowing(new NullPointerException());
+
+        assertThat(result.getError()).isEqualTo("Internal error of the client tool (NullPointerException)");
+    }
+
+    private ToolResult executeToolCallThrowing(final RuntimeException failure) {
+        AiTool tool = mock(AiTool.class);
+        when(tool.execute(any(), any())).thenThrow(failure);
+        AiToolRegistry registry = mock(AiToolRegistry.class);
+        when(registry.get(StandardToolName.SEARCH_NODES)).thenReturn(tool);
+        ReflectionTestUtils.setField(poller, "toolRegistry", registry);
+
+        ToolCall call = new ToolCall().callId("call-1").tool(StandardToolName.SEARCH_NODES).arguments(Map.of());
+        return ReflectionTestUtils.invokeMethod(poller, "executeToolCall", call, new AiToolContext(1));
     }
 }

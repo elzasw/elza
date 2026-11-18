@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -18,7 +19,9 @@ import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ArrOutputRestrictionScopeVO;
 import cz.tacr.elza.controller.vo.ArrOutputTemplateVO;
+import cz.tacr.elza.controller.vo.DataRecordRef;
 import cz.tacr.elza.controller.vo.FormItemType;
+import cz.tacr.elza.controller.vo.ItemData;
 import cz.tacr.elza.controller.vo.NodeTreeData;
 import cz.tacr.elza.controller.vo.OutputDef;
 import cz.tacr.elza.controller.vo.OutputItem;
@@ -180,7 +183,10 @@ public class OutputFactory {
      */
     public <T extends ArrItem> OutputItem createOutputItem(final T item) {
         Assert.notNull(item, "Hodnota musí být vyplněna");
+        return createOutputItem(item, clientFactoryVO.collectRecordRefNames(List.of(item)));
+    }
 
+    private <T extends ArrItem> OutputItem createOutputItem(final T item, final Map<Integer, String> apNameMap) {
         OutputItem outputItem = new OutputItem();
         outputItem.setId(item.getItemId());
         outputItem.setItemTypeId(item.getItemTypeId());
@@ -196,7 +202,11 @@ public class OutputFactory {
             StaticDataProvider sdp = staticDataService.getData();
             RulItemType itemType = sdp.getItemType(item.getItemTypeId());
             DataType dataType = DataType.fromId(itemType.getDataTypeId());
-            outputItem.setData(clientFactoryVO.convertData(arrData, dataType));
+            ItemData data = clientFactoryVO.convertData(arrData, dataType);
+            if (data instanceof DataRecordRef recordRefData) {
+                recordRefData.setName(apNameMap.get(recordRefData.getValue()));
+            }
+            outputItem.setData(data);
         }
         return outputItem;
     }
@@ -205,9 +215,10 @@ public class OutputFactory {
         if (items == null) {
             return null;
         }
+        Map<Integer, String> apNameMap = clientFactoryVO.collectRecordRefNames(items);
         List<OutputItem> result = new ArrayList<>(items.size());
         for (ArrOutputItem item : items) {
-            result.add(createOutputItem(item));
+            result.add(createOutputItem(item, apNameMap));
         }
         return result;
     }

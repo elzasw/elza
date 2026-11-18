@@ -13,6 +13,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.FlushModeType;
 import jakarta.transaction.Transactional;
 
 import org.apache.commons.io.FileUtils;
@@ -36,6 +37,10 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.packageimport.PackageService;
+import cz.tacr.elza.repository.AiConversationRepository;
+import cz.tacr.elza.repository.AiProposalDecisionRepository;
+import cz.tacr.elza.repository.AiRequestEventRepository;
+import cz.tacr.elza.repository.AiRequestRepository;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingIssueRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
@@ -80,6 +85,7 @@ import cz.tacr.elza.repository.ExternalSystemRepository;
 import cz.tacr.elza.repository.FundRegisterScopeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.PackageDependencyRepository;
+import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.FundStructureExtensionRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -196,9 +202,19 @@ public class HelperTestService {
     @Autowired
     protected ExternalSystemRepository externalSystemRepository;
     @Autowired
+    private AiProposalDecisionRepository aiProposalDecisionRepository;
+    @Autowired
+    private AiRequestEventRepository aiRequestEventRepository;
+    @Autowired
+    private AiRequestRepository aiRequestRepository;
+    @Autowired
+    private AiConversationRepository aiConversationRepository;
+    @Autowired
     private NodeOutputRepository nodeOutputRepository;
     @Autowired
     private OutputFileRepository outputFileRepository;
+    @Autowired
+    private FundFileRepository fundFileRepository;
     @Autowired
     private OutputResultRepository outputResultRepository;
     @Autowired
@@ -386,6 +402,12 @@ public class HelperTestService {
 
         logger.debug("Cleaning table contents...");
 
+        // a proposal decision references the arr_change of its apply
+        aiProposalDecisionRepository.deleteAll();
+        aiRequestEventRepository.deleteAll();
+        aiRequestRepository.deleteAll();
+        aiConversationRepository.deleteAll();
+
         wfTaskApRevStateRepository.deleteAll();
         wfTaskApStateRepository.deleteAll();
         wfTaskRepository.deleteAll();
@@ -448,6 +470,13 @@ public class HelperTestService {
         levelRepository.deleteAll();
         nodeOutputRepository.deleteAll();
         outputFileRepository.deleteAll();
+        // Loading the files would auto-flush the queued deletes of the output files (shared dms_file table)
+        // together with all deletes before them, e.g. ap_part while ap_access_point still references it.
+        // The deletes succeed only together in the final flush.
+        FlushModeType flushMode = em.getFlushMode();
+        em.setFlushMode(FlushModeType.COMMIT);
+        fundFileRepository.deleteAll();
+        em.setFlushMode(flushMode);
         outputResultRepository.deleteAll();
         outputTemplateRepository.deleteAll();
         outputRepository.deleteAll();

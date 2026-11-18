@@ -27,8 +27,18 @@ public interface ApBindingStateRepository extends ElzaJpaRepository<ApBindingSta
     @Query("SELECT bis FROM ap_binding_state bis JOIN FETCH bis.binding b JOIN FETCH b.apExternalSystem WHERE bis.accessPoint IN :accessPoints AND bis.deleteChangeId IS NULL")
     List<ApBindingState> findByAccessPoints(@Param("accessPoints") Collection<ApAccessPoint> accessPoints);
 
-    @Query("SELECT bis FROM ap_binding_state bis JOIN FETCH bis.binding b WHERE bis.accessPointId IN :accessPointIds AND bis.deleteChangeId IS NULL")
-    List<ApBindingState> findActiveByAccessPointIdIn(@Param("accessPointIds") Collection<Integer> accessPointIds);
+    /**
+     * One active binding of each access point. An access point bound to several external systems
+     * contributes its binding to the external system with the lowest id, so the result does not
+     * depend on the row order.
+     *
+     * @return at most one binding state per access point
+     */
+    @Query("SELECT bis FROM ap_binding_state bis JOIN FETCH bis.binding b " +
+            "WHERE bis.accessPointId IN :accessPointIds AND bis.deleteChangeId IS NULL " +
+            "AND bis.externalSystemId = (SELECT MIN(bis2.externalSystemId) FROM ap_binding_state bis2 " +
+            "WHERE bis2.accessPointId = bis.accessPointId AND bis2.deleteChangeId IS NULL)")
+    List<ApBindingState> findFirstActiveByAccessPointIdIn(@Param("accessPointIds") Collection<Integer> accessPointIds);
 
     @Query("SELECT bis FROM ap_binding_state bis WHERE bis.binding = :binding AND bis.deleteChangeId IS NULL")
     Optional<ApBindingState> findActiveByBinding(@Param("binding") ApBinding binding);

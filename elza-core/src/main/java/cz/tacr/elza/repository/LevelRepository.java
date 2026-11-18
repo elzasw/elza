@@ -14,6 +14,7 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.projection.DeletedNodeInfo;
 import cz.tacr.elza.repository.vo.ItemChange;
 import cz.tacr.elza.service.arrangement.DeleteFundHistory;
 
@@ -128,4 +129,21 @@ public interface LevelRepository extends JpaRepository<ArrLevel, Integer>, Level
     @Query("SELECT DISTINCT l.node.nodeId FROM arr_level l " +
            "WHERE l.node.nodeId IN :nodeIds AND l.deleteChange IS NULL")
     Set<Integer> findNodeIdsWithActiveLevel(@Param("nodeIds") Collection<Integer> nodeIds);
+
+    /**
+     * The last deletion of each deleted unit of description (a unit without an active level) with
+     * one of the given UUIDs. A unit moved within the tree has several deleted levels; the level
+     * deleted last (the highest change id) is the one whose deletion removed the unit.
+     *
+     * @param uuids UUIDs of the units
+     * @return one row per deleted unit; two rows only when two levels of the unit were deleted by
+     *         the same change, then both describe that change
+     */
+    @Query("SELECT new cz.tacr.elza.domain.projection.DeletedNodeInfo("
+            + "n.nodeId, n.uuid, f.name, c.changeDate, u.username) "
+            + "FROM arr_level l JOIN l.node n JOIN n.fund f JOIN l.deleteChange c LEFT JOIN c.user u "
+            + "WHERE n.uuid IN :uuids "
+            + "AND NOT EXISTS (SELECT 1 FROM arr_level al WHERE al.node = n AND al.deleteChange IS NULL) "
+            + "AND c.changeId = (SELECT MAX(l2.deleteChange.changeId) FROM arr_level l2 WHERE l2.node = n)")
+    List<DeletedNodeInfo> findLastDeletions(@Param("uuids") Collection<String> uuids);
 }

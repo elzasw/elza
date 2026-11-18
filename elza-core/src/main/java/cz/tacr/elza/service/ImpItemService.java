@@ -1,5 +1,7 @@
 package cz.tacr.elza.service;
 
+import static cz.tacr.elza.domain.ImpItem.ItemState;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -26,7 +28,6 @@ import cz.tacr.elza.domain.DmsFile;
 import cz.tacr.elza.domain.ImpBatch;
 import cz.tacr.elza.domain.ImpItem;
 import cz.tacr.elza.domain.ImpItemResult;
-import cz.tacr.elza.domain.ItemState;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
@@ -99,17 +100,15 @@ public class ImpItemService {
     }
 
     /**
-     * Adds a new item to the batch. If the batch is in TEST_FINISHED it is walked back to
-     * PREPARATION first - a test run's verdict does not extend to items added after it.
+     * Adds a new item to the batch. A tested batch is walked back to PREPARATION first - a test
+     * run's verdict does not extend to items added after it.
      *
      * @param dmsFile stored source file for this item, or null if not stored yet (folder-on-server
      *                path in a later substep); the item name defaults to the file's name.
      */
     @Transactional
     public ImpItem addItem(ImpBatch batch, DmsFile dmsFile, String name) {
-        if (batch.getState() == BatchState.TEST_FINISHED) {
-            batchService.changeState(batch, BatchState.PREPARATION);
-        }
+        batchService.discardTestResult(batch);
         if (batch.getState() != BatchState.PREPARATION) {
             throw new BusinessException(
                     "Items may only be added to a batch in PREPARATION; current state: " + batch.getState(),
@@ -305,11 +304,13 @@ public class ImpItemService {
     /**
      * Removes an item from its batch. Allowed while the batch is being prepared (any non-finished
      * item) or, when the batch is in FAILED / PAUSED, for items that ended in ERROR - so the
-     * operator can clean up the broken piece after a run.
+     * operator can clean up the broken piece after a run. A tested batch is walked back to
+     * PREPARATION first - the test run's verdict does not extend to the changed item list.
      */
     @Transactional
     public void deleteItem(ImpItem item) {
         ImpBatch batch = item.getBatch();
+        batchService.discardTestResult(batch);
         BatchState bs = batch.getState();
         boolean allowed = bs == BatchState.PREPARATION
                 || ((bs == BatchState.FAILED || bs == BatchState.PAUSED) && item.getState() == ItemState.ERROR);

@@ -9,7 +9,8 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 
 /**
- * Podmínka pro souřadnice — geometrie záznamu (její obálka) leží uvnitř zadané oblasti.
+ * Podmínka pro souřadnice „Je součástí“ — geometrie záznamu leží celá uvnitř zadané oblasti
+ * (včetně hranice).
  */
 public class SubsetCoordinatesDescItemCondition implements HibernateDescItemCondition {
 
@@ -39,8 +40,8 @@ public class SubsetCoordinatesDescItemCondition implements HibernateDescItemCond
                 .append("join arr_data_coordinates co on it.data_id = co.data_id ")
                 .append("where n.fund_id = :fundId ")
                 .append("and it.item_type_id = :descItemTypeId ")
-                .append("and ST_Covers(co.coordinates_value, ")
-                .append("              ST_GeomFromText(:inputWkt)) ");
+                .append("and ST_CoveredBy(co.coordinates_value, ")
+                .append("                 ST_GeomFromText(:inputWkt)) ");
 
         if (lockChangeId == null) {
             sb.append("and l.delete_change_id is null ")

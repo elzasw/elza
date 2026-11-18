@@ -237,13 +237,17 @@ public class DaFakeArchiveTest extends AbstractServiceTest {
         Integer silent = item("aip-silent", QueueItemState.EXPORT_SENT, AipType.METADATA_BASE, "e1");
         wakeProcessors();
 
+        // the processor ends the items of the batch one by one, each in its own write
         DaSyncQueueItem accepted = awaitItem(ok, i -> i.getState() != QueueItemState.EXPORT_SENT);
+        DaSyncQueueItem refused = awaitItem(bad, i -> i.getState() != QueueItemState.EXPORT_SENT);
+        DaSyncQueueItem notConfirmed = awaitItem(silent, i -> i.getState() != QueueItemState.EXPORT_SENT);
 
         assertEquals(QueueItemState.EXPORT_OK, accepted.getState());
         assertEquals("Přijato jako verze 2.", accepted.getStateMessage());
-        assertEquals(QueueItemState.EXPORT_ERROR, reload(bad).getState());
-        assertEquals("Digitální archiv balíček odmítl: Neplatný balíček: chybí EAD", reload(bad).getStateMessage());
-        assertEquals(DaExportExtSyncsProcessor.NOT_CONFIRMED, reload(silent).getStateMessage());
+        assertEquals(QueueItemState.EXPORT_ERROR, refused.getState());
+        assertEquals("Digitální archiv balíček odmítl: Neplatný balíček: chybí EAD", refused.getStateMessage());
+        assertEquals(QueueItemState.EXPORT_ERROR, notConfirmed.getState());
+        assertEquals(DaExportExtSyncsProcessor.NOT_CONFIRMED, notConfirmed.getStateMessage());
         assertTrue(requests.get("/ingest/status/e1").get() >= 2, "the DA was asked again after PENDING");
     }
 

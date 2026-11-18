@@ -138,4 +138,12 @@ public class ImpItem {
 
     public int getApsPaired() { return apsPaired; }
     public void setApsPaired(int apsPaired) { this.apsPaired = apsPaired; }
+
+    public enum ItemState {
+        READY,
+        TEST_RUN_FINISHED,
+        RUNNING,
+        FINISHED,
+        ERROR
+    }
 }

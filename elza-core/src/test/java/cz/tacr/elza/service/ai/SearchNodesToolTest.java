@@ -35,9 +35,13 @@ import cz.tacr.elza.controller.vo.MultimatchContainsFilter;
 import cz.tacr.elza.controller.vo.OperationCompareType;
 import cz.tacr.elza.controller.vo.SearchParams;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.vo.ArrFundToNodeList;
 import cz.tacr.elza.security.UserPermission;
@@ -49,7 +53,7 @@ import cz.tacr.elza.service.UserService;
 
 /**
  * The {@code searchNodes} AI tool: argument mapping to Elza search parameters,
- * enforcement of the conversation owner's read permissions (restriction pushed
+ * validation of item conditions against the installed item types, enforcement of the conversation owner's read permissions (restriction pushed
  * into the query, empty result when nothing is readable), and the capped,
  * fund-grouped result mapping.
  */
@@ -63,6 +67,7 @@ class SearchNodesToolTest {
     private final ArrangementInternalService arrangementInternalService = mock(ArrangementInternalService.class);
     private final LevelTreeCacheService levelTreeCacheService = mock(LevelTreeCacheService.class);
     private final StaticDataService staticDataService = mock(StaticDataService.class);
+    private final StaticDataProvider sdp = mock(StaticDataProvider.class);
     private final PlatformTransactionManager txManager = mock(PlatformTransactionManager.class);
 
     private SearchNodesTool tool;
@@ -70,6 +75,7 @@ class SearchNodesToolTest {
     @BeforeEach
     void setUp() {
         when(txManager.getTransaction(any())).thenReturn(new SimpleTransactionStatus());
+        when(staticDataService.getData()).thenReturn(sdp);
         tool = new SearchNodesTool(userService, nodeSearchService, arrangementInternalService,
                                    levelTreeCacheService, staticDataService, 
                                    new TransactionTemplate(txManager), new ObjectMapper());
@@ -155,19 +161,123 @@ class SearchNodesToolTest {
     void mapsItemConditionsToFieldValueFilters() {
         givenPermissions(fundRead(FUND_ID));
         givenSearchFindsNothing();
+        givenItemType("ZP2015_UNIT_DATE", DataType.UNITDATE);
 
         tool.execute(Map.of("itemConditions", List.of(Map.of(
                 "type", "ZP2015_UNIT_DATE",
                 "operation", "INTERSECT",
                 "value", "1930-1939"))), new AiToolContext(USER_ID));
 
-        ArgumentCaptor<SearchParams> searchParams = ArgumentCaptor.forClass(SearchParams.class);
-        verify(nodeSearchService).nodeSearchData(searchParams.capture(), any());
-        FieldValueFilter filter = (FieldValueFilter) searchParams.getValue().getFilters().get(0);
+        FieldValueFilter filter = searchedCondition();
         DescItemField field = (DescItemField) filter.getField();
         assertThat(field.getTypeCode()).isEqualTo("ZP2015_UNIT_DATE");
         assertThat(filter.getOperation()).isEqualTo(OperationCompareType.INTERSECT);
         assertThat(filter.getValue()).isEqualTo("1930-1939");
+    }
+
+    @Test
+    void mapsEnumConditionToTheStoredSpecificationCode() {
+        givenPermissions(fundRead(FUND_ID));
+        givenSearchFindsNothing();
+        ItemType levelType = givenItemType("ZP2015_LEVEL_TYPE", DataType.ENUM, "ZP2015_LEVEL_ITEM");
+
+        tool.execute(Map.of("itemConditions", List.of(Map.of(
+                "type", "zp2015_level_type",
+                "spec", "zp2015_level_item",
+                "operation", "EQ"))), new AiToolContext(USER_ID));
+
+        DescItemField field = (DescItemField) searchedCondition().getField();
+        assertThat(field.getTypeCode()).isEqualTo(levelType.getCode());
+        assertThat(field.getSpecCode()).isEqualTo("ZP2015_LEVEL_ITEM");
+    }
+
+    @Test
+    void notNullNeedsNoValue() {
+        givenPermissions(fundRead(FUND_ID));
+        givenSearchFindsNothing();
+        givenItemType("ZP2015_NAME", DataType.STRING);
+
+        tool.execute(Map.of("itemConditions", List.of(Map.of(
+                "type", "ZP2015_NAME",
+                "operation", "NOT_NULL"))), new AiToolContext(USER_ID));
+
+        assertThat(searchedCondition().getOperation()).isEqualTo(OperationCompareType.NOT_NULL);
+    }
+
+    /**
+     * A code the installed rules do not define must fail with a message the model
+     * can act on — the search would otherwise fail without one.
+     */
+    @Test
+    void rejectsUnknownItemTypeCodeWithoutSearching() {
+        givenPermissions(fundRead(FUND_ID));
+
+        assertThatThrownBy(() -> tool.execute(Map.of("itemConditions", List.of(Map.of(
+                "type", "ZP2015_NO_SUCH_TYPE",
+                "operation", "NOT_NULL"))), new AiToolContext(USER_ID)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Unknown item type code: ZP2015_NO_SUCH_TYPE")
+                .hasMessageContaining("getItemTypes");
+        verifyNoInteractions(nodeSearchService);
+    }
+
+    /** An unknown specification would otherwise silently find nothing. */
+    @Test
+    void rejectsUnknownSpecificationCode() {
+        givenPermissions(fundRead(FUND_ID));
+        givenItemType("ZP2015_LEVEL_TYPE", DataType.ENUM, "ZP2015_LEVEL_ITEM");
+
+        assertThatThrownBy(() -> tool.execute(Map.of("itemConditions", List.of(Map.of(
+                "type", "ZP2015_LEVEL_TYPE",
+                "spec", "ZP2015_LEVEL_GONE",
+                "operation", "EQ"))), new AiToolContext(USER_ID)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("ZP2015_LEVEL_GONE")
+                .hasMessageContaining("ZP2015_LEVEL_TYPE");
+        verifyNoInteractions(nodeSearchService);
+    }
+
+    @Test
+    void rejectsSpecificationOnTypeWithoutSpecifications() {
+        givenPermissions(fundRead(FUND_ID));
+        givenItemType("ZP2015_NAME", DataType.STRING);
+
+        assertThatThrownBy(() -> tool.execute(Map.of("itemConditions", List.of(Map.of(
+                "type", "ZP2015_NAME",
+                "spec", "SOME_SPEC",
+                "operation", "CONTAINS",
+                "value", "pivovar"))), new AiToolContext(USER_ID)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("has no specifications");
+        verifyNoInteractions(nodeSearchService);
+    }
+
+    /** An enumerated item is matched by its specification; without one there is nothing to compare. */
+    @Test
+    void rejectsEnumConditionWithoutSpecification() {
+        givenPermissions(fundRead(FUND_ID));
+        givenItemType("ZP2015_LEVEL_TYPE", DataType.ENUM, "ZP2015_LEVEL_ITEM");
+
+        assertThatThrownBy(() -> tool.execute(Map.of("itemConditions", List.of(Map.of(
+                "type", "ZP2015_LEVEL_TYPE",
+                "operation", "EQ",
+                "value", "ZP2015_LEVEL_ITEM"))), new AiToolContext(USER_ID)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("requires a 'spec'");
+        verifyNoInteractions(nodeSearchService);
+    }
+
+    @Test
+    void rejectsComparisonWithoutValue() {
+        givenPermissions(fundRead(FUND_ID));
+        givenItemType("ZP2015_NAME", DataType.STRING);
+
+        assertThatThrownBy(() -> tool.execute(Map.of("itemConditions", List.of(Map.of(
+                "type", "ZP2015_NAME",
+                "operation", "EQ"))), new AiToolContext(USER_ID)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("requires a 'value'");
+        verifyNoInteractions(nodeSearchService);
     }
 
     @Test
@@ -236,6 +346,28 @@ class SearchNodesToolTest {
                 return node;
             }).toList();
         });
+    }
+
+    /** Registers an installed item type with the given specification codes. */
+    private ItemType givenItemType(final String code, final DataType dataType, final String... specCodes) {
+        ItemType itemType = mock(ItemType.class);
+        when(itemType.getCode()).thenReturn(code);
+        when(itemType.getDataType()).thenReturn(dataType);
+        when(itemType.hasSpecifications()).thenReturn(specCodes.length > 0);
+        for (String specCode : specCodes) {
+            RulItemSpec spec = new RulItemSpec();
+            spec.setCode(specCode);
+            when(itemType.getItemSpecByCode(specCode)).thenReturn(spec);
+        }
+        when(sdp.getItemTypeByCode(code)).thenReturn(itemType);
+        return itemType;
+    }
+
+    /** The single item condition the search was called with. */
+    private FieldValueFilter searchedCondition() {
+        ArgumentCaptor<SearchParams> searchParams = ArgumentCaptor.forClass(SearchParams.class);
+        verify(nodeSearchService).nodeSearchData(searchParams.capture(), any());
+        return (FieldValueFilter) searchParams.getValue().getFilters().get(0);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })

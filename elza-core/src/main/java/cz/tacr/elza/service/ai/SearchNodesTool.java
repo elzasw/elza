@@ -35,8 +35,10 @@ import cz.tacr.elza.controller.vo.SearchParams;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.vo.ArrFundToNodeList;
 import cz.tacr.elza.security.UserPermission;
@@ -222,28 +224,80 @@ public class SearchNodesTool implements AiTool {
             fulltext.setValue(params.getFulltext().trim());
             filters.add(fulltext);
         }
-        if (params.getItemConditions() != null) {
+        if (CollectionUtils.isNotEmpty(params.getItemConditions())) {
+            StaticDataProvider sdp = staticDataService.getData();
             for (ItemCondition condition : params.getItemConditions()) {
-                if (StringUtils.isBlank(condition.getType()) || condition.getOperation() == null) {
-                    throw new IllegalArgumentException(
-                            "Each itemCondition requires a 'type' (item-type code) and an 'operation'");
-                }
-                DescItemField field = new DescItemField();
-                field.setFieldType(FieldType.DESC_ITEM);
-                field.setTypeCode(condition.getType());
-                field.setSpecCode(condition.getSpec());
-                FieldValueFilter filter = new FieldValueFilter();
-                filter.setFilterType(FilterType.FIELD_VALUE);
-                filter.setField(field);
-                // the contract operations are a subset of Elza's, names aligned
-                filter.setOperation(OperationCompareType.valueOf(condition.getOperation().name()));
-                filter.setValue(condition.getValue());
-                filters.add(filter);
+                filters.add(toFieldValueFilter(condition, sdp));
             }
         }
         SearchParams searchParams = new SearchParams();
         searchParams.setFilters(filters);
         return searchParams;
+    }
+
+    /**
+     * One item condition as an Elza filter, validated against the installed item
+     * types first. The search itself does not tell a mistyped code from a missing
+     * value: an unknown type or spec code fails without a usable message or
+     * silently finds nothing. The model cannot learn from either, so every
+     * mistake is reported here in terms of the call's own arguments.
+     */
+    private FieldValueFilter toFieldValueFilter(final ItemCondition condition, final StaticDataProvider sdp) {
+        if (StringUtils.isBlank(condition.getType()) || condition.getOperation() == null) {
+            throw new IllegalArgumentException(
+                    "Each itemCondition requires a 'type' (item-type code) and an 'operation'");
+        }
+        String typeCode = condition.getType().trim().toUpperCase();
+        ItemType itemType = sdp.getItemTypeByCode(typeCode);
+        if (itemType == null) {
+            throw new IllegalArgumentException("Unknown item type code: " + condition.getType().trim()
+                    + ". Use only codes that appear in the context or in earlier results; getItemTypes"
+                    + " lists the codes of a rule set (the fund's ruleSetCode).");
+        }
+
+        String specCode = null;
+        if (StringUtils.isNotBlank(condition.getSpec())) {
+            if (!itemType.hasSpecifications()) {
+                throw new IllegalArgumentException(
+                        "Item type " + typeCode + " has no specifications; omit 'spec'.");
+            }
+            String requested = condition.getSpec().trim();
+            RulItemSpec spec = itemType.getItemSpecByCode(requested);
+            if (spec == null) {
+                spec = itemType.getItemSpecByCode(requested.toUpperCase());
+            }
+            if (spec == null) {
+                throw new IllegalArgumentException("Unknown specification code " + requested
+                        + " for item type " + typeCode + "; getItemTypes lists its specifications.");
+            }
+            specCode = spec.getCode();
+        }
+
+        // the contract operations are a subset of Elza's, names aligned
+        OperationCompareType operation = OperationCompareType.valueOf(condition.getOperation().name());
+        if (operation != OperationCompareType.NOT_NULL) {
+            // an enumerated item is matched by its specification, any other by its value
+            if (itemType.getDataType() == DataType.ENUM) {
+                if (specCode == null) {
+                    throw new IllegalArgumentException("Operation " + operation + " on the enumerated item type "
+                            + typeCode + " requires a 'spec' (the value to match).");
+                }
+            } else if (StringUtils.isBlank(condition.getValue())) {
+                throw new IllegalArgumentException(
+                        "Operation " + operation + " on item type " + typeCode + " requires a 'value'.");
+            }
+        }
+
+        DescItemField field = new DescItemField();
+        field.setFieldType(FieldType.DESC_ITEM);
+        field.setTypeCode(typeCode);
+        field.setSpecCode(specCode);
+        FieldValueFilter filter = new FieldValueFilter();
+        filter.setFilterType(FilterType.FIELD_VALUE);
+        filter.setField(field);
+        filter.setOperation(operation);
+        filter.setValue(condition.getValue());
+        return filter;
     }
 
     /**

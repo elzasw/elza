@@ -1,7 +1,8 @@
 package cz.tacr.elza.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import cz.tacr.elza.domain.enumeration.StringLength;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.Column;
@@ -29,7 +30,8 @@ public class DaDaoFileFolder {
     @JoinColumn(name = "delete_change_id")
     private DaChange deleteChange;
 
-    @Column(name = "label", length = StringLength.LENGTH_250, nullable = false)
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
+    @Column(name = "label", nullable = false)
     private String label;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = DaDao.class)

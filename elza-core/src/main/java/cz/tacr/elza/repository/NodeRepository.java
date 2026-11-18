@@ -68,6 +68,28 @@ public interface NodeRepository extends ElzaJpaRepository<ArrNode, Integer>, Nod
 
     List<ArrNode> findAllByUuidIn(Collection<String> uuids);
 
+    /**
+     * Node with the given UUID that has an active level. A link (URI-REF elza-node://) is
+     * resolved only to such a node: a deleted node keeps its arr_node row, but deleting its
+     * level clears the target of the links to it.
+     *
+     * @param uuid UUID of the node
+     * @return the node, null when it does not exist or has no active level
+     */
+    @Query("SELECT n FROM arr_node n WHERE n.uuid = :uuid " +
+            "AND EXISTS (SELECT 1 FROM arr_level l WHERE l.node = n AND l.deleteChange IS NULL)")
+    ArrNode findActiveByUuid(@Param("uuid") String uuid);
+
+    /**
+     * Nodes with the given UUIDs that have an active level, see {@link #findActiveByUuid(String)}.
+     *
+     * @param uuids UUIDs of the nodes
+     * @return the nodes found
+     */
+    @Query("SELECT n FROM arr_node n WHERE n.uuid IN :uuids " +
+            "AND EXISTS (SELECT 1 FROM arr_level l WHERE l.node = n AND l.deleteChange IS NULL)")
+    List<ArrNode> findActiveByUuidIn(@Param("uuids") Collection<String> uuids);
+
     @Query("SELECT n FROM arr_node n WHERE n.fund = :fund AND n.uuid IN :uuids")
     List<ArrNode> findByFundAndUuidIn(@Param("fund") ArrFund fund, @Param("uuids") Collection<String> uuids);
 

@@ -213,7 +213,7 @@ public class StorageOrderGeneratorAction extends Action {
         if (data == null) {
             return;
         }
-        Validate.isTrue(data.getDataTypeId() == DataType.INT.getId(), "Unexpected data type: %i", data.getDataTypeId());
+        Validate.isTrue(data.getDataTypeId() == DataType.INT.getId(), "Unexpected data type: %d", data.getDataTypeId());
         ArrDataInteger dataInt = HibernateUtils.unproxy(data);
         lastOrderValues.put(structObjId, dataInt.getIntegerValue());
     }
