@@ -18,6 +18,30 @@ between the installed and the new version; see :doc:`/03-upgrade`.
 Fixes
 -----
 
+* Fix: 10242 - A link to another unit of description (``elza-node://``)
+  whose target had been deleted was connected to the deleted unit again by
+  every later import (the import connects the unresolved links of the whole
+  database) and by saving the item. Such a link now stays without target.
+  Validation reports it with the fund, date and user of the deletion, so
+  the deletion can be found in the history of changes of the fund; a link
+  to a unit that is not in the database is reported by its own message.
+  The upgrade drops the validation state of the units with such links in
+  open fund versions, so the start of the application validates them
+  again.
+* Fix: 10247 - CAM - the synchronization of a local entity bound to a CAM
+  entity, and connecting a local entity to a CAM entity without replacing
+  its content, kept the local parts of a non-repeatable type (body,
+  creation, extinction) next to the parts received from CAM, so the entity
+  had e.g. two bodies and validation reported an error. A part received
+  from CAM now replaces the local part of the same non-repeatable type;
+  the local part stays in the history of the entity. An entity that
+  already has such a duplicate is corrected by its next synchronization.
+  Entity lists and the CSV export of entities show the first created part
+  when a type is still repeated, and the external identifier of the
+  external system with the lowest id when an entity is bound to more
+  systems, instead of a random one. The upgrade adds a unique index on the
+  indexes of entity parts (``ap_index``); on a large database it takes a
+  few minutes.
 * Fix: 10249 - DA - loading the metadata of a package still failed with
   "value too long for type character varying(250)" after the fix 10212,
   now on the table ``da_level_view``: the name of a level above the parts
@@ -28,6 +52,13 @@ Fixes
   list by the problem *Chyba při zpracování metadat* and run
   *Aktualizace a oprava AIP* with the type *Aktualizace pouze DB*; the
   packages are already downloaded.
+
+3.4.13
+======
+
+The build 3.4.12 with a corrected test of the build; no change for
+users or administrators. When upgrading to 3.4.13, read the entries of
+3.4.12.
 
 3.4.12
 ======
@@ -143,30 +174,6 @@ Fixes
   more funds than the tree cache holds (``elza.levelTreeCache.size``, 30
   by default), the trees were repeatedly evicted and loaded again, and the
   tree and arrangement of other users waited meanwhile.
-* Fix: 10242 - A link to another unit of description (``elza-node://``)
-  whose target had been deleted was connected to the deleted unit again by
-  every later import (the import connects the unresolved links of the whole
-  database) and by saving the item. Such a link now stays without target.
-  Validation reports it with the fund, date and user of the deletion, so
-  the deletion can be found in the history of changes of the fund; a link
-  to a unit that is not in the database is reported by its own message.
-  The upgrade drops the validation state of the units with such links in
-  open fund versions, so the start of the application validates them
-  again.
-* Fix: 10247 - CAM - the synchronization of a local entity bound to a CAM
-  entity, and connecting a local entity to a CAM entity without replacing
-  its content, kept the local parts of a non-repeatable type (body,
-  creation, extinction) next to the parts received from CAM, so the entity
-  had e.g. two bodies and validation reported an error. A part received
-  from CAM now replaces the local part of the same non-repeatable type;
-  the local part stays in the history of the entity. An entity that
-  already has such a duplicate is corrected by its next synchronization.
-  Entity lists and the CSV export of entities show the first created part
-  when a type is still repeated, and the external identifier of the
-  external system with the lowest id when an entity is bound to more
-  systems, instead of a random one. The upgrade adds a unique index on the
-  indexes of entity parts (``ap_index``); on a large database it takes a
-  few minutes.
 
 3.4.11
 ======
