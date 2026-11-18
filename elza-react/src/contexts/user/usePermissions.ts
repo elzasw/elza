@@ -25,6 +25,7 @@ function checkPermission(permissionsMap: Record<string, any>, permission: Permis
     switch (permission.type) {
         case perms.FUND_RD:
         case perms.FUND_ARR:
+        case perms.FUND_ARR_NODE:
         case perms.FUND_OUTPUT_WR:
         case perms.FUND_VER_WR:
         case perms.FUND_ISSUE_ADMIN:
