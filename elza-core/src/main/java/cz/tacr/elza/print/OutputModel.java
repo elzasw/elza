@@ -897,7 +897,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     private Institution createInstitution(ArrFund arrFund) {
 
         ParInstitution parInst = institutionRepository.findByFundFetchTypeAndAccessPoint(arrFund);
-        Institution inst = new Institution(parInst.getInternalCode(), parInst.getInstitutionType());
+        Institution inst = new Institution(parInst.getInternalCode(), parInst.getInstitutionType(),
+                parInst.getName(), parInst.getShortName());
 
         inst.setRecord(getRecordById(parInst.getAccessPoint().getAccessPointId()));
 

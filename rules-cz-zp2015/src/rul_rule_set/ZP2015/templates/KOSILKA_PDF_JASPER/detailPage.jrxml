@@ -202,7 +202,7 @@
 				<box topPadding="4" bottomPadding="3"/>
 			</element>
 			<element kind="textField" uuid="1214b24f-1050-4901-b0cf-cbfdc0e188e9" x="1" y="0" width="142" height="44" fontSize="14.0" pdfEncoding="Cp1250" textAdjust="ScaleFont" hTextAlign="Center" vTextAlign="Middle">
-				<expression><![CDATA[$P{fund}.getInstitution().getRecord().getPreferredPart().getSingleItemValue("NM_MAIN")]]></expression>
+				<expression><![CDATA[$P{fund}.getInstitution().getName()]]></expression>
 				<property name="com.jaspersoft.studio.unit.x" value="mm"/>
 				<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				<box topPadding="3" leftPadding="3" bottomPadding="3" rightPadding="3">
