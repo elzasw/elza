@@ -12,10 +12,15 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Predicate;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.nimbusds.jose.util.JSONObjectUtils;
 import com.nimbusds.jose.util.Resource;
@@ -61,8 +66,14 @@ import org.springframework.security.kerberos.authentication.sun.SunJaasKerberosC
 import org.springframework.security.kerberos.authentication.sun.SunJaasKerberosTicketValidator;
 import org.springframework.security.kerberos.web.authentication.SpnegoAuthenticationProcessingFilter;
 import org.springframework.security.kerberos.web.authentication.SpnegoEntryPoint;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtClaimNames;
+import org.springframework.security.oauth2.jwt.JwtClaimValidator;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
@@ -288,6 +299,25 @@ public class ApplicationSecurity {
         return Base64.getMimeDecoder().decode(keyValue);
     }
 
+    /**
+     * Token lifetime is always checked; issuer and audience only when configured.
+     */
+    static OAuth2TokenValidator<Jwt> createJwtValidator(OAuth2Properties props) {
+        List<OAuth2TokenValidator<Jwt>> validators = new ArrayList<>();
+        if (StringUtils.isNotBlank(props.getIssuer())) {
+            validators.add(JwtValidators.createDefaultWithIssuer(props.getIssuer()));
+        } else {
+            validators.add(JwtValidators.createDefault());
+        }
+        List<String> acceptedAudiences = props.getAudiences();
+        if (CollectionUtils.isNotEmpty(acceptedAudiences)) {
+            Predicate<Collection<String>> hasAcceptedAudience = tokenAudiences -> tokenAudiences != null
+                    && CollectionUtils.containsAny(tokenAudiences, acceptedAudiences);
+            validators.add(new JwtClaimValidator<>(JwtClaimNames.AUD, hasAcceptedAudience));
+        }
+        return new DelegatingOAuth2TokenValidator<>(validators);
+    }
+
     @ConditionalOnProperty(prefix = "elza.security.o-auth2", name = "key-url")
     @Bean
     public JwtDecoder getjwtDecoder() {
@@ -305,8 +335,9 @@ public class ApplicationSecurity {
 
             RSAPublicKey publicKey = (RSAPublicKey) KeyFactory.getInstance("RSA")
                     .generatePublic(new X509EncodedKeySpec(getKeySpec(key)));
-            JwtDecoder jwtDecoder = NimbusJwtDecoder.withPublicKey(publicKey)
+            NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withPublicKey(publicKey)
                     .signatureAlgorithm(SignatureAlgorithm.from(jwsAlgorithm)).build();
+            jwtDecoder.setJwtValidator(createJwtValidator(optionalOAuth2Props.get()));
             return jwtDecoder;
         } catch (ParseException e) {
             throw new IllegalStateException("Failed to parse token", e);
