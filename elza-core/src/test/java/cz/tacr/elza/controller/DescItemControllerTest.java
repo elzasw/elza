@@ -34,8 +34,10 @@ import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataFileRef;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataStructureRef;
+import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.SobjVrequestRepository;
@@ -338,6 +340,27 @@ public class DescItemControllerTest extends AbstractControllerTest {
         assertEquals(1, findOpenItems(nodeIds, fileType).size());
     }
 
+    @Test
+    public void replaceFileContentRepointsItemsTest() {
+        Fund fund = createFund("Replace attachment content", "replaceAttachment");
+        ArrFundVersionVO fundVersion = getOpenVersion(fund);
+        List<Integer> nodeIds = createLevels(fundVersion).stream().map(ArrNodeVO::getId).toList();
+        RulDescItemTypeExtVO fileType = findDescItemTypeByCode(SRD_FILE);
+
+        Integer oldFileId = createFundFile(fund);
+        for (Integer nodeId : nodeIds) {
+            appendToNode(fundVersion, fileType, nodeId, List.of(valueWithoutSpec(DataType.FILE_REF, oldFileId)));
+        }
+
+        Integer newFileId = replaceFundFile(oldFileId, "opravená příloha");
+        helperTestService.waitForWorkers();
+
+        assertNotEquals(oldFileId, newFileId);
+        List<Integer> openFileIds = findOpenFileIds(nodeIds, fileType);
+        assertEquals(nodeIds.size(), openFileIds.size());
+        assertTrue(openFileIds.stream().allMatch(newFileId::equals));
+    }
+
     private BulkChangeResult appendToNode(final ArrFundVersionVO fundVersion,
                                           final RulDescItemTypeExtVO type,
                                           final Integer nodeId,
@@ -398,6 +421,38 @@ public class DescItemControllerTest extends AbstractControllerTest {
             }
             return file.getFileId();
         });
+    }
+
+    /**
+     * Replaces the file content the same way as DmsController.updateFile with an uploaded file.
+     */
+    private Integer replaceFundFile(final Integer fileId, final String content) {
+        byte[] bytes = content.getBytes(StandardCharsets.UTF_8);
+        return new TransactionTemplate(tm).execute(status -> {
+            ArrFile oldFile = dmsService.getArrFile(fileId);
+            ArrFile newFile = new ArrFile();
+            newFile.setFileName("priloha-2.txt");
+            newFile.setMimeType("text/plain");
+            newFile.setFileSize(bytes.length);
+            try {
+                dmsService.replaceArrFileContent(oldFile, newFile, new ByteArrayInputStream(bytes));
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+            return newFile.getFileId();
+        });
+    }
+
+    private List<Integer> findOpenFileIds(final List<Integer> nodeIds, final RulDescItemTypeExtVO type) {
+        return new TransactionTemplate(tm).execute(status -> descItemService
+                .findByNodeIdsAndDeleteChangeIsNull(nodeIds, List.of(type.getId())).stream()
+                .map(DescItemControllerTest::fileIdOf)
+                .toList());
+    }
+
+    private static Integer fileIdOf(final ArrDescItem item) {
+        ArrDataFileRef data = HibernateUtils.unproxy(item.getData());
+        return data.getFileId();
     }
 
     /**

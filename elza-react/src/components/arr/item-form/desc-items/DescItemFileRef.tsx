@@ -13,6 +13,7 @@ import { messages as commonMessages } from "./commonMessages";
 import { useStyles } from "./styles";
 import { useActiveFund } from "utils/hooks";
 import { DescItemProps } from "./types";
+import { useFundFile } from "./useFundFile";
 
 interface Props extends DescItemProps {
   onChange: (item: NodeItemFileRef) => Promise<void>;
@@ -56,11 +57,11 @@ export function DescItemFileRef({
     item.undefined ? formatMessage(commonMessages.undefined) : "",
   );
   const [files, setFiles] = useState<ArrFileVO[]>([]);
-  const [file, setFile] = useState<ArrFileVO>();
 
   const fieldRef = useRef<HTMLInputElement>(null);
 
   const data = item.data as DataFileRef;
+  const file = useFundFile(activeFund.id, data?.fileId);
 
   const handleFileSelect = (_e: SelectionEvents, data: OptionOnSelectData) => {
     setQuery(data.optionText);
@@ -78,21 +79,14 @@ export function DescItemFileRef({
   }
 
   useEffect(() => {
-    if (data?.fileId) {
-      (async () => {
-        const file: ArrFileVO = await WebApi.getEditableFundFile(
-          activeFund.id,
-          data.fileId,
-        );
-        setQuery(file.name);
-        setFile(file);
-      })();
+    if (file) {
+      setQuery(file.name);
     } else if (item.undefined) {
       setQuery(formatMessage(commonMessages.undefined));
     } else {
       setQuery("");
     }
-  }, [data?.fileId, item.undefined]);
+  }, [file, item.undefined]);
 
   useDebouncedEffect(() => {
     if (!item.undefined && item.nodeId === nodeId) {

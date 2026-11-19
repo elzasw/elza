@@ -52,8 +52,17 @@ export interface OutputStateChangeMessage extends Message {
   entityString: string;
 }
 
+export interface FilesChangeMessage extends Message {
+  eventType: EventType.FILES_CHANGE;
+  /** Fund id (the server sends it in the versionId field). */
+  versionId: number;
+  /** Simple class name of the changed file entity (the server sends it in the entityId field). */
+  entityId: string;
+}
+
 export type AnyMessage =
   | ChangeMessage
+  | FilesChangeMessage
   | TestMessage
   | PolicyChangeMessage
   | StructureDataChangeMessage
