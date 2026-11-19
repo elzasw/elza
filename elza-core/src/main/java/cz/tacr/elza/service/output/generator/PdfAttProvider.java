@@ -148,19 +148,20 @@ public class PdfAttProvider implements AttPageProvider {
         /**
          * add all pages into input document
          * 
-         * @param inDoc
-         * @return Return number of added pages
+         * @param outDoc
+         * @return Return added pages
          * @throws IOException
          */
-        public int addAllPages(PDDocument outDoc) throws IOException {
-            int cnt = 0;
+        public List<PDPage> addAllPages(PDDocument outDoc) throws IOException {
+            List<PDPage> addedPages = new ArrayList<>();
             for(PdfFileInfo fileInfo: fileInfos) {
                 PDDocument mergedDoc = fileInfo.getPdfDocument();
                 for (PDPage page : mergedDoc.getPages()) {
                     outDoc.addPage(page);
+                    addedPages.add(page);
                 }
             }
-            return cnt;
+            return addedPages;
         }
 
     }
