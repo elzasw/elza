@@ -51,7 +51,6 @@ export const nodeMessages = defineMessages({
     fundTitleSearch: { id: "arr.fund.title.search", defaultMessage: "Vyhledat v archivních souborech" },
     historyTitle: { id: "arr.history.title", defaultMessage: "Historie změn" },
     historyTitleNodeChanges: { id: "arr.history.title.nodeChanges", defaultMessage: "Jednotka popisu" },
-    issuesAddNodeTitle: { id: "arr.issues.add.node.title", defaultMessage: "Přidat připomínku - Jednotka popisu" },
     nodeStatusErrErrors: { id: "arr.node.status.err.errors", defaultMessage: "Chyby" },
     nodeStatusErrMissing: { id: "arr.node.status.err.missing", defaultMessage: "Chybějící prvky" },
     nodeStatusOk: { id: "arr.node.status.ok", defaultMessage: "Ok" },
