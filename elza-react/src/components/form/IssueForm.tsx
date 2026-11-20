@@ -1,4 +1,12 @@
-import { Button, Field as FluentField, Select, Textarea, makeStyles, tokens } from '@fluentui/react-components';
+import {
+    Button,
+    Field as FluentField,
+    Select,
+    Textarea,
+    makeStyles,
+    mergeClasses,
+    tokens,
+} from '@fluentui/react-components';
 import * as issuesActions from 'actions/arr/issues';
 import * as issueTypesActions from 'actions/refTables/issueTypes';
 import { globalMessages } from 'components/shared/lang/messages';
@@ -49,13 +57,14 @@ interface Props {
     /** Injected by `modalDialogShow`. */
     onClose?: () => void;
     update?: boolean;
+    className?: string;
 }
 
 function toOptionalId(value: string) {
     return value ? Number(value) : undefined;
 }
 
-export function IssueForm({ initialValues, onSubmit, onSubmitSuccess, onClose, update = false }: Props) {
+export function IssueForm({ initialValues, onSubmit, onSubmitSuccess, onClose, update = false, className }: Props) {
     const intl = useIntl();
     const styles = useStyles();
     const dispatch = useAppThunkDispatch();
@@ -101,7 +110,7 @@ export function IssueForm({ initialValues, onSubmit, onSubmitSuccess, onClose, u
             {({ handleSubmit: submitForm, submitting }) => (
                 // noValidate: Fluent `required` sets the native attribute, whose browser check would block
                 // the submit before final-form validation shows its own messages
-                <form className={styles.form} onSubmit={submitForm} noValidate>
+                <form className={mergeClasses(styles.form, className)} onSubmit={submitForm} noValidate>
                     <Field<number> name="issueListId">
                         {({ input }) => (
                             <FluentField label={intl.formatMessage(messages.issueList)}>

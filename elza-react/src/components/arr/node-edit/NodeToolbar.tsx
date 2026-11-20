@@ -37,13 +37,12 @@ import {
   TextQuoteRegular,
 } from "@fluentui/react-icons";
 import { WebApi } from "actions";
-import * as issuesActions from "actions/arr/issues";
 import { deleteNode } from "actions/arr/node";
 import { toggleCopyAllDescItemType } from "actions/arr/nodeSetting";
 import { fundSubNodeDaoChangeScenario } from "actions/arr/subNodeDaos";
 import { modalDialogHide, modalDialogShow } from "actions/global/modalDialog";
 import { routerNavigate } from "actions/router";
-import { IssueForm, IssueFormValues } from "components/form/IssueForm";
+import { getChildReferenceMark, useIssueCreateWindow } from "components/arr/useIssueCreateWindow";
 import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
 import { globalMessages } from 'components/shared/lang/messages';
 import { nodeMessages } from 'components/arr/nodeMessages';
@@ -213,6 +212,7 @@ export const NodeToolbar = ({
   const copyItems = useCopyItems();
   const pasteItems = usePasteItems();
   const clipboard = useItemClipboard();
+  const openIssueCreateWindow = useIssueCreateWindow();
 
   const issueProtocol = useAppSelector(({ app }) => app.issueProtocol as any); // TODO add types
   const issueTypes = useAppSelector(({ refTables }) => refTables.issueTypes);
@@ -348,29 +348,14 @@ export const NodeToolbar = ({
   }
 
   function handleCreateIssueNode() {
-    dispatch(
-      modalDialogShow(
-        this,
-        intl.formatMessage(nodeMessages.issuesAddNodeTitle),
-        <IssueForm
-          onSubmit={(values: IssueFormValues) =>
-            WebApi.addIssue({
-              ...values,
-              nodeId: nodeData.id,
-            })
-          }
-          initialValues={{
-            issueListId: issueProtocol.id,
-            issueTypeId: issueTypes?.data?.[0].id,
-          }}
-          onSubmitSuccess={(data) => {
-            dispatch(issuesActions.list.invalidate(data.issueListId));
-            dispatch(issuesActions.detail.invalidate(data.id));
-            dispatch(modalDialogHide());
-          }}
-        />,
-      ),
-    );
+    openIssueCreateWindow({
+      nodeId: nodeData.id,
+      referenceMark: getChildReferenceMark(activeParent, nodeData.id),
+      initialValues: {
+        issueListId: issueProtocol.id,
+        issueTypeId: issueTypes?.data?.[0].id,
+      },
+    });
   }
 
   function handleCreateTemplate() {

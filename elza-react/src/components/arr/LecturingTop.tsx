@@ -5,7 +5,7 @@ import {Col, Dropdown, DropdownButton, FormControl, Row} from 'react-bootstrap';
 import {connect} from 'react-redux';
 import * as issuesActions from '../../actions/arr/issues';
 import {downloadFile} from '../../actions/global/download';
-import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog';
+import {modalDialogShow} from '../../actions/global/modalDialog';
 import * as issueStatesActions from '../../actions/refTables/issueStates';
 import * as issueTypesActions from '../../actions/refTables/issueTypes';
 import * as perms from '../../actions/user/Permission';
@@ -15,7 +15,8 @@ import indexById from '../../shared/utils/indexById';
 import objectById from '../../shared/utils/objectById';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import {IssueStateVO, IssueVO} from '../../types';
-import { IssueForm, IssueFormValues } from '../form/IssueForm';
+import { FluentDialogContext } from 'components/shared/dialog/FluentModalDialog';
+import { getChildReferenceMark, showIssueCreateWindow } from './useIssueCreateWindow';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import { daoMessages } from 'components/arr/daoMessages';
 import Icon from '../shared/icon/Icon';
@@ -35,6 +36,9 @@ const basicOptionMap = i => (
  * Horní část lektoringu, zajištující seznam protokolů, seznam připomínek a nastavení
  */
 class LecturingTop extends React.Component<any> {
+
+    static contextType = FluentDialogContext;
+    declare context: React.ContextType<typeof FluentDialogContext>;
 
     state: any = {
         issueListId: null,
@@ -91,27 +95,16 @@ class LecturingTop extends React.Component<any> {
         this.props.dispatch(downloadFile(UrlFactory.exportIssueList(this.state.issueListId)));
     };
 
-    createIssue = (nodeId?: number) => {
+    createIssue = (nodeId?: number, referenceMark?: string[]) => {
         const { issueTypes } = this.props;
-        this.props.dispatch(
-            modalDialogShow(
-                this,
-                nodeId != null ? this.props.intl.formatMessage(daoMessages.issuesAddNodeTitle) : this.props.intl.formatMessage(daoMessages.issuesAddArrTitle),
-                <IssueForm
-                    initialValues={{
-                        issueListId: this.state.issueListId,
-                        issueTypeId: issueTypes?.data?.[0].id,
-                    }}
-                    onSubmit={(values: IssueFormValues) =>
-                        WebApi.addIssue({
-                            ...values,
-                            nodeId,
-                        })
-                    }
-                    onSubmitSuccess={this.afterAdd}
-                />,
-            ),
-        );
+        showIssueCreateWindow(this.context.showModal, {
+            nodeId,
+            referenceMark,
+            initialValues: {
+                issueListId: this.state.issueListId,
+                issueTypeId: issueTypes?.data?.[0].id,
+            },
+        });
     }
 
     createArrIssue = () => this.createIssue();
@@ -120,14 +113,7 @@ class LecturingTop extends React.Component<any> {
         const {node} = this.props;
         if (!node?.selectedSubNodeId) { return; }
 
-        this.createIssue(node.selectedSubNodeId);
-    };
-
-    afterAdd = data => {
-        const {dispatch} = this.props;
-        dispatch(issuesActions.list.invalidate(data.issueListId));
-        dispatch(issuesActions.detail.invalidate(data.id));
-        dispatch(modalDialogHide());
+        this.createIssue(node.selectedSubNodeId, getChildReferenceMark(node, node.selectedSubNodeId));
     };
 
     selectIssue = ([index]) => {

@@ -5485,6 +5485,10 @@
     "defaultMessage": "Choose a comment",
     "srcHash": "ggXWWmOsEt8Q"
   },
+  "arr.issues.createWindow.nodeTitle": {
+    "defaultMessage": "Add a comment — description unit {referenceMark}",
+    "srcHash": "M2s7-ZFDiyXt"
+  },
   "arr.issues.settings.title": {
     "defaultMessage": "Review settings",
     "srcHash": "y3s3PdkWbIgB"

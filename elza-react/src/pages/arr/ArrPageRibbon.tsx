@@ -10,7 +10,7 @@ import ConfirmForm from '../../components/shared/form/ConfirmForm';
 import { WebApi } from '../../actions/WebApi';
 import { modalDialogHide, modalDialogShow } from '../../actions/global/modalDialog';
 import ArrHistoryForm from "../../components/arr/ArrHistoryForm";
-import { IssueForm, IssueFormValues } from '../../components/form/IssueForm';
+import { getChildReferenceMark, useIssueCreateWindow } from '../../components/arr/useIssueCreateWindow';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import * as issuesActions from '../../actions/arr/issues';
 import { nodeWithIssueByFundVersion } from '../../actions/arr/issues';
@@ -51,6 +51,7 @@ export default function ArrPageRibbonFn({
     const intl = useIntl();
     const dispatch = useThunkDispatch();
     const showSearchModal = useSearchFundsModal();
+    const openIssueCreateWindow = useIssueCreateWindow();
 
     const handleShowFundHistory = (versionId: number, locked: boolean) => {
         const form = (
@@ -94,30 +95,15 @@ export default function ArrPageRibbonFn({
             userDetail.permissionsMap?.[perms.FUND_ISSUE_LIST_WR]?.issueListIds.length > 0;
     }
 
-    const createIssue = (nodeId?: number) => {
-        dispatch(
-            modalDialogShow(
-                this,
-                nodeId != null ? intl.formatMessage(arrPageMessages.issuesAddNodeTitle) : intl.formatMessage(arrPageMessages.issuesAddArrTitle),
-                <IssueForm
-                    initialValues={{
-                        issueListId: issueProtocol.id,
-                        issueTypeId: issueTypes?.data?.[0].id,
-                    }}
-                    onSubmit={(values: IssueFormValues) =>
-                        WebApi.addIssue({
-                            ...values,
-                            nodeId,
-                        })
-                    }
-                    onSubmitSuccess={data => {
-                        dispatch(issuesActions.list.invalidate(data.issueListId));
-                        dispatch(issuesActions.detail.invalidate(data.id));
-                        dispatch(modalDialogHide());
-                    }}
-                />,
-            ),
-        );
+    const createIssue = (nodeId?: number, referenceMark?: string[]) => {
+        openIssueCreateWindow({
+            nodeId,
+            referenceMark,
+            initialValues: {
+                issueListId: issueProtocol.id,
+                issueTypeId: issueTypes?.data?.[0].id,
+            },
+        });
     }
 
     const createIssueFund = () => {
@@ -128,7 +114,7 @@ export default function ArrPageRibbonFn({
         if (activeFund?.nodes?.activeIndex !== null) {
             const node = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
             if (node) {
-                createIssue(node.selectedSubNodeId);
+                createIssue(node.selectedSubNodeId, getChildReferenceMark(node, node.selectedSubNodeId));
             }
         }
     };

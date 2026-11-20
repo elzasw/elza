@@ -150,6 +150,8 @@ interface CollapsibleDragWindowProps {
   initialWidth?: number;
   initialHeight?: number;
   enablePinBottom?: boolean;
+  /** Height follows the content and the user cannot resize the window; `initialHeight` only centres it. */
+  autoHeight?: boolean;
 }
 
 export function CollapsibleDragWindow({
@@ -159,6 +161,7 @@ export function CollapsibleDragWindow({
   initialWidth = 650,
   initialHeight = 700,
   enablePinBottom = false,
+  autoHeight = false,
 }: PropsWithChildren<CollapsibleDragWindowProps>) {
   const initialPosition = { x: window.innerWidth / 2 - initialWidth / 2, y: window.innerHeight / 2 - initialHeight / 2 };
 
@@ -168,6 +171,7 @@ export function CollapsibleDragWindow({
       onClose={onClose}
       initialWidth={initialWidth}
       initialHeight={initialHeight}
+      autoHeight={autoHeight}
     >
       {children}
     </CollapsibleWindowBody>
@@ -179,6 +183,7 @@ interface CollapsibleWindowBodyProps {
   onClose: () => void;
   initialWidth: number;
   initialHeight: number;
+  autoHeight: boolean;
 }
 
 function CollapsibleWindowBody({
@@ -186,6 +191,7 @@ function CollapsibleWindowBody({
   onClose,
   initialWidth,
   initialHeight,
+  autoHeight,
   children,
 }: PropsWithChildren<CollapsibleWindowBodyProps>) {
   const { pinnedBottom, registerResizable, isResizingRef } = useContext(DraggableWindowContext);
@@ -211,6 +217,8 @@ function CollapsibleWindowBody({
   }, []);
 
   useEffect(() => {
+    // DraggableWindow renders resize handles only after a body registers itself
+    if (autoHeight) return;
     registerResizable({
       onResizeStart: () => ({
         width: sizeRef.current.width,
@@ -223,7 +231,7 @@ function CollapsibleWindowBody({
         if (openRef.current) setHeight(newHeight);
       },
     });
-  }, [registerResizable]);
+  }, [registerResizable, autoHeight]);
 
   const collapsedPinned = pinnedBottom && !open;
   const collapsedPinnedRef = useRef(collapsedPinned);
@@ -259,6 +267,8 @@ function CollapsibleWindowBody({
     }
   }, []);
 
+  const hasFixedHeight = open && !autoHeight;
+
   return (
     <div
       ref={measuredRef}
@@ -269,8 +279,8 @@ function CollapsibleWindowBody({
         minWidth: collapsedPinned ? undefined : "300px",
         width: collapsedPinned ? PINNED_COLLAPSED_WIDTH : width,
         maxWidth: `${viewport.width}px`,
-        minHeight: open ? "300px" : undefined,
-        height: open ? height : "auto",
+        minHeight: hasFixedHeight ? "300px" : undefined,
+        height: hasFixedHeight ? height : "auto",
         maxHeight: `${viewport.height}px`,
         zIndex: 10000,
         borderRadius: pinnedBottom ? "8px 8px 0 0" : "8px",
