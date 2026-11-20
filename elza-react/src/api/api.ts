@@ -52,6 +52,8 @@ interface WindowEx extends Window {
 declare module "axios" {
     export interface AxiosRequestConfig {
         overrideErrorHandler?: boolean;
+        /** Error codes handled by the caller: no error dialog, the raw axios error is rethrown. */
+        ignoredErrorCodes?: string[];
     }
 }
 
@@ -81,6 +83,7 @@ const axios = globalAxios.create();
 
 axios.interceptors.response.use(undefined, error => {
     if (error.config.overrideErrorHandler) { throw error; }
+    if (error.config.ignoredErrorCodes?.includes(error.response?.data?.code)) { throw error; }
 
     const exception = resolveException(error);
     if (exception.unauthorized && !error.config.noPending) {

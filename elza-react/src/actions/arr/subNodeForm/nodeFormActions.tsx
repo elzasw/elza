@@ -6,6 +6,7 @@ import { WebApi } from 'actions/index';
 import { findByRoutingKeyInGlobalState, getRoutingKeyType } from 'stores/app/utils';
 import NodeRequestController from '../../../websocketController';
 import { increaseNodeVersion } from '../node';
+import { fundCloseNodeTab } from '../nodes';
 import { fundNodeInfoReceive } from '../nodeInfo';
 import { fundSubNodeInfoReceive } from '../subNodeInfo';
 import { AreaType, CreateDescItemResult, ItemFormActions } from './itemFormActions';
@@ -70,7 +71,7 @@ export class NodeFormActions extends ItemFormActions {
             const parentsRequested = !!(showParents && node.changeParent);
             const childrenRequested = !!showChildren;
 
-            Api.node.nodeGetNodeData({
+            return Api.node.nodeGetNodeData({
                 fundVersionId: versionId,
                 nodeId,
                 formData: true,
@@ -80,7 +81,7 @@ export class NodeFormActions extends ItemFormActions {
                 siblingsMaxCount: node.pageSize,
                 siblingsFilter: node.filterText,
                 nodeStatus: true,
-            }).then(({ data: json }) => {
+            }, { ignoredErrorCodes: ['ID_NOT_EXIST'] }).then(({ data: json }) => {
                 dispatch(
                     fundNodeInfoReceive(versionId, nodeId, routingKey, {
                         childNodes: json.siblings ? json.siblings : null,
@@ -115,6 +116,16 @@ export class NodeFormActions extends ItemFormActions {
                         receivedAt: Date.now(),
                         needClean,
                     });
+                }
+            }).catch(error => {
+                if (error?.response?.data?.code !== 'ID_NOT_EXIST') {
+                    throw error;
+                }
+                // The node was deleted meanwhile (e.g. the tab was restored from localStorage),
+                // so the whole tab may show a stale subtree.
+                const r = findByRoutingKeyInGlobalState(getState(), versionId, routingKey);
+                if (r) {
+                    dispatch(fundCloseNodeTab(versionId, r.node.id, routingKey, r.nodeIndex));
                 }
             });
         };
