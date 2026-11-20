@@ -33,6 +33,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import cz.tacr.elza.bulkaction.generator.result.Result;
+import cz.tacr.elza.domain.enumeration.StringLength;
 
 
 /**
@@ -113,6 +114,14 @@ public class ArrBulkActionRun {
 
     @Column(length = Length.LONG) // Hibernate long text field
     private String config;
+
+    /**
+     * Code of the output filter the action was computed with, null when computed over all levels.
+     * Kept as a code, not a reference, because a package update deletes output filters which are
+     * no longer defined.
+     */
+    @Column(length = StringLength.LENGTH_50)
+    private String outputFilterCode;
 
     /**
      * Vrací identifikátor záznamu.
@@ -373,6 +382,14 @@ public class ArrBulkActionRun {
 
     public void setConfig(String config) {
         this.config = config;
+    }
+
+    public String getOutputFilterCode() {
+        return outputFilterCode;
+    }
+
+    public void setOutputFilterCode(String outputFilterCode) {
+        this.outputFilterCode = outputFilterCode;
     }
 
     /**

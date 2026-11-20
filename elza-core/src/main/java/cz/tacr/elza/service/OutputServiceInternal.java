@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.common.TaskExecutor;
 import cz.tacr.elza.controller.vo.ApScopeVO;
+import cz.tacr.elza.bulkaction.BulkActionConfigManager;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
@@ -129,6 +130,9 @@ public class OutputServiceInternal {
     @Autowired
     @Lazy
     private AsyncRequestService asyncRequestService;
+
+    @Autowired
+    private BulkActionConfigManager bulkActionConfigManager;
 
     private final DmsService dmsService;
 
@@ -505,15 +509,21 @@ public class OutputServiceInternal {
         // find output node ids
         List<Integer> nodeIds = getOutputNodes(output, fundVersion.getLockChange()).stream().map(n -> n.getNodeId()).collect(Collectors.toList());
 
-        // find finished actions
+        // find finished actions, for an action respecting output filters there may be a run for
+        // each filter
         List<ArrBulkActionRun> finishedActions = bulkActionRunRepository.findBulkActionsByNodes(fundVersion.getFundVersionId(), nodeIds, State.FINISHED);
-        if (recommendedActions.size() > finishedActions.size()) {
-            return OutputRequestStatus.RECOMMENDED_ACTION_NOT_RUN;
+        Set<String> finishedActionCodes = new HashSet<>();
+        List<ArrBulkActionRun> validFinishedActions = new ArrayList<>();
+        for (ArrBulkActionRun finishedAction : finishedActions) {
+            finishedActionCodes.add(finishedAction.getBulkActionCode());
+            if (bulkActionConfigManager.isRunValidForOutput(finishedAction, output)) {
+                validFinishedActions.add(finishedAction);
+            }
         }
 
         ArrChange fromChange = null;
         Map<String, ArrChange> lastChangeByCode = new HashMap<>();
-        for (ArrBulkActionRun finishedAction : finishedActions) {
+        for (ArrBulkActionRun finishedAction : validFinishedActions) {
             ArrChange change = finishedAction.getChange();
             ArrChange newestChange = lastChangeByCode.get(finishedAction.getBulkActionCode());
             // replace if a newer change found
@@ -526,11 +536,20 @@ public class OutputServiceInternal {
             }
         }
 
+        // an action never run is reported before an action run only with another output filter
+        boolean runWithOtherFilter = false;
         for (RulAction ra : recommendedActions) {
-            // test: bulk action not started yet
-            if (!lastChangeByCode.containsKey(ra.getCode())) {
+            if (lastChangeByCode.containsKey(ra.getCode())) {
+                continue;
+            }
+            if (!finishedActionCodes.contains(ra.getCode())) {
+                // test: bulk action not started yet
                 return OutputRequestStatus.RECOMMENDED_ACTION_NOT_RUN;
             }
+            runWithOtherFilter = true;
+        }
+        if (runWithOtherFilter) {
+            return OutputRequestStatus.RECOMMENDED_ACTION_FILTER_CHANGED;
         }
 
         if (fromChange != null) {

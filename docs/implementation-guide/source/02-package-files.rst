@@ -652,6 +652,17 @@ file name. The kinds are ``FundValidation``, ``SerialNumberGenerator``,
 their own. The kind is ``type`` of the action in the REST API
 (``BulkActionType``).
 
+A ``!MultiAction`` with ``applyOutputFilter: true`` respects the output
+filter of the output it is run from (ZP2015: ``ZP2015_INTRO.yaml``). The run
+skips the units the filter hides, together with their subtrees, and
+processes the other units with the description items as the filter changes
+them, so the computed values match what the output shows. The run stores the
+code of the filter and its results are written only to outputs with the same
+filter; an output with another filter asks for the action to be run again
+before it is generated. Actions without the key (generators, validation)
+always process all units. The key needs an ELZA version that knows it - an
+older one refuses to load the action.
+
 rul_structure_type.xml and rul_structure_definition.xml
 =======================================================
 

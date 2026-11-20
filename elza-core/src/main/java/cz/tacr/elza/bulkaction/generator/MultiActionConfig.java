@@ -10,6 +10,20 @@ public class MultiActionConfig extends BaseActionConfig {
 
 	List<ActionConfig> actions;
 
+	/**
+	 * See {@link #isApplyOutputFilter()}
+	 */
+	boolean applyOutputFilter = false;
+
+	@Override
+	public boolean isApplyOutputFilter() {
+		return applyOutputFilter;
+	}
+
+	public void setApplyOutputFilter(boolean applyOutputFilter) {
+		this.applyOutputFilter = applyOutputFilter;
+	}
+
 	public List<ActionConfig> getActions() {
 		return actions;
 	}

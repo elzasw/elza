@@ -37,6 +37,11 @@ const generateReasonMessages = defineMessages({
         id: 'ribbon.action.arr.output.generate.recommendedAction',
         defaultMessage: 'Nebyly spuštěny všechny doporučené akce',
     },
+    RECOMMENDED_ACTION_FILTER_CHANGED: {
+        id: 'ribbon.action.arr.output.generate.recommendedActionFilter',
+        defaultMessage:
+            'Doporučené akce byly spuštěny s jiným nastavením filtru, než má výstup. Některé hodnoty spočtené funkcemi neodpovídají filtru výstupu',
+    },
 });
 import {indexById} from '../../stores/app/utils';
 import {isFundOutputFilesAction} from './fundOutputFiles';

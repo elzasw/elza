@@ -13,6 +13,10 @@ public interface BulkActionRunRepositoryCustom {
     /**
      * Searches latest executions of bulk actions for specified node ids.
      *
+     * Returns the latest run for each combination of the action and the output filter it was
+     * computed with ({@link ArrBulkActionRun#getOutputFilterCode()}), so a single action may have
+     * several runs in the result.
+     *
      * @param fundVersionId
      * @param nodeIds not-empty
      * @param state When null then action with any state can be returned.

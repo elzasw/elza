@@ -541,8 +541,13 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.actionUrl + '/queue/' + versionId + '/' + code, null);
     }
 
-    queueBulkActionWithIds(versionId: number, code: string, nodeIds: number[]) {
-        return AjaxUtils.ajaxPost(WebApiCls.actionUrl + '/queue/' + versionId + '/' + code, null, nodeIds);
+    /**
+     * @param outputId output the action is run for; an action respecting output filters is then
+     *                 computed with the output's filter
+     */
+    queueBulkActionWithIds(versionId: number, code: string, nodeIds: number[], outputId?: number) {
+        const params = outputId !== undefined ? { outputId } : null;
+        return AjaxUtils.ajaxPost(WebApiCls.actionUrl + '/queue/' + versionId + '/' + code, params, nodeIds);
     }
 
     versionValidate(versionId: number, showAll = false) {

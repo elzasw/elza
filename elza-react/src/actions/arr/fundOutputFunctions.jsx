@@ -81,7 +81,7 @@ export function fundOutputActionRun(versionId, code) {
             } = funds[index];
             if (fundOutputDetail) {
                 const nodeIds = fundOutputDetail.nodes.map(node => node.id);
-                return WebApi.queueBulkActionWithIds(versionId, code, nodeIds);
+                return WebApi.queueBulkActionWithIds(versionId, code, nodeIds, fundOutputDetail.id);
             }
         } else {
             window.console.error('Active fund not found');

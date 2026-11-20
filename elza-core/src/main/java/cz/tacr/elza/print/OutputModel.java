@@ -1,8 +1,5 @@
 package cz.tacr.elza.print;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -27,15 +24,10 @@ import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
-import org.yaml.snakeyaml.LoaderOptions;
-import org.yaml.snakeyaml.TypeDescription;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.Constructor;
 
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.config.export.ExportConfig;
 import cz.tacr.elza.core.ElzaLocale;
-import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.data.StructType;
@@ -43,26 +35,15 @@ import cz.tacr.elza.core.fund.FundTree;
 import cz.tacr.elza.core.fund.FundTreeProvider;
 import cz.tacr.elza.core.fund.TreeNode;
 import cz.tacr.elza.dataexchange.output.filters.ApplyFilter;
-import cz.tacr.elza.dataexchange.output.filters.FilterRule;
-import cz.tacr.elza.dataexchange.output.filters.FilterRuleContext;
-import cz.tacr.elza.dataexchange.output.filters.FilterRuleResultType;
 import cz.tacr.elza.dataexchange.output.filters.FilterRules;
-import cz.tacr.elza.dataexchange.output.filters.ReplaceItem;
-import cz.tacr.elza.dataexchange.output.filters.SoiLoadDispatcher;
-import cz.tacr.elza.dataexchange.output.filters.conditions.And;
-import cz.tacr.elza.dataexchange.output.filters.conditions.EntityProperties;
-import cz.tacr.elza.dataexchange.output.filters.conditions.Not;
-import cz.tacr.elza.dataexchange.output.filters.conditions.PartCondition;
+import cz.tacr.elza.dataexchange.output.filters.NodeRestrictionEvaluator;
 import cz.tacr.elza.dataexchange.output.sections.StructObjectInfoLoader;
-import cz.tacr.elza.dataexchange.output.writer.StructObjectInfo;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrDaLink;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrFsLink;
 import cz.tacr.elza.domain.ArrLegacyDaoLink;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -152,20 +133,10 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     private final Map<Integer, Fund> fundIdMap = new HashMap<>();
 
     /**
-     * Collection of nodes which cannot be published
-     */
-    final Set<Integer> restrictedNodeIds = new HashSet<>();
-
-    /**
      * Nodes whose digital objects are hidden by the output filter. Links to the digital archive
      * are not in the node cache, so the filter cannot remove them from the cached node.
      */
     private final Set<Integer> daoHiddenNodeIds = new HashSet<>();
-
-    /**
-     * Restriction items for each level
-     */
-    Map<Integer, List<ArrItem>> levelRestrMap = new HashMap<>();
 
     /**
      * Filtered records have references to initialized Nodes (RecordWithLinks) which is reason why
@@ -217,13 +188,12 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private OutputItemConvertor itemConvertor = new OutputItemConvertor(this);
 
-    private OutputFilterConfig outputFilterConfig;
-
-    private FilterRules filterRules;
+    /**
+     * Evaluates the output filter for loaded nodes, null when the output has no filter
+     */
+    private NodeRestrictionEvaluator restrictionEvaluator;
 
     private StructObjectInfoLoader soiLoader;
-
-    private Map<Integer, StructObjectInfo> structRestrDefsMap = new HashMap<>();
 
     private OutputContext outputContext;
 
@@ -529,24 +499,16 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
             RestoredNode cachedNode = cachedNodeMap.get(arrNodeId);
             Objects.requireNonNull(cachedNode);
 
-            // get list of restriction id relevant filter conditions
-            List<ArrItem> restrictionItems = getRestrictionItems(cachedNode);
-
-            // expand restriction list to include parent(s) restriction list
-            if (nodeId.getParent() != null) {
-                List<ArrItem> restParentItems = levelRestrMap.get(nodeId.getParent().getArrNodeId());
-                if (restParentItems != null) {
-                    restrictionItems.addAll(restParentItems);
+            if (restrictionEvaluator != null) {
+                Integer parentArrNodeId = nodeId.getParent() != null ? nodeId.getParent().getArrNodeId() : null;
+                ApplyFilter filter = restrictionEvaluator.evaluate(arrNodeId, parentArrNodeId,
+                                                                   cachedNode.getDescItems());
+                if (filter.isDaoHidden()) {
+                    daoHiddenNodeIds.add(arrNodeId);
                 }
-            }
-
-            // if we have a list - we have to filter
-            if (!restrictionItems.isEmpty()) {
-                levelRestrMap.put(nodeId.getArrNodeId(), restrictionItems);
-
-                cachedNode = filterNode(nodeId, cachedNode, restrictionItems);
+                cachedNode = filter.apply(cachedNode);
                 if (cachedNode == null) {
-                    // if filter return null according to conditions
+                    // node is hidden by the filter
                     continue;
                 }
             }
@@ -628,178 +590,6 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         }
     }
 
-    /**
-     * Return list of items with restriction definitions
-     *
-     * @param node
-     * @return List<Integer>
-     */
-    private List<ArrItem> getRestrictionItems(RestoredNode node) {
-        if (filterRules == null) {
-            return Collections.emptyList();
-        }
-        List<ArrItem> restrictionItems = new ArrayList<>();
-        for (ArrItem item : node.getDescItems()) {
-            // RulItemType itemType = item.getItemType();
-            for (cz.tacr.elza.core.data.ItemType i : filterRules.getRestrictionTypes()) {
-                if (item.getData() == null) {
-                    continue;
-                }
-                if (i.getItemTypeId().equals(item.getItemTypeId())) {
-                    restrictionItems.add(item);
-                }
-            }
-        }
-        return restrictionItems;
-    }
-
-    /**
-     * 
-     * @param nodeId
-     * @param node
-     * @param restrictionItems
-     * @return Return null if node should be filtered
-     */
-    private RestoredNode filterNode(NodeId nodeId, RestoredNode node, List<ArrItem> restrictionItems) {
-        NodeId parentNodeId = nodeId.getParent();
-        if (parentNodeId != null && restrictedNodeIds.contains(parentNodeId.getArrNodeId())) {
-            restrictedNodeIds.add(nodeId.getArrNodeId());
-            return null;
-        }
-
-        if (filterRules == null || CollectionUtils.isEmpty(restrictionItems)) {
-            return node;
-        }
-
-        Map<cz.tacr.elza.core.data.ItemType, List<ArrItem>> itemsByType = node.getDescItems().stream()
-                .collect(Collectors.groupingBy(item -> sdp.getItemTypeById(item.getItemTypeId())));
-
-        ApplyFilter filter = new ApplyFilter();
-
-        // non-structured restriction items all share the same context (the node's own items),
-        // so that context is evaluated only once regardless of how many such items are present
-        boolean ownItemsProcessed = false;
-        for (ArrItem restrictionItem : restrictionItems) {
-            cz.tacr.elza.core.data.ItemType itemType = sdp.getItemTypeById(restrictionItem.getItemTypeId());
-
-            Collection<? extends ArrItem> soiItems;
-            if (itemType.getDataType().equals(DataType.STRUCTURED)) {
-                ArrData data = HibernateUtils.unproxy(restrictionItem.getData());
-                if (data == null) {
-                    continue;
-                }
-                ArrDataStructureRef dsr = (ArrDataStructureRef) data;
-                Integer restrictionId = dsr.getStructuredObjectId();
-                StructObjectInfo soi = readSoiFromDB(restrictionId);
-                soiItems = soi.getItems();
-            } else {
-                if (ownItemsProcessed) {
-                    continue;
-                }
-                ownItemsProcessed = true;
-                soiItems = node.getDescItems();
-            }
-
-            FilterRuleContext filterRuleContext = new FilterRuleContext(soiItems, apCacheProvider, sdp);
-            for (FilterRule rule : filterRules.getFilterRules()) {
-                FilterRuleResultType result = processRule(nodeId, rule, filterRuleContext, itemsByType, filter);
-                if (result == FilterRuleResultType.RESULT_BREAK) {
-                    break;
-            }
-        }
-        }
-
-        return filter.apply(node);
-    }
-
-    private FilterRuleResultType processRule(NodeId nodeId, FilterRule rule,
-                             FilterRuleContext filterRuleContext,
-                             Map<cz.tacr.elza.core.data.ItemType, List<ArrItem>> itemsByType,
-                             ApplyFilter filter) {
-
-        if (!rule.canApply(filterRuleContext)) {
-            // rule does not apply for this soi
-            return FilterRuleResultType.RESULT_CONTINUE;
-        }
-
-        if (rule.isBreakEval()) {
-            return FilterRuleResultType.RESULT_BREAK;
-        }
-
-        // if we need to hide level
-        if (rule.isHiddenLevel()) {
-            restrictedNodeIds.add(nodeId.getArrNodeId());
-
-            filter.hideLevel();
-            return FilterRuleResultType.RESULT_BREAK;
-        }
-
-        boolean changed = false;
-
-        // hidden Dao
-        if (rule.isHiddenDao()) {
-            filter.hideDao();
-            daoHiddenNodeIds.add(nodeId.getArrNodeId());
-            changed = true;
-        }
-
-        // check hidden items
-        if (rule.getHiddenTypes() != null) {
-            for (cz.tacr.elza.core.data.ItemType hiddenType : rule.getHiddenTypes()) {
-                List<ArrItem> hiddenItems = itemsByType.get(hiddenType);
-                if (CollectionUtils.isNotEmpty(hiddenItems)) {
-                    hiddenItems.forEach(hi -> filter.addHideItem(hi));
-                    changed = true;
-                }
-            }
-        }
-
-        // replace itemType(s)
-        if (rule.getReplaceItems() != null) {
-            for (ReplaceItem replaceDef : rule.getReplaceItems()) {
-                List<ArrItem> replaceItems = itemsByType.get(replaceDef.getSource());
-                if (CollectionUtils.isNotEmpty(replaceItems)) {
-                    // source found -> store as new target
-                    // hide original Target item(s), they are replaced by Source item(s)
-                    List<ArrItem> replacedItems = itemsByType.get(replaceDef.getTarget());
-                    if (CollectionUtils.isNotEmpty(replacedItems)) {
-                        replacedItems.forEach(ri -> filter.addHideItem(ri));
-                    }
-                    for (ArrItem replaceItem : replaceItems) {
-                        // hide Source item
-                        filter.addHideItem(replaceItem);
-                        // copy from Source item
-                        ArrItem copy = replaceItem.makeCopy();
-                        // set Target type to copy of Source item
-                        copy.setItemType(replaceDef.getTarget().getEntity());
-                        filter.addItem(copy);
-                        changed = true;
-                    }
-                }
-            }
-        }
-
-        // add items
-        rule.addItems(itemsByType, filter, changed, filterRuleContext, elzaLocale.getLocale());
-
-        return FilterRuleResultType.RESULT_CONTINUE;
-    }
-
-    private StructObjectInfo readSoiFromDB(Integer structuredObjectId) {
-        StructObjectInfo soi = structRestrDefsMap.get(structuredObjectId);
-        if (soi != null) {
-            return soi;
-        }
-        // read from DB
-        SoiLoadDispatcher soiLoadDisp = new SoiLoadDispatcher();
-        soiLoader.addRequest(structuredObjectId, soiLoadDisp);
-        soi = soiLoadDisp.getResult();
-        Objects.requireNonNull(soi);
-
-        structRestrDefsMap.put(structuredObjectId, soi);
-        return soi;
-    }
-
     private Node createNode(NodeId nodeId, RestoredNode cachedNode) {
     	Objects.requireNonNull(cachedNode);
         Integer fundId = cachedNode.getNode().getFundId();
@@ -859,39 +649,16 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
-        // init output filters config
-        this.outputFilterConfig = loadOutputFilterConfig(params.getOutputFilter());
-
-        // init filter rules
-        if (outputFilterConfig != null) {
-            this.filterRules = new FilterRules(outputFilterConfig, staticDataService.getData());
+        // init output filter
+        Path outputFilterFile = params.getOutputFilter();
+        if (outputFilterFile != null) {
+            OutputFilterConfig outputFilterConfig = OutputFilterConfig.load(outputFilterFile);
+            FilterRules filterRules = new FilterRules(outputFilterConfig, sdp);
+            this.restrictionEvaluator = new NodeRestrictionEvaluator(filterRules, sdp, apCacheProvider,
+                    elzaLocale.getLocale(), soiLoader);
         }
 
         logger.info("Output model initialization ended, outputId:{}", params.getOutputId());
-    }
-
-    private OutputFilterConfig loadOutputFilterConfig(Path outputFilterConfig) {
-        if (outputFilterConfig == null) {
-            return null;
-        }
-        // register type descriptors
-        Constructor yamlCtor = new Constructor(new LoaderOptions());
-        yamlCtor.addTypeDescription(new TypeDescription(OutputFilterConfig.class, "!OutputFilterConfig"));
-        yamlCtor.addTypeDescription(new TypeDescription(EntityProperties.class, "!EntityProperties"));
-        yamlCtor.addTypeDescription(new TypeDescription(And.class, "!And"));
-        yamlCtor.addTypeDescription(new TypeDescription(Not.class, "!Not"));
-        yamlCtor.addTypeDescription(new TypeDescription(PartCondition.class, "!Part"));        
-        Yaml yamlLoader = new Yaml(yamlCtor);
-
-        OutputFilterConfig ofc;
-        try (InputStream inputStream = new FileInputStream(outputFilterConfig.toFile())) {
-            ofc = yamlLoader.load(inputStream);
-        } catch (IOException e) {
-            logger.error("Failed to read yaml file {}", outputFilterConfig, e);
-            throw new SystemException(e);
-        }
-
-        return ofc;
     }
 
     private Institution createInstitution(ArrFund arrFund) {
