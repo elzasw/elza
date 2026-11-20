@@ -2037,7 +2037,7 @@ export class WebApiCls {
      * @param data {IssueVO} data pro přidání připomínky
      * @returns {Promise}
      */
-    addIssue(data: IssueVO) {
+    addIssue(data: Partial<IssueVO>) {
         return AjaxUtils.ajaxPost(WebApiCls.issueUrl + '/issues', null, data);
     }
 

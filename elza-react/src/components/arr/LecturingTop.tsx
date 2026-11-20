@@ -15,7 +15,7 @@ import indexById from '../../shared/utils/indexById';
 import objectById from '../../shared/utils/objectById';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import {IssueStateVO, IssueVO} from '../../types';
-import IssueForm from '../form/IssueForm';
+import { IssueForm, IssueFormValues } from '../form/IssueForm';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import { daoMessages } from 'components/arr/daoMessages';
 import Icon from '../shared/icon/Icon';
@@ -102,9 +102,9 @@ class LecturingTop extends React.Component<any> {
                         issueListId: this.state.issueListId,
                         issueTypeId: issueTypes?.data?.[0].id,
                     }}
-                    onSubmit={(data: IssueVO) =>
+                    onSubmit={(values: IssueFormValues) =>
                         WebApi.addIssue({
-                            ...data,
+                            ...values,
                             nodeId,
                         })
                     }

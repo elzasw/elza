@@ -43,7 +43,7 @@ import { toggleCopyAllDescItemType } from "actions/arr/nodeSetting";
 import { fundSubNodeDaoChangeScenario } from "actions/arr/subNodeDaos";
 import { modalDialogHide, modalDialogShow } from "actions/global/modalDialog";
 import { routerNavigate } from "actions/router";
-import IssueForm from "components/form/IssueForm";
+import { IssueForm, IssueFormValues } from "components/form/IssueForm";
 import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
 import { globalMessages } from 'components/shared/lang/messages';
 import { nodeMessages } from 'components/arr/nodeMessages';
@@ -59,7 +59,6 @@ import {
   NodeStatus,
 } from "elza-api";
 import { useState } from "react";
-import { IssueVO } from "types";
 import { ArrDaoVO } from "typings/dao";
 import { DescItemTypeRef } from "typings/store";
 import {
@@ -354,9 +353,9 @@ export const NodeToolbar = ({
         this,
         intl.formatMessage(nodeMessages.issuesAddNodeTitle),
         <IssueForm
-          onSubmit={(data: IssueVO) =>
+          onSubmit={(values: IssueFormValues) =>
             WebApi.addIssue({
-              ...data,
+              ...values,
               nodeId: nodeData.id,
             })
           }

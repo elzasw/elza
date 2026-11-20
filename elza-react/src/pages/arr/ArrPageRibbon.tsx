@@ -10,14 +10,13 @@ import ConfirmForm from '../../components/shared/form/ConfirmForm';
 import { WebApi } from '../../actions/WebApi';
 import { modalDialogHide, modalDialogShow } from '../../actions/global/modalDialog';
 import ArrHistoryForm from "../../components/arr/ArrHistoryForm";
-import IssueForm from '../../components/form/IssueForm';
+import { IssueForm, IssueFormValues } from '../../components/form/IssueForm';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import * as issuesActions from '../../actions/arr/issues';
 import { nodeWithIssueByFundVersion } from '../../actions/arr/issues';
 import { getFundVersion } from '../../constants';
 import { useThunkDispatch } from 'utils/hooks';
 import { AppState, UserDetail, Node } from 'typings/store';
-import { IssueVO } from 'types';
 import { useSearchFundsModal } from 'components/shared/dialog/FluentModalDialog';
 import { globalMessages } from 'components/shared/lang/messages';
 
@@ -105,9 +104,9 @@ export default function ArrPageRibbonFn({
                         issueListId: issueProtocol.id,
                         issueTypeId: issueTypes?.data?.[0].id,
                     }}
-                    onSubmit={(data: IssueVO) =>
+                    onSubmit={(values: IssueFormValues) =>
                         WebApi.addIssue({
-                            ...data,
+                            ...values,
                             nodeId,
                         })
                     }
