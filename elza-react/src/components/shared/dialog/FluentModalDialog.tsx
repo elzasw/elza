@@ -6,6 +6,7 @@ import SearchFundsForm from "components/arr/search-funds-form/SearchFundsForm";
 import { DraggableWindowContext, DraggableWindowDragger } from "../draggable-window";
 import { defineMessages } from 'react-intl';
 import { getIntl } from 'components/shared/lang/intlInstance';
+import { useAppSelector } from 'utils/hooks/useAppSelector';
 
 const searchFundsMessages = defineMessages({
     windowTitle: { id: 'arr.fund.search.windowTitle', defaultMessage: 'Vyhledávání v archivních souborech' },
@@ -56,10 +57,24 @@ export function FluentDialogProvider({ children, hidden }: FluentDialogProviderP
   const [modals, setModals] = useState<{ id: string, name?: string, isSingleInstance?: boolean, dialog: JSX.Element }[]>([]);
 
   const modalsRef = useRef(modals);
+  const username = useAppSelector(({ userDetail }) => userDetail.username);
+  const lastUsernameRef = useRef(username);
 
   useEffect(() => {
     modalsRef.current = modals;
   }, [modals])
+
+  // Windows survive a logout, so drafts outlive an expired session, but not another user logging in.
+  useEffect(() => {
+    if (!username) {
+      return;
+    }
+    const isDifferentUser = !!lastUsernameRef.current && lastUsernameRef.current !== username;
+    lastUsernameRef.current = username;
+    if (isDifferentUser) {
+      setModals([]);
+    }
+  }, [username]);
 
   const showModal = <R, D>({ createDialog, isSingleInstance, name }: ShowModalProps<R, D>) => {
     return new Promise<{ result: R, data: D }>((resolve) => {
@@ -106,7 +121,7 @@ export function FluentDialogProvider({ children, hidden }: FluentDialogProviderP
       zIndex: 5000,
       display: hidden ? "none" : "block"
     }}>
-      {modals.map(({ dialog }, index) => <div key={index}>
+      {modals.map(({ id, dialog }) => <div key={id}>
         {dialog}
       </div>)}
     </div>
@@ -152,6 +167,8 @@ interface CollapsibleDragWindowProps {
   enablePinBottom?: boolean;
   /** Height follows the content and the user cannot resize the window; `initialHeight` only centres it. */
   autoHeight?: boolean;
+  /** Each change expands a collapsed window and brings it to the front. */
+  revealRequest?: number;
 }
 
 export function CollapsibleDragWindow({
@@ -162,6 +179,7 @@ export function CollapsibleDragWindow({
   initialHeight = 700,
   enablePinBottom = false,
   autoHeight = false,
+  revealRequest = 0,
 }: PropsWithChildren<CollapsibleDragWindowProps>) {
   const initialPosition = { x: window.innerWidth / 2 - initialWidth / 2, y: window.innerHeight / 2 - initialHeight / 2 };
 
@@ -172,6 +190,7 @@ export function CollapsibleDragWindow({
       initialWidth={initialWidth}
       initialHeight={initialHeight}
       autoHeight={autoHeight}
+      revealRequest={revealRequest}
     >
       {children}
     </CollapsibleWindowBody>
@@ -184,6 +203,7 @@ interface CollapsibleWindowBodyProps {
   initialWidth: number;
   initialHeight: number;
   autoHeight: boolean;
+  revealRequest: number;
 }
 
 function CollapsibleWindowBody({
@@ -192,9 +212,10 @@ function CollapsibleWindowBody({
   initialWidth,
   initialHeight,
   autoHeight,
+  revealRequest,
   children,
 }: PropsWithChildren<CollapsibleWindowBodyProps>) {
-  const { pinnedBottom, registerResizable, isResizingRef } = useContext(DraggableWindowContext);
+  const { pinnedBottom, registerResizable, isResizingRef, bringToFront } = useContext(DraggableWindowContext);
   const PINNED_COLLAPSED_WIDTH = 260;
   const MIN_WIDTH = 300;
   const MIN_HEIGHT = 300;
@@ -247,6 +268,18 @@ function CollapsibleWindowBody({
     setOpen(!open);
   }
 
+  // the effect also re-runs when lastHeight changes; a request is handled only once
+  const handledRevealRef = useRef(revealRequest);
+  useEffect(() => {
+    if (revealRequest === handledRevealRef.current) return;
+    handledRevealRef.current = revealRequest;
+    if (!openRef.current) {
+      setHeight(lastHeight);
+      setOpen(true);
+    }
+    bringToFront();
+  }, [revealRequest, lastHeight, bringToFront]);
+
   const measuredRef = useCallback((node: HTMLDivElement) => {
     if (node !== null) {
       const resizeObserver = new ResizeObserver(() => {
@@ -255,6 +288,10 @@ function CollapsibleWindowBody({
         // setWidth/setHeight; reading it back here would fight that update.
         if (isResizingRef.current) return;
         const rect = node.getBoundingClientRect();
+        // The window layer is hidden with display: none (e.g. while logged out) and the
+        // window measures 0x0; keep the last size so it comes back unchanged.
+        const isHidden = rect.width === 0 && rect.height === 0;
+        if (isHidden) return;
         // Ignore sizes forced by the viewport cap (maxWidth/maxHeight); otherwise
         // shrinking the viewport would overwrite the user's chosen size and it
         // wouldn't grow back when the viewport does.
