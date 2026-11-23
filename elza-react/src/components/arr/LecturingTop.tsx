@@ -16,7 +16,8 @@ import objectById from '../../shared/utils/objectById';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import {IssueStateVO, IssueVO} from '../../types';
 import { FluentDialogContext } from 'components/shared/dialog/FluentModalDialog';
-import { getChildReferenceMark, showIssueCreateWindow } from './useIssueCreateWindow';
+import { showIssueCreateWindow } from './useIssueCreateWindow';
+import { IssueTarget } from './IssueCreateWindow';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import { daoMessages } from 'components/arr/daoMessages';
 import Icon from '../shared/icon/Icon';
@@ -95,25 +96,24 @@ class LecturingTop extends React.Component<any> {
         this.props.dispatch(downloadFile(UrlFactory.exportIssueList(this.state.issueListId)));
     };
 
-    createIssue = (nodeId?: number, referenceMark?: string[]) => {
+    createIssue = (initialTarget: IssueTarget) => {
         const { issueTypes } = this.props;
         showIssueCreateWindow(this.context.showModal, {
-            nodeId,
-            referenceMark,
+            initialTarget,
             initialValues: {
                 issueListId: this.state.issueListId,
-                issueTypeId: issueTypes?.data?.[0].id,
+                issueTypeId: issueTypes?.data?.[0]?.id,
             },
         });
     }
 
-    createArrIssue = () => this.createIssue();
+    createArrIssue = () => this.createIssue('fund');
 
     createNodeIssue = () => {
         const {node} = this.props;
         if (!node?.selectedSubNodeId) { return; }
 
-        this.createIssue(node.selectedSubNodeId, getChildReferenceMark(node, node.selectedSubNodeId));
+        this.createIssue('node');
     };
 
     selectIssue = ([index]) => {
@@ -191,7 +191,7 @@ class LecturingTop extends React.Component<any> {
                 <FormControl
                     as={'select'}
                     name={'protocol'}
-                    onChange={({target: {value}}: any) => this.selectIssueList(value, fund.id)}
+                    onChange={({target: {value}}: any) => this.selectIssueList(Number(value), fund.id)}
                     value={issueListId}
                     className="form-select"
                 >

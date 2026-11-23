@@ -10,7 +10,8 @@ import ConfirmForm from '../../components/shared/form/ConfirmForm';
 import { WebApi } from '../../actions/WebApi';
 import { modalDialogHide, modalDialogShow } from '../../actions/global/modalDialog';
 import ArrHistoryForm from "../../components/arr/ArrHistoryForm";
-import { getChildReferenceMark, useIssueCreateWindow } from '../../components/arr/useIssueCreateWindow';
+import { useIssueCreateWindow } from '../../components/arr/useIssueCreateWindow';
+import { IssueTarget } from '../../components/arr/IssueCreateWindow';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import * as issuesActions from '../../actions/arr/issues';
 import { nodeWithIssueByFundVersion } from '../../actions/arr/issues';
@@ -95,26 +96,25 @@ export default function ArrPageRibbonFn({
             userDetail.permissionsMap?.[perms.FUND_ISSUE_LIST_WR]?.issueListIds.length > 0;
     }
 
-    const createIssue = (nodeId?: number, referenceMark?: string[]) => {
+    const createIssue = (initialTarget: IssueTarget) => {
         openIssueCreateWindow({
-            nodeId,
-            referenceMark,
+            initialTarget,
             initialValues: {
                 issueListId: issueProtocol.id,
-                issueTypeId: issueTypes?.data?.[0].id,
+                issueTypeId: issueTypes?.data?.[0]?.id,
             },
         });
     }
 
     const createIssueFund = () => {
-        createIssue();
+        createIssue('fund');
     };
 
     const createIssueNode = () => {
         if (activeFund?.nodes?.activeIndex !== null) {
             const node = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
             if (node) {
-                createIssue(node.selectedSubNodeId, getChildReferenceMark(node, node.selectedSubNodeId));
+                createIssue('node');
             }
         }
     };

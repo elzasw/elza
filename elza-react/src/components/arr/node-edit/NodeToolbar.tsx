@@ -42,7 +42,7 @@ import { toggleCopyAllDescItemType } from "actions/arr/nodeSetting";
 import { fundSubNodeDaoChangeScenario } from "actions/arr/subNodeDaos";
 import { modalDialogHide, modalDialogShow } from "actions/global/modalDialog";
 import { routerNavigate } from "actions/router";
-import { getChildReferenceMark, useIssueCreateWindow } from "components/arr/useIssueCreateWindow";
+import { useIssueCreateWindow } from "components/arr/useIssueCreateWindow";
 import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
 import { globalMessages } from 'components/shared/lang/messages';
 import { nodeMessages } from 'components/arr/nodeMessages';
@@ -349,11 +349,10 @@ export const NodeToolbar = ({
 
   function handleCreateIssueNode() {
     openIssueCreateWindow({
-      nodeId: nodeData.id,
-      referenceMark: getChildReferenceMark(activeParent, nodeData.id),
+      initialTarget: 'node',
       initialValues: {
         issueListId: issueProtocol.id,
-        issueTypeId: issueTypes?.data?.[0].id,
+        issueTypeId: issueTypes?.data?.[0]?.id,
       },
     });
   }
