@@ -14,6 +14,7 @@ import { IssueTarget } from './IssueCreateWindow';
 import { urlFund, urlFundNode, urlFundTree } from '../../constants';
 import { useContext, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
+import { Dropdown, DropdownButton } from 'react-bootstrap';
 
 /**
  * Adding a lecturing comment in a non-modal window: the comment targets the fund or a unit of description
@@ -96,6 +97,12 @@ function Launcher({ initialTarget }: { initialTarget: IssueTarget }) {
             <button onClick={() => openIssueCreateWindow({ initialTarget: 'node', initialValues })}>
                 Připomínka k JP
             </button>
+            {/* as in the ribbon and the lecturing panel */}
+            <DropdownButton id="add-issue" title="Přidat připomínku">
+                <Dropdown.Item onClick={() => openIssueCreateWindow({ initialTarget, initialValues })}>
+                    Připomínka z nabídky
+                </Dropdown.Item>
+            </DropdownButton>
         </>
     );
 }
@@ -135,6 +142,8 @@ interface OpenWindowOptions {
     otherFundProtocolsPending?: boolean;
     /** Another floating window is opened before the comment window. */
     openOtherWindowFirst?: boolean;
+    /** Opened from a dropdown menu, whose item has focus when it is clicked. */
+    openFromDropdown?: boolean;
 }
 
 async function openWindow(
@@ -145,6 +154,7 @@ async function openWindow(
         writableProtocolIds,
         otherFundProtocolsPending = false,
         openOtherWindowFirst = false,
+        openFromDropdown = false,
     }: OpenWindowOptions = {}
 ) {
     const addedIssues: Record<string, unknown>[] = [];
@@ -187,7 +197,15 @@ async function openWindow(
     if (openOtherWindowFirst) {
         fireEvent.click(screen.getByRole('button', { name: 'Jiné okno' }));
     }
-    fireEvent.click(screen.getByRole('button', { name: 'Otevřít' }));
+    if (openFromDropdown) {
+        fireEvent.click(screen.getByRole('button', { name: 'Přidat připomínku' }));
+        const menuItem = await screen.findByText('Připomínka z nabídky');
+        // a browser focuses the item on a mouse click; jsdom does not
+        act(() => menuItem.focus());
+        fireEvent.click(menuItem);
+    } else {
+        fireEvent.click(screen.getByRole('button', { name: 'Otevřít' }));
+    }
     await screen.findByRole('option', { name: 'Závažná' });
 
     const setArrRegion = (options: ArrRegionOptions) =>
@@ -461,6 +479,18 @@ describe('IssueCreateWindow', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Otevřít' }));
 
         expect(screen.getAllByText('Přidat připomínku - Jednotka popisu')).toHaveLength(1);
+    });
+
+    it('po otevření je kurzor v textu připomínky', async () => {
+        await openWindow('node');
+
+        await waitFor(() => expect(screen.getByLabelText(/Text připomínky/)).toHaveFocus());
+    });
+
+    it('po otevření z rozbalovací nabídky (pás karet, panel lektorování) zůstane kurzor v textu připomínky', async () => {
+        await openWindow('fund', { openFromDropdown: true });
+
+        await waitFor(() => expect(screen.getByLabelText(/Text připomínky/)).toHaveFocus());
     });
 
     it('okno se zavírá křížkem v záhlaví, formulář nemá tlačítko Zrušit', async () => {

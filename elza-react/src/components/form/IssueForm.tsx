@@ -19,8 +19,8 @@ import { Field, Form, useForm, useFormState } from 'react-final-form';
 import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
 import { IssueListVO, IssueVO } from 'types';
 import { IssueType } from 'typings/store';
-import { useActiveFund, useAppThunkDispatch } from 'utils/hooks';
-import { useAppSelector } from 'utils/hooks/useAppSelector';
+import { useActiveFund, useAppSelector, useAppThunkDispatch } from 'utils/hooks';
+import { useFundProtocols } from './useFundProtocols';
 
 // Id jsou převzatá z legacy katalogu beze změny.
 const messages = defineMessages({
@@ -73,21 +73,6 @@ export interface IssueFormValues {
 
 const NO_PROTOCOLS: IssueListVO[] = [];
 const NO_ISSUE_TYPES: IssueType[] = [];
-
-interface IssueProtocolsStore {
-    fetched: boolean;
-    count: number;
-    rows: IssueListVO[];
-    /** Fund the protocols were loaded for. */
-    parent: number | null;
-}
-
-/** Protocols of the fund; none while they load, as the shared list in the store may still hold another fund's. */
-export function useFundProtocols(fundId: number | undefined): IssueListVO[] | undefined {
-    const issueProtocols = useAppSelector(({ app }) => app.issueProtocols as IssueProtocolsStore);
-    const areProtocolsOfFund = issueProtocols.fetched && issueProtocols.parent === fundId;
-    return areProtocolsOfFund ? issueProtocols.rows : undefined;
-}
 
 interface SelectionSyncProps {
     name: 'issueListId' | 'issueTypeId';
@@ -171,6 +156,8 @@ interface Props {
     fundId?: number;
     /** Whether a comment can go to the protocol; only such protocols are offered. All are when omitted. */
     canAddToProtocol?: (protocol: IssueListVO) => boolean;
+    /** Moves focus to the comment text when the form appears. */
+    autoFocus?: boolean;
 }
 
 function toOptionalId(value: string) {
@@ -193,6 +180,7 @@ export function IssueForm({
     canAddAnother = false,
     fundId,
     canAddToProtocol,
+    autoFocus = false,
 }: Props) {
     const intl = useIntl();
     const styles = useStyles();
@@ -214,6 +202,16 @@ export function IssueForm({
             descriptionRef.current?.focus();
         }
     }, []);
+
+    // a frame later, not with `autoFocus`: a react-bootstrap dropdown that opened the form (ribbon, lecturing
+    // panel) closes in the same click and returns focus to its toggle in its own effect
+    useEffect(() => {
+        if (!autoFocus) {
+            return undefined;
+        }
+        const frame = requestAnimationFrame(() => descriptionRef.current?.focus());
+        return () => cancelAnimationFrame(frame);
+    }, [autoFocus]);
 
     useEffect(() => {
         dispatch(issueTypesActions.fetchIfNeeded());

@@ -17,7 +17,8 @@ import * as perms from 'actions/user/Permission';
 import { createReferenceMarkStringFromArray } from 'components/arr/ArrUtils';
 import { daoMessages } from 'components/arr/daoMessages';
 import { nodeMessages } from 'components/arr/nodeMessages';
-import { IssueForm, IssueFormValues, IssueSubmitResult, useFundProtocols } from 'components/form/IssueForm';
+import { IssueForm, IssueFormValues, IssueSubmitResult } from 'components/form/IssueForm';
+import { useFundProtocols } from 'components/form/useFundProtocols';
 import { CollapsibleDragWindow } from 'components/shared/dialog/FluentModalDialog';
 import { usePermissions, useUserContext } from 'contexts/user';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -26,8 +27,7 @@ import { MessageDescriptor, defineMessages, useIntl } from 'react-intl';
 import { useRouteMatch } from 'react-router-dom';
 import { IssueListVO, IssueVO } from 'types';
 import { AppState, Node, SubNode } from 'typings/store';
-import { useAppThunkDispatch } from 'utils/hooks';
-import { useAppSelector } from 'utils/hooks/useAppSelector';
+import { useAppSelector, useAppThunkDispatch } from 'utils/hooks';
 import { URL_FUND, urlFundNode } from '../../constants';
 
 const messages = defineMessages({
@@ -90,7 +90,6 @@ const useStyles = makeStyles({
         display: 'flex',
         flexDirection: 'column',
         gap: tokens.spacingVerticalS,
-        marginBottom: tokens.spacingVerticalM,
     },
     targetSelection: {
         display: 'flex',
@@ -122,7 +121,11 @@ const useStyles = makeStyles({
         whiteSpace: 'nowrap',
     },
     form: {
-        padding: 0,
+        // stretched over the side and bottom padding of the window body and the gap below the target, so the
+        // saving overlay of the form reaches the window edge like the overlay above; the padding keeps the fields
+        // where they were
+        margin: `0 -${WINDOW_BODY_PADDING} -${WINDOW_BODY_PADDING}`,
+        padding: `${tokens.spacingVerticalM} ${WINDOW_BODY_PADDING} ${WINDOW_BODY_PADDING}`,
         flexGrow: 1,
         minHeight: 0,
         overflowY: 'auto',
@@ -421,6 +424,7 @@ export function IssueCreateWindow({ initialTarget, initialValues, onClose }: Pro
                         canAddAnother
                         fundId={openFundId}
                         canAddToProtocol={canAddToProtocol}
+                        autoFocus
                     />
                 </div>
                 {/* always rendered: a live region announces reliably only when it exists before its text */}
