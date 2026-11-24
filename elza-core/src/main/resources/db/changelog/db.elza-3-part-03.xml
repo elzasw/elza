@@ -1583,4 +1583,15 @@
         <modifyDataType tableName="da_dao_file" columnName="file_name" newDataType="${type.text}"/>
     </changeSet>
 
+    <changeSet id="20261120100000" author="jdolezal">
+        <!-- Output filter a bulk action was computed with (code of rul_output_filter); null when
+             computed over all levels. A code, not a foreign key: a package update deletes output
+             filters which the package no longer defines. -->
+        <addColumn tableName="arr_bulk_action_run">
+            <column name="output_filter_code" type="nvarchar(50)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

@@ -31,7 +31,7 @@
 				<expression><![CDATA[$P{output}.getSingleItemValue( "ZP2015_DATE_RANGE" )]]></expression>
 			</element>
 			<element kind="textField" uuid="569bfdb1-6510-4732-ac7e-e7f018d39e20" x="0" y="0" width="455" height="22" fontSize="14.0" pdfEncoding="Cp1250" textAdjust="StretchHeight">
-				<expression><![CDATA[$P{fund}.getInstitution().getRecord().getPreferredPart().getSingleItem("NM_MAIN").getSerializedValue()]]></expression>
+				<expression><![CDATA[$P{fund}.getInstitution().getName()]]></expression>
 				<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				<box bottomPadding="5">

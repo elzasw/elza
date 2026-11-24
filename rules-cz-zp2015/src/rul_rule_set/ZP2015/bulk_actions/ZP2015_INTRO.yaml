@@ -1,5 +1,8 @@
 !MultiAction
 name: Agregace úvodu
+# Spuštění z výstupu s filtrem (např. Omezení přístupnosti) počítá jen s JP,
+# které filtr ve výstupu zobrazí, a s jejich prvky popisu upravenými filtrem
+applyOutputFilter: true
 
 actions:
   # úprava dějin původce

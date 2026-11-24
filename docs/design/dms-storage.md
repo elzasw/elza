@@ -151,7 +151,9 @@ deleted by it, and creates a new `ArrFile` (new `dms_file` row, new
 `storage_path`) through the normal write path. The old row and file stay
 untouched, so the replacement is revertible through `RevertingChangesService`
 like any other change; reverting removes the new file
-(`revert-attachment`). The cost is disk space: old content stays until the
+(`revert-attachment`). Open description items that referenced the old file
+get a new version pointing to the new file under the same change, so the
+arrangement form and outputs use the new content. The cost is disk space: old content stays until the
 history is dropped (fund deletion, history deletion).
 
 `DmsService.updateFile` changes metadata only (name, file name, MIME type,

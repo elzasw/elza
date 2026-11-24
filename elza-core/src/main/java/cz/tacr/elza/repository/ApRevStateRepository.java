@@ -21,7 +21,8 @@ public interface ApRevStateRepository extends ElzaJpaRepository<ApRevState, Inte
     @Query("SELECT rs FROM ap_rev_state rs JOIN FETCH rs.revision rev WHERE rev.state = :state AND rs.deleteChange IS NULL")
     ApRevState findByState(@Param("state") ApState state);
 
-    @Query("SELECT rs FROM ap_rev_state rs JOIN FETCH rs.revision rev WHERE rev.state in :states AND rs.deleteChange IS NULL")
+    @Query("SELECT rs FROM ap_rev_state rs JOIN FETCH rs.revision rev JOIN FETCH rs.createChange c LEFT JOIN FETCH c.user" +
+            " WHERE rev.state in :states AND rs.deleteChange IS NULL")
     List<ApRevState> findByStates(@Param("states") List<ApState> state);
 
 	void deleteAllByRevisionIdIn(Collection<Integer> revisionIds);

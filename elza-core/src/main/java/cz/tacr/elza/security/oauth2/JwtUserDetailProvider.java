@@ -1,7 +1,6 @@
 package cz.tacr.elza.security.oauth2;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -10,7 +9,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -19,6 +17,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.jwt.BadJwtException;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -30,12 +29,9 @@ import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemStringVO;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -47,6 +43,8 @@ import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.UsrPermission.PermissionType;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.security.SiemAuditLogger;
 import cz.tacr.elza.security.SiemAuditLogger.AuthenticationType;
@@ -59,7 +57,7 @@ public class JwtUserDetailProvider implements AuthenticationProvider {
 
     private static final Logger log = LoggerFactory.getLogger(JwtUserDetailProvider.class);
 
-    private Converter<Jwt, ? extends AbstractAuthenticationToken> jwtAuthenticationConverter = new JwtAuthenticationConverter();
+    private final JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
 
     private final JwtDecoder jwtDecoder;
     private final UserService userService;
@@ -74,24 +72,20 @@ public class JwtUserDetailProvider implements AuthenticationProvider {
     /**
      * Cache pro podrobnosti uživatele.
      */
-    private final LoadingCache<String, UserDetail> userDetailCache;
+    private final Cache<String, UserDetail> userDetailCache;
 
     private final int USER_DETAIL_CACHE_LIFETIME = 5; // TimeUnit.MINUTES
-
-    private final String CLAIM_SUB = "sub";
-    private final String CLAIM_NAME = "name";
-    private final String CLAIM_AUTHORITIES = "authorities";
 
     private final String NM_MAIN = "NM_MAIN";
     /** CAM: private supplement of the name, holds the user name; written only when installed */
     private final String NM_SUP_PRIV = "NM_SUP_PRIV";
-    
+
     public JwtUserDetailProvider(final JwtDecoder jwtDecoder,
                                  final PlatformTransactionManager txManager,
                                  final UserService userService,
                                  final AccessPointService apService,
                                  final ItemTypeRepository itemTypeRepository,
-                                 final OAuth2Properties oAuth2Properties, 
+                                 final OAuth2Properties oAuth2Properties,
                                  final SiemAuditLogger siemAuditLogger) {
         this.jwtDecoder = jwtDecoder;
         this.txManager = txManager;
@@ -101,13 +95,9 @@ public class JwtUserDetailProvider implements AuthenticationProvider {
         this.oAuth2Properties = oAuth2Properties;
         this.userDetailCache = CacheBuilder.newBuilder()
                 .expireAfterWrite(USER_DETAIL_CACHE_LIFETIME, TimeUnit.MINUTES)
-                .build(new CacheLoader<String, UserDetail>() {
-                    @Override
-                    public UserDetail load(final String name) {
-                        return null;
-                    }
-                });
+                .build();
         this.siemAuditLogger = siemAuditLogger;
+        this.jwtAuthenticationConverter.setPrincipalClaimName(oAuth2Properties.getUsernameClaim());
     }
 
     @Override
@@ -115,10 +105,9 @@ public class JwtUserDetailProvider implements AuthenticationProvider {
         BearerTokenAuthenticationToken bearer = (BearerTokenAuthenticationToken) authentication;
 
         String sourceIp = null;
-	    if (authentication.getDetails() instanceof WebAuthenticationDetails) {
-	    	var details = (WebAuthenticationDetails)authentication.getDetails();
-	        sourceIp = details.getRemoteAddress();
-	    }
+        if (authentication.getDetails() instanceof WebAuthenticationDetails details) {
+            sourceIp = details.getRemoteAddress();
+        }
 
         Jwt jwt;
         try {
@@ -131,64 +120,92 @@ public class JwtUserDetailProvider implements AuthenticationProvider {
             throw new AuthenticationServiceException(failed.getMessage(), failed);
         }
 
+        String username = jwt.getClaimAsString(oAuth2Properties.getUsernameClaim());
+        if (StringUtils.isBlank(username)) {
+            String detail = "Token has no claim " + oAuth2Properties.getUsernameClaim();
+            siemAuditLogger.jwtLoginFailed(sourceIp, "MISSING_USERNAME", detail);
+            throw new InvalidBearerTokenException(detail);
+        }
+
         AbstractAuthenticationToken token = this.jwtAuthenticationConverter.convert(jwt);
 
-        try {        
-        	Object details = prepareDetails(jwt);
-        	token.setDetails(details);
-        
-        	siemAuditLogger.loginSuccess(token.getName(), sourceIp, AuthenticationType.JWT);
-        	return token;
+        // An unknown or inactive user is a rejected login (401); only an unexpected failure is
+        // reported as a server error.
+        try {
+            UserDetail details = prepareDetails(username, jwt);
+            token.setDetails(details);
+
+            siemAuditLogger.loginSuccess(username, sourceIp, AuthenticationType.JWT);
+            return token;
+        } catch (UsernameNotFoundException e) {
+            siemAuditLogger.loginFailed(username, sourceIp, AuthenticationType.JWT, "INVALID_USERNAME", null);
+            throw e;
         } catch (LockedException e) {
-			siemAuditLogger.loginFailed(token.getName(), sourceIp, AuthenticationType.JWT, "INACTIVE_USER", null);
-			throw new AuthenticationServiceException(e.getMessage(), e);
+            siemAuditLogger.loginFailed(username, sourceIp, AuthenticationType.JWT, "INACTIVE_USER", null);
+            throw e;
         } catch (Exception e) {
-			siemAuditLogger.loginFailed(token.getName(), sourceIp, AuthenticationType.JWT,
-					"AUTHENTICATION_ERROR", e.getMessage());
-			throw new AuthenticationServiceException(e.getMessage(), e);
-		}
+            siemAuditLogger.loginFailed(username, sourceIp, AuthenticationType.JWT,
+                    "AUTHENTICATION_ERROR", e.getMessage());
+            throw new AuthenticationServiceException(e.getMessage(), e);
+        }
     }
 
-    synchronized private Object prepareDetails(Jwt jwt) {
-    	String sub = jwt.getClaimAsString(CLAIM_SUB);
-    	UserDetail result = userDetailCache.getIfPresent(sub);
-    	if (result == null) {
-    		result = createUserDetail(jwt);
-    		userDetailCache.put(sub, result);
-    	}
-    	return result;
+    synchronized private UserDetail prepareDetails(String username, Jwt jwt) {
+        UserDetail result = userDetailCache.getIfPresent(username);
+        if (result == null) {
+            result = createUserDetail(username, jwt);
+            userDetailCache.put(username, result);
+        }
+        return result;
     }
 
-    private UserDetail createUserDetail(Jwt jwt) {
-        final String sub = jwt.getClaimAsString(CLAIM_SUB);
-        final String name = jwt.getClaimAsString(CLAIM_NAME);
-        final List<String> authorities = jwt.getClaimAsStringList(CLAIM_AUTHORITIES);
-
-        log.debug("Preparing details fot JWT, headers: {}, claims: {}, sub: {}, name: {}, authorities: {}",
-                jwt.getHeaders(), jwt.getClaims(),
-                sub, name, authorities);
+    private UserDetail createUserDetail(String username, Jwt jwt) {
+        log.debug("Preparing details for JWT, headers: {}, claims: {}, username: {}",
+                jwt.getHeaders(), jwt.getClaims(), username);
 
         return new TransactionTemplate(txManager).execute(r -> {
-        	UsrUser user = userService.findByUsername(sub);
-            // prepare temporary credentials
-            SecurityContext prevSecCtx = SecurityContextHolder.getContext();
-            SecurityContext secCtx = userService.createSecurityContextSystem();
-            SecurityContextHolder.setContext(secCtx);
-
-            if (user == null) {
-                user = createJWTUser(sub, name);
+            UsrUser user = userService.findByUsername(username);
+            if (user == null && !oAuth2Properties.isCreateUsers()) {
+                throw new UsernameNotFoundException("User " + username + " does not exist");
             }
 
-            // prepare permissions and synchronize permissions
-            updatePermissions(authorities, user);
-
-            log.debug("Permissions for user '{}' are synchronized.", sub);
-
-            // return back previous context
-            SecurityContextHolder.setContext(prevSecCtx);
+            // prepare temporary credentials
+            SecurityContext prevSecCtx = SecurityContextHolder.getContext();
+            SecurityContextHolder.setContext(userService.createSecurityContextSystem());
+            try {
+                if (user == null) {
+                    user = createJWTUser(username, getDisplayName(jwt, username));
+                }
+                synchronizePermissions(jwt, user);
+            } finally {
+                SecurityContextHolder.setContext(prevSecCtx);
+            }
 
             return userService.createUserDetail(user);
         });
+    }
+
+    /**
+     * The display name falls back to the user name, the preferred name of the entity cannot be empty.
+     */
+    private String getDisplayName(Jwt jwt, String username) {
+        String name = jwt.getClaimAsString(oAuth2Properties.getNameClaim());
+        return StringUtils.isNotBlank(name) ? name : username;
+    }
+
+    private void synchronizePermissions(Jwt jwt, UsrUser user) {
+        if (!oAuth2Properties.isPermissionsManaged()) {
+            return;
+        }
+        // The default user exists in the configuration only and always has the administrator
+        // permission; there is nothing to store.
+        boolean isDefaultUser = user.getUserId() == null;
+        if (isDefaultUser) {
+            return;
+        }
+        List<String> authorities = jwt.getClaimAsStringList(oAuth2Properties.getAuthoritiesClaim());
+        updatePermissions(authorities, user);
+        log.debug("Permissions for user '{}' are synchronized.", user.getUsername());
     }
 
     private UsrUser createJWTUser(String sub, String name) {
@@ -234,11 +251,8 @@ public class JwtUserDetailProvider implements AuthenticationProvider {
     }
 
     private void updatePermissions(List<String> authorities, UsrUser user) {
-        List<UsrPermission> perms;
-        if (CollectionUtils.isEmpty(authorities)) {
-            perms = Collections.emptyList();
-        } else {
-            perms = new ArrayList<>();
+        List<UsrPermission> perms = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(authorities)) {
             for (String authority : authorities) {
                 preparePermissions(authority, perms);
             }
@@ -248,18 +262,11 @@ public class JwtUserDetailProvider implements AuthenticationProvider {
     }
 
     private void preparePermissions(String authority, List<UsrPermission> perms) {
-        List<PermProperties> permProps = this.oAuth2Properties.getPermissions();
-        if (CollectionUtils.isEmpty(permProps)) {
-            return;
-        }
-        for (PermProperties permProp : permProps) {
+        for (PermProperties permProp : oAuth2Properties.getPermissions()) {
             if (Objects.equals(authority, permProp.getAuthority())) {
-                // we have match
                 preparePermissions(permProp, perms);
             }
-
         }
-
     }
 
     private void preparePermissions(PermProperties permProp, List<UsrPermission> perms) {
@@ -289,10 +296,15 @@ public class JwtUserDetailProvider implements AuthenticationProvider {
 
     }
 
+    /**
+     * Several authorities can map to the same permission; a scope permission is a different one for
+     * each scope.
+     */
     private void addPermission(UsrPermission permObj, List<UsrPermission> perms) {
-        // check if not duplicated
         for (UsrPermission currPerm : perms) {
-            if (permObj.getPermission().equals(currPerm.getPermission())) {
+            boolean isSamePermission = permObj.getPermission() == currPerm.getPermission()
+                    && Objects.equals(permObj.getScopeId(), currPerm.getScopeId());
+            if (isSamePermission) {
                 return;
             }
         }

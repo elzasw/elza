@@ -10,7 +10,7 @@ import {WebApi} from '../../actions/WebApi';
 import {Button} from '../../components/ui';
 import objectById from '../../shared/utils/objectById';
 import storeFromArea from '../../shared/utils/storeFromArea';
-import IssueForm from '../form/IssueForm';
+import { IssueForm } from '../form/IssueForm';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import { globalMessages } from 'components/shared/lang/messages';
 import { daoMessages } from 'components/arr/daoMessages';
@@ -101,7 +101,6 @@ class LecturingBottom extends React.Component<any> {
                 this,
                 this.props.intl.formatMessage(daoMessages.issuesUpdateTitle),
                 <IssueForm
-                    // @ts-ignore
                     update
                     initialValues={issueDetail.data}
                     onSubmit={this.updateIssue}

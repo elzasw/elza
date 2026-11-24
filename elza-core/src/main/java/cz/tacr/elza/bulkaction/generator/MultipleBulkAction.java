@@ -2,10 +2,12 @@ package cz.tacr.elza.bulkaction.generator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,7 @@ import cz.tacr.elza.bulkaction.generator.multiple.TypeLevel;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.Result;
 import cz.tacr.elza.controller.vo.TreeNode;
+import cz.tacr.elza.dataexchange.output.filters.NodeRestrictionEvaluator;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
@@ -26,6 +29,7 @@ import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.LevelTreeCacheService.NodeHierarchy;
 import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
+import cz.tacr.elza.service.output.NodeRestrictionEvaluatorFactory;
 
 /**
  * Vícenásobná hromadná akce prochází strom otevřené verze archivní pomůcky a doplňuje u položek požadované atributy.
@@ -50,7 +54,15 @@ public class MultipleBulkAction extends BulkActionTransactional {
      */
     public static final String TYPE = "GENERATOR_MULTIPLE";
 
+    @Autowired
+    private NodeRestrictionEvaluatorFactory restrictionEvaluatorFactory;
+
     private List<Action> actions = new ArrayList<>();
+
+    /**
+     * Filter of the output the action is run for, null when the action processes all levels
+     */
+    private LevelOutputFilter levelOutputFilter;
 
 	MultiActionConfig config;
 
@@ -77,6 +89,13 @@ public class MultipleBulkAction extends BulkActionTransactional {
             a.init(this, bulkActionRun);
 			actions.add(a);
 		}
+
+        String outputFilterCode = bulkActionRun.getOutputFilterCode();
+        if (outputFilterCode != null) {
+            Integer ruleSetId = getFondsVersion().getRuleSetId();
+            NodeRestrictionEvaluator evaluator = restrictionEvaluatorFactory.create(ruleSetId, outputFilterCode);
+            levelOutputFilter = new LevelOutputFilter(evaluator);
+        }
 
         try {
 			/*
@@ -112,6 +131,8 @@ public class MultipleBulkAction extends BulkActionTransactional {
         Map<ArrNode, LevelWithItems> nodeStartingLevels = new HashMap<>();
         // map of all nodes, including all parents
         Map<ArrNode, LevelWithItems> nodesWithItems = new HashMap<>();
+        // parent nodes hidden by the output filter
+        Set<ArrNode> hiddenNodes = new HashSet<>();
 
         // prepare parent nodes
         for (ArrNode startingNode : startingNodes) {
@@ -123,6 +144,17 @@ public class MultipleBulkAction extends BulkActionTransactional {
                 TreeNode tn = new TreeNode(level.getNodeId(), level.getPosition());
                 LevelWithItems levelWithItems = prepareLevelWithItems(tn, parentLevel);
 
+                if (levelOutputFilter != null) {
+                    LevelWithItems visibleLevel = levelOutputFilter.filter(levelWithItems);
+                    if (visibleLevel != null) {
+                        levelWithItems = visibleLevel;
+                    } else {
+                        // a hidden parent is not passed to the actions; the evaluator remembers it
+                        // and hides its descendants, including the starting node
+                        hiddenNodes.add(level.getNode());
+                    }
+                }
+
                 nodesWithItems.put(level.getNode(), levelWithItems);
                 parentLevel = levelWithItems;
             }
@@ -130,6 +162,7 @@ public class MultipleBulkAction extends BulkActionTransactional {
             ArrLevel startingLevel = levelRepository.findByNodeAndDeleteChangeIsNull(startingNode);
             TreeNode tn = new TreeNode(startingLevel.getNodeId(), startingLevel.getPosition());
 
+            // the starting node is filtered later together with its subtree
             LevelWithItems startingLevelWithItems = prepareLevelWithItems(tn, parentLevel);
             nodesWithItems.put(startingLevel.getNode(), startingLevelWithItems);
 
@@ -141,6 +174,9 @@ public class MultipleBulkAction extends BulkActionTransactional {
             ArrNode node = entry.getKey();
             // check if it is pure parent (not starting node)
             if(nodeStartingLevels.containsKey(node)) {
+                continue;
+            }
+            if (hiddenNodes.contains(node)) {
                 continue;
             }
 
@@ -205,9 +241,18 @@ public class MultipleBulkAction extends BulkActionTransactional {
      * @param parentNodeDescItems
      *            data předků
      */
-    void generate(final LevelWithItems levelWithItems, Map<Integer, TreeNode> treeNodeMap) {
+    void generate(final LevelWithItems level, Map<Integer, TreeNode> treeNodeMap) {
         if (interrupt) {
 			throw new BulkActionInterruptedException("The action was interrupted");
+        }
+
+        LevelWithItems levelWithItems = level;
+        if (levelOutputFilter != null) {
+            levelWithItems = levelOutputFilter.filter(level);
+            if (levelWithItems == null) {
+                // the filter hides the level with its whole subtree
+                return;
+            }
         }
 
         // apply on current node

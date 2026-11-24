@@ -37,13 +37,12 @@ import {
   TextQuoteRegular,
 } from "@fluentui/react-icons";
 import { WebApi } from "actions";
-import * as issuesActions from "actions/arr/issues";
 import { deleteNode } from "actions/arr/node";
 import { toggleCopyAllDescItemType } from "actions/arr/nodeSetting";
 import { fundSubNodeDaoChangeScenario } from "actions/arr/subNodeDaos";
 import { modalDialogHide, modalDialogShow } from "actions/global/modalDialog";
 import { routerNavigate } from "actions/router";
-import IssueForm from "components/form/IssueForm";
+import { useIssueCreateWindow } from "components/arr/useIssueCreateWindow";
 import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
 import { globalMessages } from 'components/shared/lang/messages';
 import { nodeMessages } from 'components/arr/nodeMessages';
@@ -59,7 +58,6 @@ import {
   NodeStatus,
 } from "elza-api";
 import { useState } from "react";
-import { IssueVO } from "types";
 import { ArrDaoVO } from "typings/dao";
 import { DescItemTypeRef } from "typings/store";
 import {
@@ -214,6 +212,7 @@ export const NodeToolbar = ({
   const copyItems = useCopyItems();
   const pasteItems = usePasteItems();
   const clipboard = useItemClipboard();
+  const openIssueCreateWindow = useIssueCreateWindow();
 
   const issueProtocol = useAppSelector(({ app }) => app.issueProtocol as any); // TODO add types
   const issueTypes = useAppSelector(({ refTables }) => refTables.issueTypes);
@@ -349,29 +348,13 @@ export const NodeToolbar = ({
   }
 
   function handleCreateIssueNode() {
-    dispatch(
-      modalDialogShow(
-        this,
-        intl.formatMessage(nodeMessages.issuesAddNodeTitle),
-        <IssueForm
-          onSubmit={(data: IssueVO) =>
-            WebApi.addIssue({
-              ...data,
-              nodeId: nodeData.id,
-            })
-          }
-          initialValues={{
-            issueListId: issueProtocol.id,
-            issueTypeId: issueTypes?.data?.[0].id,
-          }}
-          onSubmitSuccess={(data) => {
-            dispatch(issuesActions.list.invalidate(data.issueListId));
-            dispatch(issuesActions.detail.invalidate(data.id));
-            dispatch(modalDialogHide());
-          }}
-        />,
-      ),
-    );
+    openIssueCreateWindow({
+      initialTarget: 'node',
+      initialValues: {
+        issueListId: issueProtocol.id,
+        issueTypeId: issueTypes?.data?.[0]?.id,
+      },
+    });
   }
 
   function handleCreateTemplate() {

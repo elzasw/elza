@@ -5485,6 +5485,42 @@
     "defaultMessage": "Choose a comment",
     "srcHash": "ggXWWmOsEt8Q"
   },
+  "arr.issues.createWindow.lockNode": {
+    "defaultMessage": "Lock to this description unit",
+    "srcHash": "eovzIIwrHLTj"
+  },
+  "arr.issues.createWindow.lockedNodeElsewhere": {
+    "defaultMessage": "The locked description unit belongs to a different fund",
+    "srcHash": "gN4a21trTNd8"
+  },
+  "arr.issues.createWindow.noActiveNode": {
+    "defaultMessage": "No description unit is selected",
+    "srcHash": "OL7-kxnPlMjP"
+  },
+  "arr.issues.createWindow.noFundOpen": {
+    "defaultMessage": "No fund is currently open",
+    "srcHash": "AuwFs2lNIJ9w"
+  },
+  "arr.issues.createWindow.noOpenProtocol": {
+    "defaultMessage": "No open protocol was found in this fund",
+    "srcHash": "rdFi_IVTGP7r"
+  },
+  "arr.issues.createWindow.noPermission": {
+    "defaultMessage": "You do not have permission to add comments in this fund",
+    "srcHash": "cIkDDg395T4s"
+  },
+  "arr.issues.createWindow.target": {
+    "defaultMessage": "Comment on",
+    "srcHash": "OuNifOf3SrJ2"
+  },
+  "arr.issues.createWindow.targetNode": {
+    "defaultMessage": "Description unit",
+    "srcHash": "Kv_uHCGYZGrD"
+  },
+  "arr.issues.createWindow.unlockNode": {
+    "defaultMessage": "Unlock and follow the selected description unit",
+    "srcHash": "45cuiiW6bzwA"
+  },
   "arr.issues.settings.title": {
     "defaultMessage": "Review settings",
     "srcHash": "y3s3PdkWbIgB"
@@ -8193,6 +8229,18 @@
     "defaultMessage": "Invalidated entities",
     "srcHash": "anb_5TqFryuh"
   },
+  "issue.form.addAndClose": {
+    "defaultMessage": "Add and close",
+    "srcHash": "dWHQX6PKJIz8"
+  },
+  "issue.form.saveFailed": {
+    "defaultMessage": "The comment could not be saved.",
+    "srcHash": "h3LevV_t9Dxs"
+  },
+  "issue.form.saving": {
+    "defaultMessage": "Saving…",
+    "srcHash": "qpcf-hTFaPv1"
+  },
   "issue.issueList": {
     "defaultMessage": "Review protocol",
     "srcHash": "7e4xoOEBiGli"
@@ -9272,6 +9320,10 @@
   "ribbon.action.arr.output.generate.recommendedAction": {
     "defaultMessage": "Not all recommended actions have been run",
     "srcHash": "5zccJuUKsoCT"
+  },
+  "ribbon.action.arr.output.generate.recommendedActionFilter": {
+    "defaultMessage": "Recommended actions were run with a different filter than the output has. Some values computed by functions do not match the output filter",
+    "srcHash": "XddcAtzAb5_e"
   },
   "ribbon.action.arr.output.otherAction": {
     "defaultMessage": "Use another function",

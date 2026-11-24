@@ -14,8 +14,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -530,6 +532,7 @@ public class OutputService {
             //output.setTemplate(null);
         }
 
+        Integer previousOutputFilterId = output.getOutputFilter() != null ? output.getOutputFilter().getOutputFilterId() : null;
         if (outputFilterId != null) {
             output.setOutputFilter(outputFilterRepository.findById(outputFilterId)
                     .orElseThrow(outputFilter(outputFilterId)));
@@ -539,10 +542,78 @@ public class OutputService {
 
         outputRepository.save(output);
 
+        if (!Objects.equals(previousOutputFilterId, outputFilterId)) {
+            updateItemsOfFilteredActions(fundVersion, output);
+        }
+
         EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES_DETAIL, fundVersion, output.getOutputId());
         eventNotificationService.publishEvent(event);
 
         return output;
+    }
+
+    /**
+     * Rewrites output items computed by recommended actions which respect output filters with the
+     * results of their runs computed with the current filter of the output.
+     *
+     * An action without such a run keeps its items; the check before the output generation then
+     * reports that the action was run with another filter.
+     */
+    private void updateItemsOfFilteredActions(final ArrFundVersion fundVersion, final ArrOutput output) {
+        List<ArrNodeOutput> outputNodes = nodeOutputRepository.findByOutputAndDeleteChangeIsNull(output);
+        if (outputNodes.isEmpty()) {
+            return;
+        }
+        List<Integer> nodeIds = outputNodes.stream().map(ArrNodeOutput::getNodeId).collect(Collectors.toList());
+
+        Set<String> recommendedActionCodes = new HashSet<>();
+        for (RulActionRecommended actionRecommended : actionRecommendedRepository.findByOutputType(output.getOutputType())) {
+            recommendedActionCodes.add(actionRecommended.getAction().getCode());
+        }
+
+        List<ArrBulkActionRun> validRuns = bulkActionService.filterRunsForOutput(
+                bulkActionService.findFinishedBulkActionsByNodeIds(fundVersion, nodeIds), output);
+        List<ArrBulkActionRun> filteredActionRuns = new ArrayList<>();
+        for (ArrBulkActionRun run : validRuns) {
+            String actionCode = run.getBulkActionCode();
+            if (recommendedActionCodes.contains(actionCode) && bulkActionService.isApplyOutputFilter(actionCode)) {
+                filteredActionRuns.add(run);
+            }
+        }
+        if (filteredActionRuns.isEmpty()) {
+            return;
+        }
+
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.UPDATE_OUTPUT);
+        Set<Integer> manualItemTypeIds = outputServiceInternal.getIgnoredItemTypeIds(output);
+        OutputItemConnector connector = outputServiceInternal.createItemConnector(fundVersion, output);
+        connector.setChangeSupplier(() -> change);
+
+        for (ArrBulkActionRun run : filteredActionRuns) {
+            Result runResult;
+            try {
+                runResult = run.getResult();
+            } catch (Exception e) {
+                // results stored by an older version may not be readable, the same as in storeResults
+                logger.error("Failed to deserialize results, bulkActionRunId: {}", run.getBulkActionRunId(), e);
+                continue;
+            }
+            if (runResult == null) {
+                continue;
+            }
+
+            // remove items of the previous filter, also those the new results do not contain
+            RulAction action = bulkActionService.getBulkActionByCode(run.getBulkActionCode());
+            for (RulItemTypeAction itemTypeAction : itemTypeActionRepository.findByAction(action)) {
+                Integer itemTypeId = itemTypeAction.getItemTypeId();
+                if (!manualItemTypeIds.contains(itemTypeId)) {
+                    outputServiceInternal.deleteOutputItemsByType(fundVersion, output, itemTypeId, change);
+                }
+            }
+            for (ActionResult actionResult : runResult.getResults()) {
+                actionResult.createOutputItems(connector);
+            }
+        }
     }
 
     /**
@@ -686,8 +757,8 @@ public class OutputService {
                                  final ArrOutput output,
                                  final OutputItemConnector connector) {
 
-        List<ArrBulkActionRun> bulkActionRunList = bulkActionService.findFinishedBulkActionsByNodeIds(fundVersion,
-                nodes);
+        List<ArrBulkActionRun> bulkActionRunList = bulkActionService.filterRunsForOutput(
+                bulkActionService.findFinishedBulkActionsByNodeIds(fundVersion, nodes), output);
         List<RulActionRecommended> actionRecommendeds = actionRecommendedRepository
                 .findByOutputType(output.getOutputType());
 

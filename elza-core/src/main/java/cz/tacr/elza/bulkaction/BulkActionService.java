@@ -2,6 +2,7 @@ package cz.tacr.elza.bulkaction;
 
 import static cz.tacr.elza.repository.ExceptionThrow.bulkAction;
 import static cz.tacr.elza.repository.ExceptionThrow.node;
+import static cz.tacr.elza.repository.ExceptionThrow.output;
 import static cz.tacr.elza.repository.ExceptionThrow.version;
 
 import java.util.ArrayList;
@@ -14,6 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -78,6 +80,7 @@ import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.FundsChangeRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.ArrangementService;
@@ -147,6 +150,9 @@ public class BulkActionService {
     @Autowired
     private ArrangementService arrangementService;
 
+    @Autowired
+    private OutputRepository outputRepository;
+
     /**
      * Uložení hromadné akce z klienta
      *
@@ -177,7 +183,39 @@ public class BulkActionService {
                                   @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
                                   final List<Integer> inputNodeIds,
                                   final Object runConfig) {
-        return queueInternal(userId, bulkActionCode, fundVersionId, inputNodeIds, runConfig, null);
+        return queueInternal(userId, bulkActionCode, fundVersionId, inputNodeIds, runConfig, null, null);
+    }
+
+    /**
+     * Queues the action run for an output. An action which respects output filters
+     * ({@link BulkActionConfig#isApplyOutputFilter()}) is computed with the current filter of the
+     * output and its results are then valid only for outputs with the same filter.
+     *
+     * @param userId         user who runs the action
+     * @param bulkActionCode code of the action
+     * @param fundVersionId  version of the fund
+     * @param inputNodeIds   nodes the action runs on
+     * @param outputId       output the action is run for, null when it is not run for an output
+     * @return the queued run
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_BA_ALL, UsrPermission.Permission.FUND_BA})
+    public ArrBulkActionRun queueForOutput(final Integer userId,
+                                           final String bulkActionCode,
+                                           @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
+                                           final List<Integer> inputNodeIds,
+                                           @Nullable final Integer outputId) {
+        String outputFilterCode = null;
+        if (outputId != null) {
+            ArrOutput output = outputRepository.findById(outputId).orElseThrow(output(outputId));
+            ArrFundVersion version = fundVersionRepository.getOneCheckExist(fundVersionId);
+            if (!Objects.equals(output.getFundId(), version.getFundId())) {
+                throw new SystemException("Output a verze AS nemají společný AS", BaseCode.DB_INTEGRITY_PROBLEM)
+                        .set("outputId", outputId)
+                        .set("fundVersionId", fundVersionId);
+            }
+            outputFilterCode = bulkActionConfigManager.getRequiredOutputFilterCode(bulkActionCode, output);
+        }
+        return queueInternal(userId, bulkActionCode, fundVersionId, inputNodeIds, null, null, outputFilterCode);
     }
 
     /**
@@ -205,7 +243,7 @@ public class BulkActionService {
                     .setId(fundVersionId)
                     .set("ruleSet", version.getRuleSet().getCode());
         }
-        return queueInternal(userId, sort.getCode(), fundVersionId, inputNodeIds, runConfig, null);
+        return queueInternal(userId, sort.getCode(), fundVersionId, inputNodeIds, runConfig, null, null);
     }
 
     /**
@@ -225,13 +263,16 @@ public class BulkActionService {
     /**
      * Interní uložení hromadné akce. Volá se z {@link #queue} (jednofondová akce)
      * i z {@link #queueMulti} (vícefondová akce), kde se předává seskupení {@code fundsChange}.
+     *
+     * @param outputFilterCode output filter the action is computed with, null for all levels
      */
     private ArrBulkActionRun queueInternal(final Integer userId,
                                            final String bulkActionCode,
                                            final Integer fundVersionId,
                                            final List<Integer> inputNodeIds,
                                            final Object runConfig,
-                                           final ArrFundsChange fundsChange) {
+                                           final ArrFundsChange fundsChange,
+                                           @Nullable final String outputFilterCode) {
         Assert.notNull(bulkActionCode, "Musí být vyplněn kód hromadné akce");
         Assert.isTrue(StringUtils.isNotBlank(bulkActionCode), "Musí být vyplněn kód hromadné akce");
         Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
@@ -243,6 +284,7 @@ public class BulkActionService {
         bulkActionRun.setBulkActionCode(bulkActionCode);
         bulkActionRun.setUserId(userId);
         bulkActionRun.setFundsChange(fundsChange);
+        bulkActionRun.setOutputFilterCode(outputFilterCode);
         ArrFundVersion arrFundVersion = new ArrFundVersion();
 
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(fundVersionId);
@@ -337,7 +379,7 @@ public class BulkActionService {
 
         for (ArrFundVersion version : validVersions) {
             queueInternal(userId, bulkActionCode, version.getFundVersionId(),
-                    Collections.singletonList(version.getRootNode().getNodeId()), null, fundsChange);
+                    Collections.singletonList(version.getRootNode().getNodeId()), null, fundsChange, null);
         }
 
         result.setFundsChangeId(fundsChange.getFundsChangeId());
@@ -609,6 +651,30 @@ public class BulkActionService {
     }
 
     /**
+     * Keeps only runs whose results belong to the output: an action respecting output filters
+     * keeps only the run computed with the filter of the output, see
+     * {@link BulkActionConfigManager#isRunValidForOutput(ArrBulkActionRun, ArrOutput)}.
+     */
+    public List<ArrBulkActionRun> filterRunsForOutput(Collection<ArrBulkActionRun> runs, ArrOutput output) {
+        List<ArrBulkActionRun> result = new ArrayList<>(runs.size());
+        for (ArrBulkActionRun run : runs) {
+            if (bulkActionConfigManager.isRunValidForOutput(run, output)) {
+                result.add(run);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Whether the action respects output filters, see {@link BulkActionConfig#isApplyOutputFilter()}.
+     * False for an unknown action.
+     */
+    public boolean isApplyOutputFilter(String actionCode) {
+        BulkActionConfig config = bulkActionConfigManager.get(actionCode);
+        return config != null && config.isApplyOutputFilter();
+    }
+
+    /**
      * Vyhledá hromadnou akci podle kódu.
      *
      * @param code  kód hromadné akce
@@ -639,7 +705,7 @@ public class BulkActionService {
 
     /**
      * Recommended bulk actions for the given output, each paired with the most
-     * recent run on the output's nodes (VO of the run) or, when no such run
+     * recent run on the output's nodes valid for the output's filter (VO of the run) or, when no such run
      * exists, a stub VO carrying only the action code. Order follows the list
      * of recommended actions of the output's type.
      *
@@ -658,9 +724,9 @@ public class BulkActionService {
                 .collect(Collectors.toSet());
         List<ArrBulkActionRun> runs = nodeIds.isEmpty()
                 ? Collections.emptyList()
-                : findBulkActionsByNodeIds(
+                : filterRunsForOutput(findBulkActionsByNodeIds(
                         arrangementService.getOpenVersionByFundId(output.getFund().getFundId()),
-                        nodeIds);
+                        nodeIds), output);
         runs.sort((a, b) -> b.getChange().getChangeId() - a.getChange().getChangeId());
 
         List<BulkActionRunVO> result = new ArrayList<>(recommendedActions.size());

@@ -125,14 +125,16 @@ public class BulkActionController {
 	@Transactional
 	public BulkActionRunVO queueByIds(final @PathVariable("versionId") Integer fundVersionId,
 	        final @PathVariable("code") String code,
-                    final @RequestBody List<Integer> nodeIds) {
+                    final @RequestBody List<Integer> nodeIds,
+                    // output the action is run for; its filter applies to actions which respect it
+                    final @RequestParam(value = "outputId", required = false) Integer outputId) {
         Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
         Assert.notNull(code, "Kód musí být vyplněn");
         Assert.notEmpty(nodeIds, "Pro sputění hromadné akce je vyžadován alespoň 1 uzel");
         UserDetail userDetail = userService.getLoggedUserDetail();
         Integer userId = userDetail != null ? userDetail.getId() : null;
 
-        ArrBulkActionRun actionRun = bulkActionService.queue(userId, code, fundVersionId, nodeIds, null);
+        ArrBulkActionRun actionRun = bulkActionService.queueForOutput(userId, code, fundVersionId, nodeIds, outputId);
         return factoryVo.createBulkActionRun(actionRun);
     }
 
@@ -158,9 +160,9 @@ public class BulkActionController {
                 .map(ArrNodeOutput::getNodeId)
                 .collect(Collectors.toSet());
         final List<ArrBulkActionRun> bulkActionsByNodes = nodeIds.isEmpty() ? Collections.emptyList() :
-                bulkActionService.findBulkActionsByNodeIds(
+                bulkActionService.filterRunsForOutput(bulkActionService.findBulkActionsByNodeIds(
                         arrangementService.getOpenVersionByFundId(output.getFund().getFundId()),
-                        nodeIds);
+                        nodeIds), output);
         bulkActionsByNodes.sort((o1, o2) -> o2.getChange().getChangeId() - o1.getChange().getChangeId());
 
         List<BulkActionRunVO> result = new ArrayList<>(factoryVo.createBulkActionsList(bulkActionsByNodes));

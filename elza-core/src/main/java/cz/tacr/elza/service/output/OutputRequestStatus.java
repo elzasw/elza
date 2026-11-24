@@ -18,5 +18,11 @@ public enum OutputRequestStatus {
     /**
      * Nebyly spuštěny všechny doporučené akce.
      */
-    RECOMMENDED_ACTION_NOT_RUN
+    RECOMMENDED_ACTION_NOT_RUN,
+
+    /**
+     * A recommended action respecting output filters was run only with another output filter
+     * than the output has.
+     */
+    RECOMMENDED_ACTION_FILTER_CHANGED
 }

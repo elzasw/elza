@@ -12,6 +12,39 @@ change, a step during the upgrade) name the configuration key and link to
 the relevant chapter. Before an upgrade, read the entries of all builds
 between the installed and the new version; see :doc:`/03-upgrade`.
 
+3.4.15
+======
+
+Before the upgrade
+------------------
+
+* Change: 10251 - OAuth2: when ``elza.security.o-auth2`` is configured without
+  ``permissions``, a login with a token no longer removes the user's
+  directly assigned permissions; assign them in ELZA. To keep the token
+  as the only source of permissions without any mapping, set
+  ``permissions: []``. The mapping in ``permissions`` is checked at
+  startup: an unknown permission, a permission to a fund, user or group,
+  or a permission to a scope without ``scope`` stops the start of the
+  application. Such a mapping failed every login with the authority
+  before. See :doc:`/05-security`.
+
+New
+---
+
+* New: 10251 - OAuth2: ``create-users: false`` stops creating users from
+  tokens; ``issuer`` and ``audiences`` check the token's ``iss`` and
+  ``aud`` claims; ``username-claim``, ``name-claim`` and
+  ``authorities-claim`` name the claims read from the token. See
+  :doc:`/05-security`.
+
+Fixes
+-----
+
+* Fix: 10251 - OAuth2: a deactivated user logging in with a token got
+  HTTP 500 instead of 401. Two authorities mapped to the same permission
+  for different scopes granted only one of them. A user created from a
+  token without the ``name`` claim could not be created.
+
 3.4.14
 ======
 

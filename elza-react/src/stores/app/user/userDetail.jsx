@@ -16,6 +16,7 @@ function hasRight(right) {
                     switch (right.type) {
                         case perms.FUND_RD:
                         case perms.FUND_ARR:
+                        case perms.FUND_ARR_NODE:
                         case perms.FUND_OUTPUT_WR:
                         case perms.FUND_VER_WR:
                         case perms.FUND_ISSUE_ADMIN:

@@ -90,6 +90,7 @@ interface DraggableWindowContextType {
     togglePinBottom: () => void,
     registerResizable: (handlers: { onResizeStart: () => ResizeInfo, onResize: (width: number, height: number) => void }) => void,
     isResizingRef: React.MutableRefObject<boolean>,
+    bringToFront: () => void,
 }
 
 export const DraggableWindowContext = createContext<DraggableWindowContextType>(null);
@@ -288,6 +289,7 @@ export const DraggableWindow = ({
         togglePinBottom,
         registerResizable,
         isResizingRef: _isResizing,
+        bringToFront,
     }}>
         <div>
             <div

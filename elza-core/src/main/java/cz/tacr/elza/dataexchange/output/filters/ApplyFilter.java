@@ -33,6 +33,14 @@ public class ApplyFilter {
         hideDao = true;
     }
 
+    public boolean isLevelHidden() {
+        return hideLevel;
+    }
+
+    public boolean isDaoHidden() {
+        return hideDao;
+    }
+
     public void addHideItem(ArrItem item) {
         hideItems.add(item);
     }
@@ -105,6 +113,34 @@ public class ApplyFilter {
         addItems.forEach(item -> levelInfoCopy.addItem(item));
 
         return levelInfoCopy;
+    }
+
+    /**
+     * Applies the filter to description items of a level.
+     *
+     * @return the items as the filter shows them (the same list when the filter changes nothing),
+     *         null when the level is hidden
+     */
+    public List<ArrDescItem> apply(List<ArrDescItem> descItems) {
+        if (isFilterEmpty()) {
+            return descItems;
+        }
+
+        if (hideLevel) {
+            return null;
+        }
+
+        List<ArrDescItem> result = new ArrayList<>(descItems.size() + addItems.size());
+        for (ArrDescItem descItem : descItems) {
+            // items are compared by identity, the same way RestoredNode removes them
+            if (!hideItems.contains(descItem)) {
+                result.add(descItem);
+            }
+        }
+        for (ArrItem addItem : addItems) {
+            result.add((ArrDescItem) addItem);
+        }
+        return result;
     }
 
     public RestoredNode apply(RestoredNode node) {

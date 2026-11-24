@@ -329,7 +329,7 @@
     <!-- Identifikátor z číselníku archivů -->
     <ead:agencycode localtype="CZ_MVCR_INSTITUTION_ID">${output.fund.institution.code}</ead:agencycode>
     <!-- Jméno archivu -->
-    <ead:agencyname>${output.fund.institution.record.preferredPart.getSingleItem("NM_MAIN").serializedValue}</ead:agencyname>
+    <ead:agencyname>${output.fund.institution.name}</ead:agencyname>
   </ead:maintenanceagency>
 
   <!-- Verze profilu EAD -->

@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.annotation.Nullable;
 
@@ -47,7 +48,10 @@ import cz.tacr.elza.bulkaction.generator.multiple.StorageOrderGeneratorConfig;
 import cz.tacr.elza.bulkaction.generator.multiple.TextAggregationConfig;
 import cz.tacr.elza.bulkaction.generator.multiple.UnitCountConfig;
 import cz.tacr.elza.core.ResourcePathResolver;
+import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.RulAction;
+import cz.tacr.elza.domain.RulOutputFilter;
 import cz.tacr.elza.repository.ActionRepository;
 import jakarta.transaction.Transactional;
 import jakarta.transaction.Transactional.TxType;
@@ -126,6 +130,32 @@ public class BulkActionConfigManager {
      */
     public BulkActionConfig get(final String code) {
         return bulkActionConfigMap.get(code);
+    }
+
+    /**
+     * Output filter a run of the action has to be computed with to be valid for the output.
+     *
+     * @return code of the output's filter when the action respects output filters
+     *         ({@link BulkActionConfig#isApplyOutputFilter()}), otherwise null (computed over
+     *         all levels)
+     */
+    @Nullable
+    public String getRequiredOutputFilterCode(final String actionCode, final ArrOutput output) {
+        BulkActionConfig config = bulkActionConfigMap.get(actionCode);
+        if (config == null || !config.isApplyOutputFilter()) {
+            return null;
+        }
+        RulOutputFilter outputFilter = output.getOutputFilter();
+        return outputFilter != null ? outputFilter.getCode() : null;
+    }
+
+    /**
+     * Whether the results of the run may be written to the output: the run was computed with the
+     * output filter the output requires for that action.
+     */
+    public boolean isRunValidForOutput(final ArrBulkActionRun run, final ArrOutput output) {
+        String requiredOutputFilterCode = getRequiredOutputFilterCode(run.getBulkActionCode(), output);
+        return Objects.equals(run.getOutputFilterCode(), requiredOutputFilterCode);
     }
 
     /**

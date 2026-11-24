@@ -344,6 +344,9 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
     @Query("SELECT COUNT(i) FROM arr_desc_item i JOIN i.data d WHERE i.deleteChange IS NULL AND d.file = :file")
     Integer countItemsUsingFile(@Param("file") ArrFile file);
 
+    @Query("SELECT i FROM arr_desc_item i JOIN i.data d WHERE i.deleteChange IS NULL AND d.file = :file")
+    List<ArrDescItem> findOpenItemsUsingFile(@Param("file") ArrFile file);
+
     @Query("SELECT count(i) FROM arr_desc_item i WHERE i.nodeId = :nodeId AND i.itemTypeId = :itemTypeId AND i.deleteChange IS NULL")
     int countByNodeIdAndItemTypeId(@Param("nodeId") Integer nodeId, @Param("itemTypeId") Integer itemTypeId);
 

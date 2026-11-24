@@ -1,4 +1,4 @@
-${output.fund.institution.record.preferredPart.value}
+${output.fund.institution.name}
 ${output.fund.name}
 ${output.fund.internalCode}
 

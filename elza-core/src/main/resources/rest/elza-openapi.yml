@@ -12548,6 +12548,7 @@ components:
         - OK
         - DETECT_CHANGE
         - RECOMMENDED_ACTION_NOT_RUN
+        - RECOMMENDED_ACTION_FILTER_CHANGED
       description: Generator startup status
     Output.RestrictionScope:
       type: object

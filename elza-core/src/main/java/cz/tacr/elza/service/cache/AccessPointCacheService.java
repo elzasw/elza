@@ -26,7 +26,9 @@ import jakarta.transaction.Transactional.TxType;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
+import org.hibernate.FlushMode;
 import org.hibernate.ScrollableResults;
+import org.hibernate.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -277,6 +279,10 @@ public class AccessPointCacheService {
 
             TransactionTemplate tt = new TransactionTemplate(txManager);
             tt.executeWithoutResult(t -> {
+                Session session = entityManager.unwrap(Session.class);
+                // Loaded entities are only read to build the cache: no dirty checking, no auto-flush before queries
+                session.setDefaultReadOnly(true);
+                session.setHibernateFlushMode(FlushMode.COMMIT);
                 processNewAPs(apIds);
             });
         } catch (Exception e) {
@@ -356,7 +362,7 @@ public class AccessPointCacheService {
         }
 
         // set ap state
-        List<ApState> apStates = stateRepository.findLastByAccessPointIds(accessPointIds);
+        List<ApState> apStates = stateRepository.findLastByAccessPointIdsFetchCreateChange(accessPointIds);
         if (apStates.size() != accessPointIds.size()) {
         	Map<Integer, ApState> apStatesMap = new HashMap<>();
         	for (ApState apState : apStates) {

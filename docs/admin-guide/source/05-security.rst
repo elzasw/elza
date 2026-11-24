@@ -27,7 +27,9 @@ accepts the password wins.
 Except for OAuth2, every method only verifies the identity: **the user
 must already exist in ELZA** with the same user name, and must be active.
 Users are not created automatically, and groups or roles from the
-directory are not used; permissions are always assigned in ELZA.
+directory are not used; permissions are always assigned in ELZA. OAuth2
+can create users and map the token's authorities to permissions; both
+can be switched off, see `OAuth2 / JWT`_.
 
 The first administrator
 =======================
@@ -311,29 +313,64 @@ login redirect to the provider.
      security:
        o-auth2:
          key-url: https://idp.archive.example/oauth/token_key
+         issuer: https://idp.archive.example
+         audiences: [elza]
          permissions:
            - authority: ELZA_ADMIN
              permissions: [ADMIN]
+           - authority: ELZA_ENTITIES
+             scope: GLOBAL
+             permissions: [AP_SCOPE_RD, AP_SCOPE_WR]
 
 ``key-url``
    URL returning the public key for verifying token signatures, as JSON
    with the PEM-encoded RSA key in the field ``value``. The key is read
    once at startup; the application does not start when it cannot be
    read. Tokens must be signed with RS256.
+``issuer``
+   Expected value of the token's ``iss`` claim. Not checked when not set.
+``audiences``
+   List of accepted values of the token's ``aud`` claim; the token must
+   contain at least one of them. Not checked when not set. Set at least
+   one of ``issuer`` and ``audiences`` when the identity provider issues
+   tokens for other applications too; otherwise ELZA accepts any token
+   signed by the provider.
+``create-users``
+   Create a user who does not exist in ELZA yet; default ``true``. With
+   ``false`` only users created in ELZA can log in with a token; a token
+   of another user is rejected (HTTP 401, reason ``INVALID_USERNAME`` in
+   the security audit log).
 ``permissions``
-   Mapping of values of the token's ``authorities`` claim to ELZA
-   permissions. ``scope`` restricts a permission to a scope of archival
-   entities, by its code.
+   Mapping of values of the token's authorities to ELZA permissions.
+   ``scope`` is the code of a scope of archival entities and is required
+   by permissions to a scope (``AP_SCOPE_RD``, ``AP_SCOPE_WR``, ...).
+   Only permissions without a target and permissions to a scope can be
+   mapped; permissions to a fund, a user or a group cannot. The mapping
+   is checked at startup; the application does not start with an unknown
+   permission, with a permission to a fund, user or group, or with a
+   permission to a scope without ``scope``.
+
+   When ``permissions`` is set, the user's directly assigned permissions
+   are replaced by those mapped from the token at every login; an empty
+   list (``permissions: []``) removes them. When it is not set, a login
+   with a token does not change permissions, and they are assigned in
+   ELZA as for the other methods. Permissions inherited from groups are
+   never changed.
+``username-claim``, ``name-claim``, ``authorities-claim``
+   Claims holding the user name, the display name and the list of
+   authorities; default ``sub``, ``name`` and ``authorities``. For
+   example, Keycloak has the user name in ``preferred_username``. The
+   claims must be at the top level of the token.
 ``user-scope``, ``user-ap-type``
    Scope and class of the archival entities of users created from tokens;
    default ``JWT_USERS`` and ``PERSON_INDIVIDUAL``. The class must be
    offered by the rule set of the scope.
 
-The token's ``sub`` claim is the user name and ``name`` the display name.
-Unlike the other methods, a user who does not exist is created, together
-with an archival entity of the person in the scope ``user-scope``. The
-user's directly assigned permissions are replaced by those mapped from
-the token. User data are cached for five minutes, so a change of
+A token without the user name claim is rejected. A user created from a
+token gets an archival entity of the person in the scope ``user-scope``,
+named by the display name claim, or by the user name when the token has
+no display name. A deactivated user is rejected (HTTP 401, reason
+``INACTIVE_USER``). User data are cached for five minutes, so a change of
 permissions or deactivation takes effect within five minutes.
 
 Personal API keys

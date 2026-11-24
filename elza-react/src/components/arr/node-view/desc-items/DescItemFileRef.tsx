@@ -1,10 +1,9 @@
 import { Link } from "@fluentui/react-components";
-import { UrlFactory, WebApi } from "actions";
+import { UrlFactory } from "actions";
 import { downloadFile } from "actions/global/download";
-import { ArrFileVO } from "components/arr/item-form/desc-items";
+import { useFundFile } from "components/arr/item-form/desc-items/useFundFile";
 import { useActiveFund } from "utils/hooks";
 import { DataFileRef, DataType } from "elza-api";
-import { useEffect, useState } from "react";
 import { useAppThunkDispatch } from "utils/hooks";
 import { DescItemProps } from "./types";
 import { FormattedMessage } from "react-intl";
@@ -21,19 +20,7 @@ export function DescItemFileRef({ item, nodeId }: DescItemProps) {
 
   const dispatch = useAppThunkDispatch();
   const activeFund = useActiveFund();
-  const [file, setFile] = useState<ArrFileVO>();
-
-  useEffect(() => {
-    if (data?.fileId) {
-      (async () => {
-        const file: ArrFileVO = await WebApi.getEditableFundFile(
-          activeFund.id,
-          data.fileId,
-        );
-        setFile(file);
-      })();
-    }
-  }, [data?.fileId, item.undefined]);
+  const file = useFundFile(activeFund.id, data?.fileId);
 
   function handleDownload() {
     dispatch(downloadFile(UrlFactory.downloadDmsFile(data.fileId)));

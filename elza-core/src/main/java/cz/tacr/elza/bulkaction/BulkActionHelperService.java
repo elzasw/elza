@@ -154,9 +154,9 @@ public class BulkActionHelperService {
             OutputItemConnector connector = outputServiceInternal.createItemConnector(bulkActionRunReload.getFundVersion(), output);
             connector.setChangeSupplier(changeSupplier);
 
-            // update output by each result
+            // update output by each result, only when computed with the filter the output requires
             Result actionResult = bulkActionRunReload.getResult();
-            if (actionResult != null) {
+            if (actionResult != null && bulkActionConfigManager.isRunValidForOutput(bulkActionRunReload, output)) {
                 for (ActionResult result : actionResult.getResults()) {
                     result.createOutputItems(connector);
                 }

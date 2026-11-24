@@ -15,6 +15,7 @@ import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -44,8 +45,12 @@ import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrChange.Type;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataFileRef;
+import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.DmsFile;
@@ -54,12 +59,14 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FileRepository;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.OutputFileRepository;
 import cz.tacr.elza.service.ArrangementInternalService;
+import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventStringInVersion;
@@ -104,6 +111,12 @@ public class DmsService {
 
     @Autowired
     private DmsTrashService dmsTrashService;
+
+    @Autowired
+    private DescItemRepository descItemRepository;
+
+    @Autowired
+    private DescriptionItemService descriptionItemService;
 
     /**
      * On startup make sure {@code dms/} exists and {@code README.txt} matches
@@ -326,7 +339,31 @@ public class DmsService {
             newFile.setMimeType(oldFile.getMimeType());
         }
         createFile(newFile, fileStream);
+        repointFileRefItems(oldFile, newFile, updateChange);
         return newFile;
+    }
+
+    /**
+     * Points open description items from the replaced file to its new row, so the
+     * arrangement form and outputs use the new content. The items get a new version
+     * under the replacement change, so reverting it restores both file and items.
+     */
+    private void repointFileRefItems(final ArrFile oldFile, final ArrFile newFile, final ArrChange updateChange) {
+        List<ArrDescItem> itemsUsingOldFile = descItemRepository.findOpenItemsUsingFile(oldFile);
+        if (itemsUsingOldFile.isEmpty()) {
+            return;
+        }
+        List<ArrDescItem> updatedItems = new ArrayList<>(itemsUsingOldFile.size());
+        for (ArrDescItem item : itemsUsingOldFile) {
+            ArrDataFileRef data = (ArrDataFileRef) ArrData.makeCopyWithoutId(item.getData());
+            data.setFile(newFile);
+            ArrDescItem updatedItem = new ArrDescItem(item);
+            updatedItem.setData(data);
+            updatedItems.add(updatedItem);
+        }
+        ArrFundVersion openVersion = arrangementInternalService.getOpenVersionByFund(oldFile.getFund());
+        // forceUpdate: the logical value stays the same, so read-only items follow the file as well
+        descriptionItemService.updateDescriptionItems(updatedItems, openVersion, updateChange, true);
     }
 
     /**
